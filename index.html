@@ -352,12 +352,31 @@ document.querySelectorAll('#qcats .qcat')[0].classList.add('sel');
 function setSyncDot(s){document.getElementById('sync-dot').className='sync-dot '+s;}
 function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 
+function jsonp(params, cbName) {
+  return new Promise((resolve) => {
+    const scriptId = 'jsonp_' + Date.now();
+    window[cbName] = function(data) {
+      resolve(data);
+      delete window[cbName];
+      const s = document.getElementById(scriptId);
+      if (s) s.remove();
+    };
+    const qs = Object.entries(params).map(([k,v]) => k + '=' + encodeURIComponent(v)).join('&');
+    const script = document.createElement('script');
+    script.id = scriptId;
+    script.src = SHEET_URL + '?' + qs + '&callback=' + cbName;
+    script.onerror = function() { resolve(null); delete window[cbName]; };
+    document.head.appendChild(script);
+  });
+}
+
 async function apiCall(payload){
   setSyncDot('syncing');
   try{
-    const r=await fetch(SHEET_URL,{method:'POST',mode:'no-cors',body:JSON.stringify(payload)});
+    const cbName = 'cb_' + Date.now();
+    const result = await jsonp(payload, cbName);
     setSyncDot('synced');
-    return {success:true};
+    return result || {success:true};
   }catch(e){
     setSyncDot('error');
     showToast('sync failed — saved locally');
@@ -368,8 +387,8 @@ async function apiCall(payload){
 async function loadEntries(){
   try{
     setSyncDot('syncing');
-    const r=await fetch(SHEET_URL,{method:'POST',body:JSON.stringify({action:'getEntries'})});
-    const d=await r.json();
+    const cbName = 'cb_load_' + Date.now();
+    const d = await jsonp({action:'getEntries'}, cbName);
     if(d&&d.success&&d.entries){
       entries=d.entries.map(e=>({...e,amount:parseFloat(e.amount)||0,necessity:parseInt(e.necessity)||70})).reverse();
       renderHome();
