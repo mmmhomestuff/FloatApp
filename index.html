@@ -381,10 +381,15 @@ function jsonp(params, cbName) {
 async function apiCall(payload){
   setSyncDot('syncing');
   try{
-    const cbName = 'cb_' + Date.now();
-    const result = await jsonp(payload, cbName);
-    setSyncDot('synced');
-    return result || {success:true};
+    const flat={};
+    for(const[k,v]of Object.entries(payload)){
+      if(typeof v==='object'&&v!==null){for(const[k2,v2]of Object.entries(v))flat[k2]=v2;}
+      else flat[k]=v;
+    }
+    const cbName='cb_'+Date.now();
+    const result=await jsonp(flat,cbName);
+    if(result&&result.success){setSyncDot('synced');return result;}
+    throw new Error('jsonp failed');
   }catch(e){
     setSyncDot('error');
     showToast('sync failed — saved locally');
