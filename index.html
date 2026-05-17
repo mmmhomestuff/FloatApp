@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -647,7 +648,7 @@ html,body{height:100%;background:#FAF8F4;font-family:'Nunito',sans-serif;color:v
 <div class="pay-modal" id="deposit-modal" style="display:none;">
   <div class="pay-modal-box">
     <div class="pay-modal-title" id="dm-title">Confirm deposit</div>
-    <div class="pay-modal-sub">Log when this actually hit your account</div>
+    <div class="pay-modal-sub" id="dm-sub">Log when this actually hit your account</div>
     <div class="pay-modal-label">date it posted</div>
     <input class="pay-modal-inp" type="date" id="dm-date">
     <div class="pay-modal-label">amount received</div>
@@ -671,7 +672,9 @@ html,body{height:100%;background:#FAF8F4;font-family:'Nunito',sans-serif;color:v
 <div class="toast" id="toast"></div>
 </div>
 <script>
-const SHEET_URL = '/.netlify/functions/proxy';
+// *** FIX 1: Point directly at Google Apps Script instead of the old dead Netlify proxy ***
+const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzhpu207loWi36NTyccZIQ54GJcnxWS1giuoajxC24_R2-3sLpeBZGsoiC66py6clxDTw/exec';
+
 let entries = [];
 let qType = 'exp';
 let shopItems = [];
@@ -766,18 +769,29 @@ function currentMonthKey(){ const n=new Date(); return n.getFullYear()+'-'+Strin
 function getBillPaidStatus(name){ const mk=currentMonthKey(); return paidBills[mk] && paidBills[mk][name] ? paidBills[mk][name] : null; }
 function getDepositStatus(name){ const mk=currentMonthKey(); return depositedItems[mk] && depositedItems[mk][name] ? depositedItems[mk][name] : null; }
 
-async function apiCall(payload){
+// *** FIX 2: Use JSONP via doGet instead of fetch/POST to the dead proxy ***
+function apiCall(payload){
   setSyncDot('syncing');
-  try{
-    const r=await fetch(SHEET_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    const d=await r.json();
-    setSyncDot('synced');
-    return d;
-  }catch(e){
-    setSyncDot('error');
-    showToast('sync failed - saved locally');
-    return null;
-  }
+  return new Promise((resolve)=>{
+    const cb='cb_'+Date.now();
+    const params=new URLSearchParams({...payload,callback:cb});
+    const script=document.createElement('script');
+    window[cb]=function(d){
+      delete window[cb];
+      document.body.removeChild(script);
+      setSyncDot('synced');
+      resolve(d);
+    };
+    script.onerror=function(){
+      delete window[cb];
+      document.body.removeChild(script);
+      setSyncDot('error');
+      showToast('sync failed - saved locally');
+      resolve(null);
+    };
+    script.src=SHEET_URL+'?'+params.toString();
+    document.body.appendChild(script);
+  });
 }
 
 async function loadEntries(){
@@ -813,16 +827,19 @@ function nav(id,btn){
 function setQT(t){
   qType=t;
   const qz=document.getElementById('qz'),qzw=document.getElementById('qz-wrap'),qs=document.getElementById('q-sub'),ql=document.getElementById('qz-label');
+  const pendingWrap=document.getElementById('q-pending-wrap');
   if(t==='exp'){
     document.getElementById('qt-e').className='type-btn sel-exp';
     document.getElementById('qt-i').className='type-btn inc';
     qz.style.background='var(--pink-l)';qz.style.borderColor='var(--pink)';
     qzw.style.borderColor='var(--pink)';qs.style.background='var(--pink-d)';ql.style.color='var(--pink-d)';
+    if(pendingWrap) pendingWrap.style.display='none';
   }else{
     document.getElementById('qt-e').className='type-btn exp';
     document.getElementById('qt-i').className='type-btn inc sel-inc';
     qz.style.background='var(--mint-l)';qz.style.borderColor='var(--mint)';
     qzw.style.borderColor='var(--mint)';qs.style.background='var(--mint-d)';ql.style.color='var(--mint-d)';
+    if(pendingWrap) pendingWrap.style.display='block';
   }
 }
 
@@ -866,6 +883,36 @@ function submitNewTag(){
 function addNewTag(){ showTagInput(); }
 
 async function quickLog(){
+  const isPending = document.getElementById('q-pending-chk') && document.getElementById('q-pending-chk').checked;
+  if(qType === 'inc' && isPending){
+    const amt = parseFloat(document.getElementById('q-amt').value);
+    if(!amt || amt <= 0){ document.getElementById('q-amt').focus(); return; }
+    const client = document.getElementById('q-client') ? document.getElementById('q-client').value.trim() : '';
+    const invoice = document.getElementById('q-invoice') ? document.getElementById('q-invoice').value.trim() : '';
+    const note = document.getElementById('q-note').value.trim();
+    const pending = {
+      id: Date.now().toString(),
+      amt,
+      client: client || note || 'Unknown client',
+      invoice,
+      note,
+      invoicedDate: new Date().toISOString(),
+      status: 'pending'
+    };
+    pendingIncome.push(pending);
+    savePendingIncome();
+    document.getElementById('q-amt').value = '';
+    document.getElementById('q-note').value = '';
+    document.getElementById('q-nec').value = 70;
+    document.getElementById('q-nec-pct').textContent = '70%';
+    document.getElementById('q-pending-chk').checked = false;
+    togglePendingFields();
+    if(document.getElementById('q-client')) document.getElementById('q-client').value = '';
+    if(document.getElementById('q-invoice')) document.getElementById('q-invoice').value = '';
+    showToast('invoice logged as pending');
+    if(document.getElementById('bills').classList.contains('active')) renderBills();
+    return;
+  }
   const amt=parseFloat(document.getElementById('q-amt').value);
   if(!amt||amt<=0){document.getElementById('q-amt').focus();return;}
   const nec=parseInt(document.getElementById('q-nec').value)||70;
@@ -1033,7 +1080,6 @@ function renderBills(){
     const payBtn=(!isIncome&&!paidStatus)?'<button class="tl-pay-btn" data-name="'+bill.name+'" data-amt="'+bill.amt+'" data-acct="'+bill.defAcct+'" onclick="markBillPaid(this)">mark paid</button>':'';
     const depositBtn=(isIncome&&!depositStatus)?'<button class="tl-deposit-btn" data-name="'+bill.name+'" data-amt="'+bill.amt+'" data-acct="'+bill.defAcct+'" onclick="confirmDepositModal(this)">confirm deposit</button>':'';
     item.innerHTML='<div class="tl-dot '+urgency+'">'+(paidStatus?'✓':bill.icon)+'</div><div class="tl-body"><div class="tl-name">'+bill.name+(isIncome?depositBadge:paidBadge)+'</div><div class="tl-meta">'+bill.acct+'</div>'+(isIncome?depositNote:paidNote)+'<a class="tl-gcal" href="'+gcalUrl+'" target="_blank">📅 calendar</a>'+payBtn+depositBtn+'</div><div class="tl-right" id="amt-right-tmp"></div>';
-    // Build editable amount with DOM to avoid quote issues
     const rightDiv=item.querySelector('#amt-right-tmp');
     rightDiv.removeAttribute('id');
     const aw=document.createElement('div');
@@ -1056,7 +1102,6 @@ function renderBills(){
     rightDiv.appendChild(aw);rightDiv.appendChild(dd);
     tl.appendChild(item);
   });
-  // Collapse passed bills only - upcoming always visible
   const sepDiv = [...tl.children].find(el => el.innerHTML && el.innerHTML.includes('already passed'));
   if(sepDiv){
     const passedItems = [];
@@ -1144,13 +1189,39 @@ async function confirmPaid(){
 function confirmDepositModal(el){
   depositModalBill={name:el.dataset.name,amt:parseFloat(el.dataset.amt),acct:el.dataset.acct};
   document.getElementById('dm-title').textContent='Confirm: '+depositModalBill.name;
+  document.getElementById('dm-sub').textContent='Log when this actually hit your account';
   document.getElementById('dm-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('dm-amt').value=depositModalBill.amt.toFixed(2);
   document.getElementById('dm-acct').value=depositModalBill.acct;
   document.getElementById('deposit-modal').style.display='flex';
 }
-function closeDepositModal(){ document.getElementById('deposit-modal').style.display='none'; depositModalBill=null; }
+function closeDepositModal(){ document.getElementById('deposit-modal').style.display='none'; depositModalBill=null; pendingDepositItem=null; }
 async function confirmDeposit(){
+  if(pendingDepositItem){
+    const postDate = document.getElementById('dm-date').value;
+    const amt = parseFloat(document.getElementById('dm-amt').value);
+    const acct = document.getElementById('dm-acct').value;
+    if(!postDate || !amt){ showToast('fill in date and amount'); return; }
+    pendingIncome = pendingIncome.filter(p => p.id !== pendingDepositItem.id);
+    savePendingIncome();
+    const entry = {
+      id: Date.now().toString(),
+      type: 'inc',
+      amount: amt,
+      who: 'Mary',
+      cat: 'income',
+      note: pendingDepositItem.client + ' (confirmed)',
+      necessity: 100,
+      date: new Date(postDate + 'T12:00:00').toISOString()
+    };
+    entries.unshift(entry);
+    renderHome();
+    closeDepositModal();
+    renderBills();
+    showToast('payment confirmed and logged!');
+    await apiCall({ action: 'addEntry', ...entry });
+    return;
+  }
   if(!depositModalBill)return;
   const postDate=document.getElementById('dm-date').value;
   const amt=parseFloat(document.getElementById('dm-amt').value);
@@ -1224,10 +1295,8 @@ function renderCalendar(){
     const ph=document.createElement('div');ph.className='cal-month-head';ph.textContent='past';listEl.appendChild(ph);
     past.slice().reverse().forEach(ev=>listEl.appendChild(makeItem(ev)));
   }
-  // Per-month collapse buttons
   const monthHeads = listEl.querySelectorAll('.cal-month-head');
   monthHeads.forEach(head => {
-    // Collect all cal-items until the next month-head
     const items = [];
     let el = head.nextElementSibling;
     while(el && !el.classList.contains('cal-month-head')){
@@ -1235,7 +1304,6 @@ function renderCalendar(){
       el = el.nextElementSibling;
     }
     if(items.length > 3){
-      // Hide items beyond 3
       items.slice(3).forEach(i => i.style.display = 'none');
       const btn = document.createElement('button');
       btn.className = 'collapse-btn';
@@ -1246,7 +1314,6 @@ function renderCalendar(){
         items.slice(3).forEach(i => i.style.display = isOpen ? 'none' : 'flex');
         this.textContent = isOpen ? 'see ' + (items.length - 3) + ' more ↓' : 'show less ↑';
       };
-      // Insert button after last item in this month group
       items[items.length - 1].after(btn);
     }
   });
@@ -1347,7 +1414,6 @@ function renderShop(){
   shopItems.forEach(item=>{
     const r=document.createElement('div');
     r.className='shop-item'+(item.checked?' checked':'');
-    // Build price input element separately to avoid quote issues
     const priceInp=document.createElement('input');
     priceInp.type='number';
     priceInp.value=item.price.toFixed(2);
@@ -1397,33 +1463,13 @@ function updateBillAmt(inp){
   }
 }
 
-
 // ---- PENDING INCOME ----
 let pendingIncome = [];
+let pendingDepositItem = null;
 try { pendingIncome = JSON.parse(localStorage.getItem('float-pending-income') || '[]'); } catch(e) {}
 
 function savePendingIncome(){
   localStorage.setItem('float-pending-income', JSON.stringify(pendingIncome));
-}
-
-// Show/hide pending fields when income type + toggle
-function setQT(t){
-  qType=t;
-  const qz=document.getElementById('qz'),qzw=document.getElementById('qz-wrap'),qs=document.getElementById('q-sub'),ql=document.getElementById('qz-label');
-  const pendingWrap=document.getElementById('q-pending-wrap');
-  if(t==='exp'){
-    document.getElementById('qt-e').className='type-btn sel-exp';
-    document.getElementById('qt-i').className='type-btn inc';
-    qz.style.background='var(--pink-l)';qz.style.borderColor='var(--pink)';
-    qzw.style.borderColor='var(--pink)';qs.style.background='var(--pink-d)';ql.style.color='var(--pink-d)';
-    if(pendingWrap) pendingWrap.style.display='none';
-  }else{
-    document.getElementById('qt-e').className='type-btn exp';
-    document.getElementById('qt-i').className='type-btn inc sel-inc';
-    qz.style.background='var(--mint-l)';qz.style.borderColor='var(--mint)';
-    qzw.style.borderColor='var(--mint)';qs.style.background='var(--mint-d)';ql.style.color='var(--mint-d)';
-    if(pendingWrap) pendingWrap.style.display='block';
-  }
 }
 
 function togglePendingFields(){
@@ -1431,44 +1477,6 @@ function togglePendingFields(){
   const fields = document.getElementById('q-pending-fields');
   if(fields) fields.style.display = chk.checked ? 'block' : 'none';
 }
-
-// Override quickLog to handle pending
-const _origQuickLog = quickLog;
-quickLog = async function(){
-  const isPending = document.getElementById('q-pending-chk') && document.getElementById('q-pending-chk').checked;
-  if(qType === 'inc' && isPending){
-    const amt = parseFloat(document.getElementById('q-amt').value);
-    if(!amt || amt <= 0){ document.getElementById('q-amt').focus(); return; }
-    const client = document.getElementById('q-client') ? document.getElementById('q-client').value.trim() : '';
-    const invoice = document.getElementById('q-invoice') ? document.getElementById('q-invoice').value.trim() : '';
-    const note = document.getElementById('q-note').value.trim();
-    const pending = {
-      id: Date.now().toString(),
-      amt,
-      client: client || note || 'Unknown client',
-      invoice,
-      note,
-      invoicedDate: new Date().toISOString(),
-      status: 'pending'
-    };
-    pendingIncome.push(pending);
-    savePendingIncome();
-    // Clear fields
-    document.getElementById('q-amt').value = '';
-    document.getElementById('q-note').value = '';
-    document.getElementById('q-nec').value = 70;
-    document.getElementById('q-nec-pct').textContent = '70%';
-    document.getElementById('q-pending-chk').checked = false;
-    togglePendingFields();
-    if(document.getElementById('q-client')) document.getElementById('q-client').value = '';
-    if(document.getElementById('q-invoice')) document.getElementById('q-invoice').value = '';
-    showToast('invoice logged as pending');
-    // Refresh bills tab if open
-    if(document.getElementById('bills').classList.contains('active')) renderBills();
-    return;
-  }
-  await _origQuickLog();
-};
 
 function renderPendingIncome(){
   const section = document.getElementById('pending-income-section');
@@ -1520,10 +1528,8 @@ function markFollowUp(id){
   const p = pendingIncome.find(p => p.id === id);
   if(!p) return;
   showToast('reminder set for ' + p.client);
-  // Could integrate with calendar here in future
 }
 
-let pendingDepositItem = null;
 function confirmPendingDeposit(el){
   const id = el.dataset.pendingId;
   const amt = parseFloat(el.dataset.pendingAmt);
@@ -1536,42 +1542,6 @@ function confirmPendingDeposit(el){
   document.getElementById('dm-acct').value = 'MMJ Freelance *4146';
   document.getElementById('deposit-modal').style.display = 'flex';
 }
-
-// Override confirmDeposit to also handle pending items
-const _origConfirmDeposit = confirmDeposit;
-confirmDeposit = async function(){
-  if(pendingDepositItem){
-    const postDate = document.getElementById('dm-date').value;
-    const amt = parseFloat(document.getElementById('dm-amt').value);
-    const acct = document.getElementById('dm-acct').value;
-    if(!postDate || !amt){ showToast('fill in date and amount'); return; }
-    // Remove from pending
-    pendingIncome = pendingIncome.filter(p => p.id !== pendingDepositItem.id);
-    savePendingIncome();
-    // Log as confirmed income entry
-    const entry = {
-      id: Date.now().toString(),
-      type: 'inc',
-      amount: amt,
-      who: 'Mary',
-      cat: 'income',
-      note: pendingDepositItem.client + ' (confirmed)',
-      necessity: 100,
-      date: new Date(postDate + 'T12:00:00').toISOString()
-    };
-    entries.unshift(entry);
-    renderHome();
-    closeDepositModal();
-    renderBills();
-    pendingDepositItem = null;
-    showToast('payment confirmed and logged!');
-    await apiCall({ action: 'addEntry', ...entry });
-    return;
-  }
-  pendingDepositItem = null;
-  await _origConfirmDeposit();
-};
-
 
 checkMonthRollover();
 loadEntries();
