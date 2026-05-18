@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -769,9 +768,24 @@ function currentMonthKey(){ const n=new Date(); return n.getFullYear()+'-'+Strin
 function getBillPaidStatus(name){ const mk=currentMonthKey(); return paidBills[mk] && paidBills[mk][name] ? paidBills[mk][name] : null; }
 function getDepositStatus(name){ const mk=currentMonthKey(); return depositedItems[mk] && depositedItems[mk][name] ? depositedItems[mk][name] : null; }
 
-// *** FIX 2: Use JSONP via doGet instead of fetch/POST to the dead proxy ***
+// Use fetch POST for writes, JSONP for reads (Safari compatibility)
 function apiCall(payload){
   setSyncDot('syncing');
+  if(payload.action === 'addEntry' || payload.action === 'deleteEntry'){
+    return fetch(SHEET_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    }).then(()=>{
+      setSyncDot('synced');
+      return {success: true};
+    }).catch(()=>{
+      setSyncDot('error');
+      showToast('sync failed - saved locally');
+      return null;
+    });
+  }
   return new Promise((resolve)=>{
     const cb='cb_'+Date.now();
     const params=new URLSearchParams({...payload,callback:cb});
