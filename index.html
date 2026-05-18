@@ -672,7 +672,7 @@ html,body{height:100%;background:#FAF8F4;font-family:'Nunito',sans-serif;color:v
 </div>
 <script>
 // *** FIX 1: Point directly at Google Apps Script instead of the old dead Netlify proxy ***
-const SHEET_URL = 'https://script.google.com/macros/s/AKfycbzhpu207loWi36NTyccZIQ54GJcnxWS1giuoajxC24_R2-3sLpeBZGsoiC66py6clxDTw/exec';
+const SHEET_URL = '/.netlify/functions/proxy';
 
 let entries = [];
 let qType = 'exp';
@@ -768,28 +768,18 @@ function currentMonthKey(){ const n=new Date(); return n.getFullYear()+'-'+Strin
 function getBillPaidStatus(name){ const mk=currentMonthKey(); return paidBills[mk] && paidBills[mk][name] ? paidBills[mk][name] : null; }
 function getDepositStatus(name){ const mk=currentMonthKey(); return depositedItems[mk] && depositedItems[mk][name] ? depositedItems[mk][name] : null; }
 
-function apiCall(payload){
+async function apiCall(payload){
   setSyncDot('syncing');
-  return new Promise((resolve)=>{
-    const cb='cb_'+Date.now();
-    const params=new URLSearchParams({...payload,callback:cb});
-    const script=document.createElement('script');
-    window[cb]=function(d){
-      delete window[cb];
-      document.body.removeChild(script);
-      setSyncDot('synced');
-      resolve(d);
-    };
-    script.onerror=function(){
-      delete window[cb];
-      document.body.removeChild(script);
-      setSyncDot('error');
-      showToast('sync failed - saved locally');
-      resolve(null);
-    };
-    script.src=SHEET_URL+'?'+params.toString();
-    document.body.appendChild(script);
-  });
+  try{
+    const r=await fetch(SHEET_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const d=await r.json();
+    setSyncDot('synced');
+    return d;
+  }catch(e){
+    setSyncDot('error');
+    showToast('sync failed - saved locally');
+    return null;
+  }
 }
 
 async function loadEntries(){
