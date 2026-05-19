@@ -12,10 +12,14 @@ exports.handler = async function(event) {
   }
 
   try {
-    const body = JSON.parse(event.body);
-    const params = new URLSearchParams(body).toString();
-    const url = APPS_SCRIPT_URL + '?' + params;
+    let params;
+    if(event.httpMethod === 'GET'){
+      params = event.queryStringParameters || {};
+    } else {
+      params = JSON.parse(event.body || '{}');
+    }
 
+    const url = APPS_SCRIPT_URL + '?' + new URLSearchParams(params).toString();
     const response = await fetch(url, { redirect: 'follow' });
     const text = await response.text();
 
