@@ -7,12 +7,16 @@ exports.handler = async function(event) {
     'Content-Type': 'application/json'
   };
 
+  if(event.httpMethod === 'OPTIONS'){
+    return { statusCode: 200, headers, body: '' };
+  }
+
   try {
     const body = JSON.parse(event.body);
     const params = new URLSearchParams(body).toString();
     const url = APPS_SCRIPT_URL + '?' + params;
 
-    const response = await fetch(url);
+    const response = await fetch(url, { redirect: 'follow' });
     const text = await response.text();
 
     return { statusCode: 200, headers, body: text };
