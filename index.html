@@ -663,6 +663,17 @@ html,body{height:100%;background:#FAF8F4;font-family:'Nunito',sans-serif;color:v
     <button class="bounce-btn" style="background:transparent;color:var(--ink-light);font-size:13px;" onclick="nav('home',document.querySelector('.bnav'))">back home</button>
   </div>
 </div>
+<div id="chore-who" class="screen">
+  <div class="success-splash">
+    <div class="splash-icon" id="cw-icon">🧹</div>
+    <div class="splash-title" id="cw-title">who did this?</div>
+    <div class="splash-sub" id="cw-sub" style="margin-bottom:32px;"></div>
+    <div style="display:flex;flex-direction:column;gap:14px;width:100%;max-width:280px;margin:0 auto;">
+      <button class="bounce-btn" onclick="selectChoreWho('MMJ')" style="background:var(--lav);color:var(--lav-d);font-size:18px;padding:20px;border-radius:var(--r-xl);">🌿 Mary</button>
+      <button class="bounce-btn" onclick="selectChoreWho('Garrett')" style="background:var(--butter);color:var(--butter-d);font-size:18px;padding:20px;border-radius:var(--r-xl);">🌲 Garrett</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 </div>
 <script>
@@ -1329,30 +1340,52 @@ function renderChores(){
 }
 
 // Handle NFC URL params — ?chore=cat+box&who=mary
+let _pendingChoreName = null;
+
 function handleNFCParams(){
   const params = new URLSearchParams(window.location.search);
   const chore = params.get('chore');
   const who = params.get('who');
   if(!chore) return;
 
-  const whoClean = who ? (who.toLowerCase()==='garrett' ? 'Garrett' : 'MMJ') : 'MMJ';
   const choreName = decodeURIComponent(chore).replace(/\+/g,' ');
-
-  // Show chore success splash
   const icons = { 'cat box':'🐱', 'dog food':'🐕', 'cat food':'🐈', 'laundry':'👕', 'dishes':'🍽️' };
-  document.getElementById('cs-icon').textContent = icons[choreName.toLowerCase()] || '🧹';
-  document.getElementById('cs-title').textContent = choreName + ' done!';
-  document.getElementById('cs-sub').textContent = whoClean + ' · ' + new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  const icon = icons[choreName.toLowerCase()] || '🧹';
 
-  // Navigate to chore success screen
+  window.history.replaceState({}, document.title, window.location.pathname);
+
+  if(who){
+    // who is known — go straight to success
+    const whoClean = who.toLowerCase()==='garrett' ? 'Garrett' : 'MMJ';
+    showChoreSuccess(choreName, whoClean, icon);
+    logChore(choreName, whoClean);
+  } else {
+    // no who — show picker
+    _pendingChoreName = choreName;
+    document.getElementById('cw-icon').textContent = icon;
+    document.getElementById('cw-title').textContent = 'who did this?';
+    document.getElementById('cw-sub').textContent = choreName;
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById('chore-who').classList.add('active');
+  }
+}
+
+function selectChoreWho(who){
+  if(!_pendingChoreName) return;
+  const choreName = _pendingChoreName;
+  _pendingChoreName = null;
+  const icons = { 'cat box':'🐱', 'dog food':'🐕', 'cat food':'🐈', 'laundry':'👕', 'dishes':'🍽️' };
+  const icon = icons[choreName.toLowerCase()] || '🧹';
+  showChoreSuccess(choreName, who, icon);
+  logChore(choreName, who);
+}
+
+function showChoreSuccess(choreName, who, icon){
+  document.getElementById('cs-icon').textContent = icon;
+  document.getElementById('cs-title').textContent = choreName + ' done!';
+  document.getElementById('cs-sub').textContent = who + ' · ' + new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('chore-success').classList.add('active');
-
-  // Log it
-  logChore(choreName, whoClean);
-
-  // Clean URL so refreshing doesn't re-log
-  window.history.replaceState({}, document.title, window.location.pathname);
 }
 
 handleNFCParams();
