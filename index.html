@@ -862,6 +862,7 @@ function nav(id,btn){
   if(id==='score')renderScore();
   if(id==='bills'){renderBills();renderAllEntries();}
   if(id==='calendar'){renderCalendar();renderGoals();}
+  if(id==='chores')loadChores();
 }
 
 // ============================================================
@@ -1352,13 +1353,6 @@ function handleNFCParams(){
 
   // Clean URL so refreshing doesn't re-log
   window.history.replaceState({}, document.title, window.location.pathname);
-}
-
-// Override nav to load chores when tab opened
-const _origNav = nav;
-function nav(id, btn){
-  _origNav(id, btn);
-  if(id === 'chores') loadChores();
 }
 
 handleNFCParams();
