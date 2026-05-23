@@ -1,0 +1,16 @@
+name: Chore Reminder
+
+on:
+  schedule:
+    - cron: '0 22 * * *'  # 6pm Eastern (UTC-4 in summer, UTC-5 in winter)
+  workflow_dispatch:       # allows manual trigger for testing
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check cat box and notify
+        run: |
+          curl -X POST https://mpwnbsztpulwwmtuabtd.supabase.co/functions/v1/chore-reminder \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "Content-Type: application/json"
