@@ -320,6 +320,53 @@ html,body{height:100%;background:#FAF8F4;font-family:'Nunito',sans-serif;color:v
 .chore-who.garrett{background:var(--butter-l);color:var(--butter-d);}
 .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 20px;border-radius:var(--r-full);font-size:12px;font-weight:800;opacity:0;transition:all 0.3s;pointer-events:none;white-space:nowrap;z-index:999;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+/* SCAN TAB */
+.scan-drop-zone{border:2.5px dashed var(--lav);border-radius:var(--r-xl);padding:32px 20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--lav-l);margin-bottom:10px;position:relative;overflow:hidden;}
+.scan-drop-zone:active{transform:scale(0.98);}
+.scan-drop-zone.has-img{border-style:solid;border-color:var(--lav-d);background:var(--surface);padding:0;}
+.scan-drop-zone img{width:100%;border-radius:calc(var(--r-xl) - 2px);display:block;max-height:280px;object-fit:cover;}
+.scan-cam-icon{font-size:40px;margin-bottom:10px;}
+.scan-drop-label{font-size:13px;font-weight:800;color:var(--lav-d);margin-bottom:4px;}
+.scan-drop-sub{font-size:11px;color:var(--ink-light);font-weight:600;}
+.scan-retake{position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.55);border:none;border-radius:var(--r-full);padding:6px 12px;font-size:11px;font-weight:800;color:#fff;cursor:pointer;font-family:'Nunito',sans-serif;}
+.scan-analyzing{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;gap:10px;}
+.scan-spinner{width:36px;height:36px;border:3px solid var(--lav);border-top-color:var(--lav-d);border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.scan-analyzing-label{font-size:13px;font-weight:800;color:var(--lav-d);}
+.scan-analyzing-sub{font-size:11px;color:var(--ink-light);font-weight:600;text-align:center;}
+.scan-result-card{background:var(--surface);border-radius:var(--r-lg);border:2px solid var(--lav);padding:16px;margin-bottom:10px;}
+.scan-result-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.scan-result-icon{width:44px;height:44px;border-radius:var(--r-md);background:var(--lav-l);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.scan-result-title{font-size:16px;font-weight:900;color:var(--ink);}
+.scan-result-sub{font-size:11px;color:var(--ink-light);font-weight:600;margin-top:2px;}
+.scan-field{margin-bottom:12px;}
+.scan-field-label{font-size:10px;font-weight:900;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-light);margin-bottom:5px;}
+.scan-field-inp{width:100%;background:var(--bg);border:2px solid rgba(61,48,80,0.1);border-radius:var(--r-md);padding:10px 12px;font-size:14px;font-weight:700;color:var(--ink);font-family:'Nunito',sans-serif;outline:none;}
+.scan-field-inp:focus{border-color:var(--lav-d);}
+.scan-field-row{display:flex;gap:8px;}
+.scan-field-row .scan-field{flex:1;}
+.scan-type-row{display:flex;gap:6px;}
+.scan-type-btn{flex:1;padding:9px;border-radius:var(--r-md);border:2px solid transparent;cursor:pointer;font-size:12px;font-weight:800;font-family:'Nunito',sans-serif;transition:all 0.18s cubic-bezier(0.34,1.56,0.64,1);display:flex;align-items:center;justify-content:center;gap:6px;}
+.scan-type-btn.exp{background:var(--pink-l);color:var(--pink-d);border-color:var(--pink);}
+.scan-type-btn.inc{background:var(--mint-l);color:var(--mint-d);border-color:var(--mint);}
+.scan-type-btn.sel-exp{background:var(--pink-d);color:#fff;border-color:var(--pink-d);}
+.scan-type-btn.sel-inc{background:var(--mint-d);color:#fff;border-color:var(--mint-d);}
+.scan-log-btn{width:100%;padding:14px;border-radius:var(--r-full);border:none;background:var(--axolotl);color:#fff;font-size:15px;font-weight:900;font-family:'Nunito',sans-serif;cursor:pointer;margin-top:4px;transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1);}
+.scan-log-btn:active{transform:scale(0.96);}
+.scan-discard-btn{width:100%;padding:11px;border-radius:var(--r-full);border:2px solid rgba(61,48,80,0.12);background:transparent;color:var(--ink-light);font-size:13px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;margin-top:8px;}
+.scan-ai-note{background:var(--lav-l);border:1.5px solid var(--lav);border-radius:var(--r-md);padding:10px 12px;margin-bottom:12px;font-size:11px;color:var(--lav-d);font-weight:700;line-height:1.5;}
+.scan-history-item{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1.5px dashed rgba(61,48,80,0.07);}
+.scan-history-item:last-child{border-bottom:none;}
+.scan-history-icon{width:34px;height:34px;border-radius:var(--r-md);background:var(--lav-l);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.scan-history-info{flex:1;min-width:0;}
+.scan-history-name{font-size:12px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.scan-history-meta{font-size:10px;color:var(--ink-light);font-weight:600;margin-top:1px;}
+.scan-history-amt{font-size:13px;font-weight:900;color:var(--pink-d);flex-shrink:0;}
+.scan-key-wrap{background:var(--mint-l);border:1.5px solid var(--mint);border-radius:var(--r-md);padding:12px 14px;margin-bottom:12px;}
+.scan-key-label{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0.08em;color:var(--mint-d);margin-bottom:6px;}
+.scan-key-inp{width:100%;background:var(--surface);border:2px solid var(--mint);border-radius:var(--r-md);padding:10px 12px;font-size:13px;font-weight:700;color:var(--ink);font-family:'Nunito',sans-serif;outline:none;margin-bottom:8px;}
+.scan-key-inp:focus{border-color:var(--mint-d);}
+.scan-key-save{padding:8px 20px;border-radius:var(--r-full);background:var(--mint-d);border:none;color:#fff;font-size:12px;font-weight:900;cursor:pointer;font-family:'Nunito',sans-serif;}
 </style>
 </head>
 <body>
@@ -340,6 +387,7 @@ html,body{height:100%;background:#FAF8F4;font-family:'Nunito',sans-serif;color:v
   <button class="bnav" onclick="nav('dashboard',this)">&#128202; stats</button>
   <button class="bnav" onclick="nav('score',this)">&#127942; score</button>
   <button class="bnav" onclick="nav('chores',this)">&#129529; chores</button>
+  <button class="bnav" onclick="nav('scan',this)" style="grid-column:span 3;background:var(--lav-l);color:var(--lav-d);border:2px solid var(--lav);">&#128247; scan a bill or receipt</button>
 </div>
 <div id="home" class="screen active">
   <div class="balance-blob">
@@ -587,6 +635,151 @@ html,body{height:100%;background:#FAF8F4;font-family:'Nunito',sans-serif;color:v
   <div class="section-head">who spent less?</div>
   <div class="card"><div id="score-bars"><div class="empty-state">no data yet</div></div></div>
 </div>
+<div id="scan" class="screen">
+  <div class="section-head" style="margin-top:6px;">📷 bill &amp; receipt scanner</div>
+  <!-- SETUP CARDS -->
+  <div id="scan-setup-section">
+    <!-- Claude API Key -->
+    <div class="scan-key-wrap" id="scan-key-wrap">
+      <div class="scan-key-label">🔑 step 1 — Claude API key</div>
+      <div style="font-size:11px;color:var(--ink-mid);font-weight:600;margin-bottom:8px;line-height:1.5;">Get your key at <strong>console.anthropic.com</strong> → API Keys.</div>
+      <input class="scan-key-inp" type="password" id="scan-api-key" placeholder="sk-ant-..." autocomplete="off">
+      <button class="scan-key-save" onclick="saveApiKey()">save key</button>
+    </div>
+    <!-- Google Drive OAuth Setup -->
+    <div class="scan-key-wrap" id="scan-drive-wrap" style="background:var(--lav-l);border-color:var(--lav);">
+      <div class="scan-key-label" style="color:var(--lav-d);">📁 step 2 — Google Drive</div>
+      <div id="scan-drive-status-msg" style="font-size:11px;color:var(--ink-mid);font-weight:600;margin-bottom:8px;line-height:1.5;">Paste your Google Client ID below — see setup guide for where to find this.</div>
+      <input class="scan-key-inp" style="border-color:var(--lav);" type="text" id="scan-google-client-id" placeholder="xxxxxx.apps.googleusercontent.com" autocomplete="off">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <button class="scan-key-save" style="background:var(--lav-d);" onclick="saveGoogleClientId()">save</button>
+        <button id="scan-drive-connect-btn" style="display:none;padding:8px 20px;border-radius:var(--r-full);background:var(--lav-d);border:none;color:#fff;font-size:12px;font-weight:900;cursor:pointer;font-family:Nunito,sans-serif;" onclick="connectGoogleDrive()">🔗 connect Google Drive</button>
+        <span id="scan-drive-connected-badge" style="display:none;font-size:11px;font-weight:800;color:var(--lav-d);">✓ Drive connected</span>
+      </div>
+    </div>
+  </div>
+  <!-- DRIVE FILE LOCATION PREVIEW -->
+  <div id="scan-file-preview" style="display:none;background:var(--lav-l);border:1.5px solid var(--lav);border-radius:var(--r-md);padding:10px 12px;margin-bottom:10px;font-size:11px;color:var(--lav-d);font-weight:700;line-height:1.6;"></div>
+  <!-- DROP / CAMERA ZONE -->
+  <div class="scan-drop-zone" id="scan-dropzone" onclick="triggerScanPicker()">
+    <div id="scan-dropzone-inner">
+      <div class="scan-cam-icon">📷</div>
+      <div class="scan-drop-label">tap to photograph a bill or receipt</div>
+      <div class="scan-drop-sub">works with photos &amp; screenshots</div>
+    </div>
+  </div>
+  <input type="file" id="scan-file-inp" accept="image/*" capture="environment" style="display:none;" onchange="handleScanFile(this)">
+  <!-- ANALYZING STATE -->
+  <div class="scan-analyzing" id="scan-analyzing" style="display:none;">
+    <div class="scan-spinner"></div>
+    <div class="scan-analyzing-label">reading your document...</div>
+    <div class="scan-analyzing-sub">Claude is extracting the details</div>
+  </div>
+  <!-- RESULT CARD -->
+  <div id="scan-result" style="display:none;">
+    <div class="scan-result-card">
+      <div class="scan-result-header">
+        <div class="scan-result-icon" id="sr-icon">📄</div>
+        <div>
+          <div class="scan-result-title" id="sr-title">Document</div>
+          <div class="scan-result-sub" id="sr-sub">review and confirm below</div>
+        </div>
+      </div>
+      <div class="scan-ai-note" id="sr-note"></div>
+      <div class="scan-field">
+        <div class="scan-field-label">type</div>
+        <div class="scan-type-row">
+          <button class="scan-type-btn sel-exp" id="sr-t-exp" onclick="setScanType('exp')">➖ expense</button>
+          <button class="scan-type-btn inc" id="sr-t-inc" onclick="setScanType('inc')">➕ income</button>
+        </div>
+      </div>
+      <div class="scan-field-row">
+        <div class="scan-field">
+          <div class="scan-field-label">amount</div>
+          <input class="scan-field-inp" type="number" id="sr-amt" step="0.01" min="0" placeholder="0.00">
+        </div>
+        <div class="scan-field">
+          <div class="scan-field-label">date</div>
+          <input class="scan-field-inp" type="date" id="sr-date">
+        </div>
+      </div>
+      <div class="scan-field">
+        <div class="scan-field-label">description</div>
+        <input class="scan-field-inp" type="text" id="sr-note-inp" placeholder="what is this?">
+      </div>
+      <div class="scan-field">
+        <div class="scan-field-label">category</div>
+        <select class="scan-field-inp" id="sr-cat">
+          <option value="bills">bills</option>
+          <option value="groceries">groceries</option>
+          <option value="health">health</option>
+          <option value="transport">transport</option>
+          <option value="personal">personal</option>
+          <option value="household">household</option>
+          <option value="eating out">eating out</option>
+          <option value="income">income</option>
+          <option value="other">other</option>
+        </select>
+      </div>
+      <div class="scan-field">
+        <div class="scan-field-label">who paid?</div>
+        <div class="chip-row">
+          <button class="chip sel" data-swho="Mary" onclick="selScanWho(this)">Mary</button>
+          <button class="chip" data-swho="Garrett" onclick="selScanWho(this)">Garrett</button>
+          <button class="chip" data-swho="Both" onclick="selScanWho(this)">Both</button>
+        </div>
+      </div>
+      <button class="scan-log-btn" onclick="confirmScanLog()">✓ log this entry</button>
+      <button class="scan-discard-btn" onclick="resetScan()">✕ discard &amp; scan another</button>
+    </div>
+  </div>
+  <!-- SCAN HISTORY -->
+  <div id="scan-history-wrap" style="display:none;">
+    <div class="section-head">recently scanned</div>
+    <div class="card"><div id="scan-history-list"></div></div>
+  </div>
+</div>
+<div id="chores" class="screen">
+  <div style="margin-top:6px;margin-bottom:12px;">
+    <div class="balance-blob" style="background:var(--lav-d);">
+      <div class="bd a" style="background:var(--mint);"></div><div class="bd b" style="background:var(--butter);"></div>
+      <div class="bal-label">today's chores</div>
+      <div class="bal-amount" id="ch-done-count" style="font-size:32px;">—</div>
+      <div class="bal-sub" id="ch-done-sub">loading...</div>
+      <div class="bal-chips">
+        <div class="bal-chip"><div class="bcl">done</div><div class="bcv" id="ch-done-num" style="color:#A8F0D4;">0</div></div>
+        <div class="bal-chip"><div class="bcl">pending</div><div class="bcv" id="ch-pending-num" style="color:var(--mint);">0</div></div>
+        <div class="bal-chip"><div class="bcl">streak</div><div class="bcv" id="ch-streak" style="color:#fff;">0</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="section-head">chore log</div>
+  <div class="card">
+    <div id="ch-empty" class="empty-state">no chores logged yet</div>
+    <div id="ch-list"></div>
+  </div>
+</div>
+<div id="chore-success" class="screen">
+  <div class="success-splash">
+    <div class="splash-icon" id="cs-icon">🧹</div>
+    <div class="splash-title" id="cs-title">done!</div>
+    <div class="splash-sub" id="cs-sub">logged just now</div>
+    <button class="bounce-btn neu" style="margin-bottom:12px;" onclick="nav('chores',document.querySelector('[onclick*=chores]'))">view chores</button>
+    <br>
+    <button class="bounce-btn" style="background:transparent;color:var(--ink-light);font-size:13px;" onclick="nav('home',document.querySelector('.bnav'))">back home</button>
+  </div>
+</div>
+<div id="chore-who" class="screen">
+  <div class="success-splash">
+    <div class="splash-icon" id="cw-icon">🧹</div>
+    <div class="splash-title" id="cw-title">who did this?</div>
+    <div class="splash-sub" id="cw-sub" style="margin-bottom:32px;"></div>
+    <div style="display:flex;flex-direction:column;gap:14px;width:100%;max-width:280px;margin:0 auto;">
+      <button class="bounce-btn" onclick="selectChoreWho('MMJ')" style="background:var(--lav);color:var(--lav-d);font-size:18px;padding:20px;border-radius:var(--r-xl);">🌿 Mary</button>
+      <button class="bounce-btn" onclick="selectChoreWho('Garrett')" style="background:var(--butter);color:var(--butter-d);font-size:18px;padding:20px;border-radius:var(--r-xl);">🌲 Garrett</button>
+    </div>
+  </div>
+</div>
 <div class="pay-modal" id="pay-modal" style="display:none;">
   <div class="pay-modal-box">
     <div class="pay-modal-title" id="pm-title">Mark as paid</div>
@@ -630,47 +823,6 @@ html,body{height:100%;background:#FAF8F4;font-family:'Nunito',sans-serif;color:v
     <div class="pay-modal-actions">
       <button class="pay-cancel-btn" onclick="closeDepositModal()">cancel</button>
       <button class="pay-confirm-btn deposit" onclick="confirmDeposit()">&#10003; confirm deposit</button>
-    </div>
-  </div>
-</div>
-<div id="chores" class="screen">
-  <div style="margin-top:6px;margin-bottom:12px;">
-    <div class="balance-blob" style="background:var(--lav-d);">
-      <div class="bd a" style="background:var(--mint);"></div><div class="bd b" style="background:var(--butter);"></div>
-      <div class="bal-label">today's chores</div>
-      <div class="bal-amount" id="ch-done-count" style="font-size:32px;">—</div>
-      <div class="bal-sub" id="ch-done-sub">loading...</div>
-      <div class="bal-chips">
-        <div class="bal-chip"><div class="bcl">done</div><div class="bcv" id="ch-done-num" style="color:#A8F0D4;">0</div></div>
-        <div class="bal-chip"><div class="bcl">pending</div><div class="bcv" id="ch-pending-num" style="color:var(--mint);">0</div></div>
-        <div class="bal-chip"><div class="bcl">streak</div><div class="bcv" id="ch-streak" style="color:#fff;">0</div></div>
-      </div>
-    </div>
-  </div>
-  <div class="section-head">chore log</div>
-  <div class="card">
-    <div id="ch-empty" class="empty-state">no chores logged yet</div>
-    <div id="ch-list"></div>
-  </div>
-</div>
-<div id="chore-success" class="screen">
-  <div class="success-splash">
-    <div class="splash-icon" id="cs-icon">🧹</div>
-    <div class="splash-title" id="cs-title">done!</div>
-    <div class="splash-sub" id="cs-sub">logged just now</div>
-    <button class="bounce-btn neu" style="margin-bottom:12px;" onclick="nav('chores',document.querySelector('[onclick*=chores]'))">view chores</button>
-    <br>
-    <button class="bounce-btn" style="background:transparent;color:var(--ink-light);font-size:13px;" onclick="nav('home',document.querySelector('.bnav'))">back home</button>
-  </div>
-</div>
-<div id="chore-who" class="screen">
-  <div class="success-splash">
-    <div class="splash-icon" id="cw-icon">🧹</div>
-    <div class="splash-title" id="cw-title">who did this?</div>
-    <div class="splash-sub" id="cw-sub" style="margin-bottom:32px;"></div>
-    <div style="display:flex;flex-direction:column;gap:14px;width:100%;max-width:280px;margin:0 auto;">
-      <button class="bounce-btn" onclick="selectChoreWho('MMJ')" style="background:var(--lav);color:var(--lav-d);font-size:18px;padding:20px;border-radius:var(--r-xl);">🌿 Mary</button>
-      <button class="bounce-btn" onclick="selectChoreWho('Garrett')" style="background:var(--butter);color:var(--butter-d);font-size:18px;padding:20px;border-radius:var(--r-xl);">🌲 Garrett</button>
     </div>
   </div>
 </div>
@@ -873,6 +1025,7 @@ function nav(id,btn){
   if(id==='score')renderScore();
   if(id==='bills'){renderBills();renderAllEntries();}
   if(id==='calendar'){renderCalendar();renderGoals();}
+  if(id==='scan')initScanScreen();
   if(id==='chores')loadChores();
 }
 
@@ -1265,8 +1418,387 @@ function confirmPendingDeposit(el){
   document.getElementById('deposit-modal').style.display='flex';
 }
 
-checkMonthRollover();
-loadEntries();
+
+// ============================================================
+// BILL SCANNER — Claude Vision + Google Drive
+// ============================================================
+
+// ---- DRIVE FOLDER MAP — mirrors physical cabinet ----
+const DRIVE_FOLDER_MAP = [
+  { match:['vec','electric','vec electric'],         folder:'Utilities/Electric (VEC)',              retention:'utility',   icon:'⚡' },
+  { match:['wbud','water','water bill'],             folder:'Utilities/Water (WBUD)',                retention:'utility',   icon:'💧' },
+  { match:['spectrum','internet'],                   folder:'Utilities/Internet (Spectrum)',          retention:'utility',   icon:'📡' },
+  { match:['bcbs','blue cross','bluecross','health insurance','blue cross blue shield'], folder:'Insurance/Health (BCBS)', retention:'insurance', icon:'🏥' },
+  { match:['state farm','insurance','auto insurance','home insurance'], folder:'Insurance/Auto & Home (State Farm)', retention:'insurance', icon:'🚗' },
+  { match:['mortgage','lot payment','land payment'], folder:'Loans & Credit/Mortgage',               retention:'loan',      icon:'🏠' },
+  { match:['ornl','bronco','auto loan','car loan'],  folder:'Loans & Credit/Bronco Loan',            retention:'loan',      icon:'🚙' },
+  { match:['student loan','navient','mohela','great lakes'], folder:'Loans & Credit/Student Loans',  retention:'loan',      icon:'🎓' },
+  { match:['best buy','bestbuy'],                    folder:'Loans & Credit/Best Buy',               retention:'credit',    icon:'💳' },
+  { match:['verizon','phone bill'],                  folder:'Subscriptions/Verizon',                 retention:'utility',   icon:'📱' },
+  { match:['adobe','creative cloud'],                folder:'Subscriptions/Adobe CC',                retention:'sub',       icon:'🎨' },
+  { match:['spotify'],                               folder:'Subscriptions/Misc',                    retention:'sub',       icon:'🎵' },
+  { match:['amazon prime'],                          folder:'Subscriptions/Misc',                    retention:'sub',       icon:'📦' },
+  { match:['ring'],                                  folder:'Subscriptions/Misc',                    retention:'sub',       icon:'🔔' },
+  { match:['google one'],                            folder:'Subscriptions/Misc',                    retention:'sub',       icon:'☁️' },
+  { match:['urbanex','pest control'],                folder:'Pest Control',                          retention:'service',   icon:'🐛' },
+  { match:['framer'],                                folder:'MMJ Freelance/Subscriptions',           retention:'business',  icon:'🖥️' },
+  { match:['invoice','payment received','client'],   folder:'MMJ Freelance/Invoices',                retention:'business',  icon:'💼' },
+  { match:['receipt','walmart','kroger','publix','target','costco','aldi'], folder:'Receipts/Groceries', retention:'receipt', icon:'🛒' },
+  { match:['restaurant','food','dining'],            folder:'Receipts/Dining',                       retention:'receipt',   icon:'🍽️' },
+  { match:['medical','doctor','hospital','pharmacy','cvs','walgreens'], folder:'Medical',            retention:'medical',   icon:'⚕️' },
+  { match:['tax','irs','w-2','w2','1099'],           folder:'Taxes/2026',                            retention:'tax',       icon:'📋' },
+];
+
+const RETENTION_RULES = {
+  utility:   { digital:5,   paper:1,   label:'utility bills' },
+  insurance: { digital:999, paper:999, label:'insurance' },
+  loan:      { digital:999, paper:999, label:'loan documents' },
+  credit:    { digital:7,   paper:1,   label:'credit statements' },
+  business:  { digital:7,   paper:7,   label:'business records' },
+  medical:   { digital:7,   paper:5,   label:'medical records' },
+  tax:       { digital:999, paper:7,   label:'tax records' },
+  service:   { digital:3,   paper:1,   label:'service receipts' },
+  receipt:   { digital:1,   paper:0,   label:'receipts' },
+  sub:       { digital:2,   paper:0,   label:'subscription records' },
+};
+
+let scanType = 'exp';
+let scanHistory = [];
+let currentScanData = null;
+let driveToken = null;
+let driveFolderCache = {};
+
+try { scanHistory = JSON.parse(localStorage.getItem('float-scan-history') || '[]'); } catch(e) {}
+try {
+  const storedToken = localStorage.getItem('float-drive-token');
+  if(storedToken){
+    const parsed = JSON.parse(storedToken);
+    if(parsed.expiry && Date.now() < parsed.expiry) driveToken = parsed.token;
+    else localStorage.removeItem('float-drive-token');
+  }
+} catch(e) {}
+
+function saveApiKey(){
+  const k = document.getElementById('scan-api-key').value.trim();
+  if(!k || !k.startsWith('sk-ant-')){ showToast('key should start with sk-ant-'); return; }
+  localStorage.setItem('float-claude-key', k);
+  document.getElementById('scan-key-wrap').style.display = 'none';
+  showToast('Claude API key saved ✓');
+}
+
+function saveGoogleClientId(){
+  const id = document.getElementById('scan-google-client-id').value.trim();
+  if(!id || !id.includes('.apps.googleusercontent.com')){ showToast('paste the full Client ID ending in .apps.googleusercontent.com'); return; }
+  localStorage.setItem('float-google-client-id', id);
+  document.getElementById('scan-drive-status-msg').textContent = 'Client ID saved! Now tap Connect Google Drive.';
+  document.getElementById('scan-drive-connect-btn').style.display = 'inline-block';
+  showToast('Client ID saved ✓');
+}
+
+function connectGoogleDrive(){
+  const clientId = localStorage.getItem('float-google-client-id');
+  if(!clientId){ showToast('save your Client ID first'); return; }
+  const redirectUri = window.location.origin + window.location.pathname;
+  const scope = 'https://www.googleapis.com/auth/drive.file';
+  const url = 'https://accounts.google.com/o/oauth2/v2/auth?client_id=' + encodeURIComponent(clientId) +
+    '&redirect_uri=' + encodeURIComponent(redirectUri) +
+    '&response_type=token&scope=' + encodeURIComponent(scope) + '&prompt=consent';
+  window.location.href = url;
+}
+
+function checkOAuthCallback(){
+  const hash = window.location.hash;
+  if(!hash || !hash.includes('access_token')) return;
+  const params = new URLSearchParams(hash.replace('#','?'));
+  const token = params.get('access_token');
+  const expiresIn = parseInt(params.get('expires_in') || '3600');
+  if(token){
+    driveToken = token;
+    localStorage.setItem('float-drive-token', JSON.stringify({ token, expiry: Date.now() + (expiresIn - 60) * 1000 }));
+    window.history.replaceState(null, '', window.location.pathname);
+    showToast('Google Drive connected ✓');
+    updateDriveUI();
+  }
+}
+
+function updateDriveUI(){
+  const clientId = localStorage.getItem('float-google-client-id');
+  const claudeKey = localStorage.getItem('float-claude-key');
+  const keyWrap = document.getElementById('scan-key-wrap');
+  const driveWrap = document.getElementById('scan-drive-wrap');
+  const connectBtn = document.getElementById('scan-drive-connect-btn');
+  const connectedBadge = document.getElementById('scan-drive-connected-badge');
+  const setupSection = document.getElementById('scan-setup-section');
+  const statusMsg = document.getElementById('scan-drive-status-msg');
+  if(keyWrap) keyWrap.style.display = claudeKey ? 'none' : 'block';
+  if(driveWrap){
+    if(driveToken){
+      if(connectedBadge) connectedBadge.style.display = 'inline';
+      if(connectBtn) connectBtn.style.display = 'none';
+      if(statusMsg) statusMsg.textContent = '✓ Connected — files auto-file to Jones Household/Finances';
+      if(claudeKey && setupSection) setupSection.style.display = 'none';
+    } else if(clientId){
+      const inp = document.getElementById('scan-google-client-id');
+      if(inp) inp.value = clientId;
+      if(statusMsg) statusMsg.textContent = 'Client ID saved! Now tap Connect Google Drive.';
+      if(connectBtn) connectBtn.style.display = 'inline-block';
+    }
+  }
+}
+
+function initScanScreen(){
+  checkOAuthCallback();
+  updateDriveUI();
+  renderScanHistory();
+}
+
+function triggerScanPicker(){
+  const k = localStorage.getItem('float-claude-key');
+  if(!k){ const s=document.getElementById('scan-setup-section');if(s)s.style.display='block'; showToast('add your Claude API key first'); return; }
+  document.getElementById('scan-file-inp').click();
+}
+
+function handleScanFile(inp){
+  const file = inp.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async function(e){
+    const dataUrl = e.target.result;
+    const base64 = dataUrl.split(',')[1];
+    const mimeType = file.type || 'image/jpeg';
+    currentScanData = { base64, mimeType, dataUrl };
+    const dz = document.getElementById('scan-dropzone');
+    dz.classList.add('has-img');
+    dz.innerHTML = '<img src="' + dataUrl + '" alt="scanned" style="width:100%;border-radius:22px;display:block;max-height:260px;object-fit:cover;"><button class="scan-retake" onclick="resetScan()">retake</button>';
+    document.getElementById('scan-analyzing').style.display = 'flex';
+    document.getElementById('scan-result').style.display = 'none';
+    document.getElementById('scan-file-preview').style.display = 'none';
+    await analyzeWithClaude(base64, mimeType);
+  };
+  reader.readAsDataURL(file);
+  inp.value = '';
+}
+
+function guessDriveFolder(description, category){
+  const text = (description + ' ' + category).toLowerCase();
+  for(const rule of DRIVE_FOLDER_MAP){
+    if(rule.match.some(function(m){ return text.includes(m); })) return rule;
+  }
+  return { folder:'Misc', retention:'receipt', icon:'📄' };
+}
+
+function buildFileName(description, dateStr){
+  const d = dateStr ? new Date(dateStr+'T12:00:00') : new Date();
+  const ym = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+  const clean = (description||'document').replace(/[^a-zA-Z0-9 ]/g,'').trim().slice(0,40);
+  return ym + ' ' + clean + '.jpg';
+}
+
+function getRetentionNote(retentionKey){
+  const r = RETENTION_RULES[retentionKey] || RETENTION_RULES.receipt;
+  const paperNote = r.paper === 0 ? 'safe to shred immediately' :
+                    r.paper === 999 ? 'keep paper permanently' :
+                    'safe to shred paper after ' + r.paper + ' year' + (r.paper>1?'s':'');
+  const digitalNote = r.digital === 999 ? 'keep digital forever' :
+                      'keep digital ' + r.digital + ' years';
+  return { paperNote, digitalNote };
+}
+
+async function analyzeWithClaude(base64, mimeType){
+  const k = localStorage.getItem('float-claude-key');
+  if(!k){ showToast('no API key found'); return; }
+  const prompt = 'You are reading a bill, receipt, or financial document photo for a household finance app. Extract the following and respond ONLY with valid JSON (no markdown, no backticks): { "type": "exp" or "inc", "amount": number (total amount due or paid), "date": "YYYY-MM-DD" (statement or due date, today if unclear), "description": "vendor name + what it is e.g. VEC Electric Bill, BCBS Insurance, Walmart Receipt", "category": one of bills/groceries/health/transport/personal/household/eating out/income/other, "icon": single emoji, "note": "one sentence: most critical info — due date, account last 4, billing period, anything urgent" }. If you cannot read clearly, return your best guess and explain in note.';
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': k, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514', max_tokens: 600,
+        messages: [{ role: 'user', content: [
+          { type: 'image', source: { type: 'base64', media_type: mimeType, data: base64 } },
+          { type: 'text', text: prompt }
+        ]}]
+      })
+    });
+    const data = await resp.json();
+    if(data.error) throw new Error(data.error.message);
+    const parsed = JSON.parse(data.content[0].text.trim().replace(/```json|```/g,'').trim());
+    document.getElementById('scan-analyzing').style.display = 'none';
+    populateScanResult(parsed);
+  } catch(err) {
+    document.getElementById('scan-analyzing').style.display = 'none';
+    showToast('scan error: ' + (err.message||'unknown'));
+    console.error(err);
+    populateScanResult({ type:'exp', amount:0, date:new Date().toISOString().slice(0,10), description:'', category:'other', icon:'📄', note:'Could not read — fill in manually' });
+  }
+}
+
+function populateScanResult(d){
+  scanType = d.type || 'exp';
+  const folderRule = guessDriveFolder(d.description || '', d.category || '');
+  const fileName = buildFileName(d.description, d.date);
+  const fullPath = 'Jones Household/Finances/' + folderRule.folder + '/' + fileName;
+  const retention = getRetentionNote(folderRule.retention);
+  if(!currentScanData) currentScanData = {};
+  currentScanData.folderRule = folderRule;
+  currentScanData.fileName = fileName;
+  currentScanData.fullPath = fullPath;
+  currentScanData.retentionKey = folderRule.retention;
+  document.getElementById('sr-icon').textContent = folderRule.icon || d.icon || '📄';
+  document.getElementById('sr-title').textContent = d.description || 'Document';
+  document.getElementById('sr-sub').textContent = 'review and confirm';
+  document.getElementById('sr-note').textContent = d.note || '';
+  document.getElementById('sr-amt').value = d.amount > 0 ? d.amount.toFixed(2) : '';
+  document.getElementById('sr-date').value = d.date || new Date().toISOString().slice(0,10);
+  document.getElementById('sr-note-inp').value = d.description || '';
+  const catEl = document.getElementById('sr-cat');
+  if(catEl) for(let o of catEl.options){ if(o.value===d.category){ catEl.value=d.category; break; } }
+  setScanType(scanType);
+  const preview = document.getElementById('scan-file-preview');
+  const driveStatus = driveToken ? '📁 will file to: ' : '📁 would file to (connect Drive to auto-file): ';
+  preview.innerHTML = driveStatus + '<strong>' + fullPath + '</strong><br><span style="font-size:10px;font-weight:600;color:var(--ink-light);">🗑 ' + retention.paperNote + ' · 💾 ' + retention.digitalNote + '</span>';
+  preview.style.display = 'block';
+  document.getElementById('scan-result').style.display = 'block';
+}
+
+function setScanType(t){
+  scanType = t;
+  document.getElementById('sr-t-exp').className = 'scan-type-btn ' + (t==='exp'?'sel-exp':'exp');
+  document.getElementById('sr-t-inc').className = 'scan-type-btn ' + (t==='inc'?'sel-inc':'inc');
+}
+
+function selScanWho(el){ document.querySelectorAll('[data-swho]').forEach(function(c){ c.classList.remove('sel'); }); el.classList.add('sel'); }
+
+async function getOrCreateFolder(parentId, name){
+  const cacheKey = parentId + '/' + name;
+  if(driveFolderCache[cacheKey]) return driveFolderCache[cacheKey];
+  const q = encodeURIComponent("name='" + name + "' and mimeType='application/vnd.google-apps.folder' and '" + parentId + "' in parents and trashed=false");
+  const searchResp = await fetch('https://www.googleapis.com/drive/v3/files?q=' + q + '&fields=files(id,name)', {
+    headers: { Authorization: 'Bearer ' + driveToken }
+  });
+  const searchData = await searchResp.json();
+  if(searchData.files && searchData.files.length > 0){
+    driveFolderCache[cacheKey] = searchData.files[0].id;
+    return searchData.files[0].id;
+  }
+  const createResp = await fetch('https://www.googleapis.com/drive/v3/files', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + driveToken, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: name, mimeType: 'application/vnd.google-apps.folder', parents: [parentId] })
+  });
+  const created = await createResp.json();
+  driveFolderCache[cacheKey] = created.id;
+  return created.id;
+}
+
+async function uploadToDrive(base64, mimeType, fileName, folderPath){
+  let parentId = 'root';
+  const parts = ('Jones Household/Finances/' + folderPath).split('/');
+  for(let i=0; i<parts.length; i++){
+    parentId = await getOrCreateFolder(parentId, parts[i]);
+  }
+  const byteChars = atob(base64);
+  const byteArr = new Uint8Array(byteChars.length);
+  for(let i=0; i<byteChars.length; i++) byteArr[i] = byteChars.charCodeAt(i);
+  const blob = new Blob([byteArr], { type: mimeType });
+  const metadata = { name: fileName, parents: [parentId] };
+  const form = new FormData();
+  form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+  form.append('file', blob);
+  const resp = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink', {
+    method: 'POST', headers: { Authorization: 'Bearer ' + driveToken }, body: form
+  });
+  const result = await resp.json();
+  if(result.error) throw new Error(result.error.message);
+  return result;
+}
+
+function matchKnownBill(description){
+  const d = description.toLowerCase();
+  for(let i=0; i<BILLS.length; i++){
+    const keywords = BILLS[i].name.toLowerCase().split(/[\s()]+/);
+    if(keywords.some(function(k){ return k.length > 3 && d.includes(k); })) return BILLS[i].name;
+  }
+  return null;
+}
+
+async function confirmScanLog(){
+  const amt = parseFloat(document.getElementById('sr-amt').value);
+  if(!amt || amt <= 0){ showToast('enter an amount'); document.getElementById('sr-amt').focus(); return; }
+  const dateVal = document.getElementById('sr-date').value;
+  const note = document.getElementById('sr-note-inp').value.trim() || 'scanned document';
+  const cat = document.getElementById('sr-cat').value;
+  const who = document.querySelector('[data-swho].sel') ? document.querySelector('[data-swho].sel').dataset.swho : 'Mary';
+  const logBtn = document.querySelector('.scan-log-btn');
+  if(logBtn){ logBtn.textContent = 'saving...'; logBtn.disabled = true; }
+  let driveUrl = null;
+  let driveFilePath = null;
+  if(driveToken && currentScanData && currentScanData.base64){
+    try {
+      const result = await uploadToDrive(currentScanData.base64, currentScanData.mimeType || 'image/jpeg', currentScanData.fileName, currentScanData.folderRule.folder);
+      driveUrl = result.webViewLink;
+      driveFilePath = currentScanData.fullPath;
+    } catch(err) {
+      console.error('Drive upload failed:', err);
+      showToast('Drive upload failed — logging entry only');
+    }
+  }
+  const billMatch = matchKnownBill(note);
+  const entry = {
+    id: 'tmp-'+Date.now().toString(), type: scanType, amount: amt, who: who, cat: cat,
+    note: note + (driveUrl ? ' 📎' : '') + (billMatch ? ' ✓' : ''),
+    necessity: 100,
+    date: dateVal ? new Date(dateVal+'T12:00:00').toISOString() : new Date().toISOString(),
+    drive_url: driveUrl || null
+  };
+  if(billMatch && dateVal){
+    const mk = getMonthKey(dateVal);
+    if(!paidBills[mk]) paidBills[mk] = {};
+    paidBills[mk][billMatch] = { date: dateVal, amt: amt, acct: 'scanned', drive_url: driveUrl };
+    localStorage.setItem('float-paid-bills', JSON.stringify(paidBills));
+  }
+  scanHistory.unshift({ icon: document.getElementById('sr-icon').textContent, name: note, amt: amt, type: scanType, date: dateVal, driveUrl: driveUrl, driveFilePath: driveFilePath, retention: currentScanData ? getRetentionNote(currentScanData.retentionKey) : null, scannedAt: new Date().toISOString() });
+  if(scanHistory.length > 30) scanHistory = scanHistory.slice(0,30);
+  localStorage.setItem('float-scan-history', JSON.stringify(scanHistory));
+  entries.unshift(entry);
+  renderHome();
+  const ok = await saveEntry(entry);
+  if(logBtn){ logBtn.textContent = '✓ log this entry'; logBtn.disabled = false; }
+  if(ok){
+    showToast(driveUrl ? 'logged & filed to Drive ✓' : 'logged ✓');
+    resetScan();
+    renderScanHistory();
+    if(billMatch){ renderBills(); showToast(billMatch + ' marked paid ✓'); }
+  }
+}
+
+function resetScan(){
+  const dz = document.getElementById('scan-dropzone');
+  dz.classList.remove('has-img');
+  dz.innerHTML = '<div id="scan-dropzone-inner"><div class="scan-cam-icon">📷</div><div class="scan-drop-label">tap to photograph a bill or receipt</div><div class="scan-drop-sub">works with photos &amp; screenshots</div></div>';
+  document.getElementById('scan-analyzing').style.display = 'none';
+  document.getElementById('scan-result').style.display = 'none';
+  document.getElementById('scan-file-preview').style.display = 'none';
+  currentScanData = null;
+}
+
+function renderScanHistory(){
+  const wrap = document.getElementById('scan-history-wrap');
+  const list = document.getElementById('scan-history-list');
+  if(!wrap || !list) return;
+  if(!scanHistory.length){ wrap.style.display='none'; return; }
+  wrap.style.display = 'block';
+  list.innerHTML = '';
+  scanHistory.slice(0,10).forEach(function(h){
+    const d = h.date ? new Date(h.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+    const paperNote = h.retention ? h.retention.paperNote : '';
+    const row = document.createElement('div');
+    row.className = 'scan-history-item';
+    row.innerHTML = '<div class="scan-history-icon">'+h.icon+'</div><div class="scan-history-info"><div class="scan-history-name">'+h.name+'</div><div class="scan-history-meta">'+d+(paperNote?' · '+paperNote:'')+'</div>'+(h.driveUrl?'<a href="'+h.driveUrl+'" target="_blank" style="font-size:10px;color:var(--lav-d);font-weight:800;text-decoration:none;">📎 view in Drive</a>':'')+'</div><div class="scan-history-amt" style="color:'+(h.type==='inc'?'var(--mint-d)':'var(--pink-d)')+';font-size:13px;font-weight:900;">'+(h.type==='inc'?'+':'-')+'$'+h.amt.toFixed(2)+'</div>';
+    list.appendChild(row);
+  });
+}
+
 
 // ============================================================
 // CHORES
@@ -1286,11 +1818,21 @@ async function loadChores(){
 
 async function logChore(choreName, who){
   try {
-    const row = { chore: choreName, who: who, logged_at: new Date().toISOString() };
+    const now = new Date().toISOString();
+    const row = { chore: choreName, who: who, logged_at: now };
     const { data, error } = await db.from('chores').insert([row]).select();
     if(error) throw error;
     if(data && data[0]) choreLog.unshift(data[0]);
     renderChores();
+    // Sync to Notion — fire and forget, never blocks the UI
+    fetch('https://mpwnbsztpulwwmtuabtd.supabase.co/functions/v1/chore-sync?action=log', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + SUPABASE_KEY
+      },
+      body: JSON.stringify({ chore: choreName, who: who, logged_at: now })
+    }).catch(err => console.warn('Notion sync skipped:', err));
     return true;
   } catch(err) {
     console.error('Chore log error:', err);
@@ -1302,17 +1844,12 @@ function renderChores(){
   const today = new Date().toDateString();
   const todayLogs = choreLog.filter(c => new Date(c.logged_at).toDateString() === today);
   const doneCount = todayLogs.length;
-
   document.getElementById('ch-done-count').textContent = doneCount === 0 ? 'nothing yet!' : doneCount + ' done';
   document.getElementById('ch-done-sub').textContent = doneCount === 0 ? 'tap an nfc sticker to log a chore' : 'great work today';
   document.getElementById('ch-done-num').textContent = doneCount;
-
-  // count pending (chores not done today — just cat box for now)
-  const knownChores = ['cat box'];
-  const pendingCount = knownChores.filter(c => !todayLogs.some(l => l.chore === c)).length;
+  const knownChores = ['cat box','bo food','dozer food','toast food'];
+  const pendingCount = knownChores.filter(c => !todayLogs.some(l => l.chore && l.chore.toLowerCase()===c)).length;
   document.getElementById('ch-pending-num').textContent = pendingCount;
-
-  // simple streak: days in a row with at least one chore
   let streak = 0;
   const d = new Date(); d.setHours(0,0,0,0);
   for(let i = 0; i < 30; i++){
@@ -1321,25 +1858,24 @@ function renderChores(){
     else break;
   }
   document.getElementById('ch-streak').textContent = streak;
-
   const list = document.getElementById('ch-list');
   const empty = document.getElementById('ch-empty');
   list.innerHTML = '';
   if(!choreLog.length){ empty.style.display='block'; return; }
   empty.style.display='none';
-
-  choreLog.slice(0, 20).forEach(c => {
+  choreLog.slice(0,20).forEach(c => {
     const d2 = new Date(c.logged_at);
     const timeStr = d2.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
     const dateStr = d2.toDateString()===today?'today':d2.toLocaleDateString('en-US',{month:'short',day:'numeric'});
     const isGarrett = c.who && c.who.toLowerCase()==='garrett';
     const row = document.createElement('div'); row.className='chore-row';
-    row.innerHTML=`<div class="chore-blob">🧹</div><div class="chore-info"><div class="chore-name">${c.chore}</div><div class="chore-meta">${dateStr} · ${timeStr}</div></div><span class="chore-who ${isGarrett?'garrett':''}">${c.who||'MMJ'}</span>`;
+    const icons = {'cat box':'🐱','bo food':'🐕','dozer food':'🐈','toast food':'🐈'};
+    const icon = icons[c.chore ? c.chore.toLowerCase() : ''] || '🧹';
+    row.innerHTML='<div class="chore-blob">'+icon+'</div><div class="chore-info"><div class="chore-name">'+c.chore+'</div><div class="chore-meta">'+dateStr+' · '+timeStr+'</div></div><span class="chore-who '+(isGarrett?'garrett':'')+'">'+( c.who||'MMJ')+'</span>';
     list.appendChild(row);
   });
 }
 
-// Handle NFC URL params — ?chore=cat+box&who=mary
 let _pendingChoreName = null;
 
 function handleNFCParams(){
@@ -1347,20 +1883,15 @@ function handleNFCParams(){
   const chore = params.get('chore');
   const who = params.get('who');
   if(!chore) return;
-
   const choreName = decodeURIComponent(chore).replace(/\+/g,' ');
-  const icons = { 'cat box':'🐱', 'dog food':'🐕', 'cat food':'🐈', 'laundry':'👕', 'dishes':'🍽️' };
+  const icons = {'cat box':'🐱','bo food':'🐕','dog food':'🐕','dozer food':'🐈','toast food':'🐈','cat food':'🐈'};
   const icon = icons[choreName.toLowerCase()] || '🧹';
-
   window.history.replaceState({}, document.title, window.location.pathname);
-
   if(who){
-    // who is known — go straight to success
     const whoClean = who.toLowerCase()==='garrett' ? 'Garrett' : 'MMJ';
     showChoreSuccess(choreName, whoClean, icon);
     logChore(choreName, whoClean);
   } else {
-    // no who — show picker
     _pendingChoreName = choreName;
     document.getElementById('cw-icon').textContent = icon;
     document.getElementById('cw-title').textContent = 'who did this?';
@@ -1374,7 +1905,7 @@ function selectChoreWho(who){
   if(!_pendingChoreName) return;
   const choreName = _pendingChoreName;
   _pendingChoreName = null;
-  const icons = { 'cat box':'🐱', 'dog food':'🐕', 'cat food':'🐈', 'laundry':'👕', 'dishes':'🍽️' };
+  const icons = {'cat box':'🐱','bo food':'🐕','dog food':'🐕','dozer food':'🐈','toast food':'🐈'};
   const icon = icons[choreName.toLowerCase()] || '🧹';
   showChoreSuccess(choreName, who, icon);
   logChore(choreName, who);
@@ -1389,6 +1920,9 @@ function showChoreSuccess(choreName, who, icon){
 }
 
 handleNFCParams();
+
+checkMonthRollover();
+loadEntries();
 </script>
 </body>
 </html>
