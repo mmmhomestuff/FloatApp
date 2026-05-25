@@ -1791,15 +1791,83 @@ const FREQUENCY_DAYS = {
 
 async function loadChores(){
   try {
-    const { data, error } = await db.from('chores').select('*').order('name', { ascending: true });
+    const { data, error } = await db.from('chores').select('*').order('logged_at', { ascending: false }).limit(50);
     if(error) throw error;
     chores = data || [];
     renderChores();
   } catch(e){
     console.error('load chores error:', e);
-    document.getElementById('chores-list').innerHTML = '<div class="empty-state">could not load chores</div>';
+    const el = document.getElementById('chores-list');
+    if(el) el.innerHTML = '<div class="empty-state">could not load chores</div>';
   }
 }
+
+function renderChores(){
+  const el = document.getElementById('chores-list');
+  if(!el) return;
+
+  const today = new Date().toDateString();
+  const todayLogs = chores.filter(c => new Date(c.logged_at).toDateString() === today);
+
+  // Update header stats
+  const doneEl = document.getElementById('ch-done-count');
+  const subEl = document.getElementById('ch-done-sub');
+  const doneNumEl = document.getElementById('ch-done-num');
+  const pendingNumEl = document.getElementById('ch-pending-num');
+  const streakEl = document.getElementById('ch-streak');
+
+  if(doneEl) doneEl.textContent = todayLogs.length === 0 ? 'nothing yet!' : todayLogs.length + ' done';
+  if(subEl) subEl.textContent = todayLogs.length === 0 ? 'tap an nfc sticker or log manually' : 'great work today';
+  if(doneNumEl) doneNumEl.textContent = todayLogs.length;
+  if(pendingNumEl) pendingNumEl.textContent = '—';
+
+  // Streak: consecutive days with at least one chore
+  let streak = 0;
+  const d = new Date(); d.setHours(0,0,0,0);
+  for(let i = 0; i < 30; i++){
+    const ds = new Date(d); ds.setDate(d.getDate() - i);
+    if(chores.some(c => new Date(c.logged_at).toDateString() === ds.toDateString())) streak++;
+    else break;
+  }
+  if(streakEl) streakEl.textContent = streak;
+
+  if(!chores.length){
+    el.innerHTML = '<div class="empty-state">no chores logged yet — tap an NFC tag or add one manually</div>';
+    return;
+  }
+
+  el.innerHTML = '';
+
+  // Manual log button
+  const logBtn = document.createElement('button');
+  logBtn.style.cssText = 'width:100%;padding:10px;border-radius:var(--r-full);background:var(--lav);border:none;color:var(--lav-d);font-size:12px;font-weight:900;cursor:pointer;font-family:Nunito,sans-serif;margin-bottom:12px;';
+  logBtn.textContent = '+ log a chore manually';
+  logBtn.onclick = manualLogChore;
+  el.appendChild(logBtn);
+
+  chores.slice(0, 20).forEach(function(c){
+    const d2 = new Date(c.logged_at);
+    const timeStr = d2.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    const dateStr = d2.toDateString() === today ? 'today' : d2.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    const isGarrett = c.who && c.who.toLowerCase() === 'garrett';
+    const choreIcons = {'cat box':'🐱','dog food':'🐕','cat food':'🐈','laundry':'👕','dishes':'🍽️','trash':'🗑️','vacuum':'🧹','sweep':'🧹','mop':'🧹'};
+    const icon = choreIcons[(c.chore||'').toLowerCase()] || '🧹';
+    const row = document.createElement('div');
+    row.className = 'chore-row';
+    row.innerHTML = '<div class="chore-blob">'+icon+'</div><div class="chore-info"><div class="chore-name">'+(c.chore||'chore')+'</div><div class="chore-meta">'+dateStr+' &middot; '+timeStr+'</div></div><span class="chore-who'+(isGarrett?' garrett':'')+'">'+( c.who||'Mary')+'</span>';
+    el.appendChild(row);
+  });
+}
+
+function manualLogChore(){
+  const name = prompt('What chore did you do?');
+  if(!name || !name.trim()) return;
+  const who = confirm('Did Garrett do it? (Cancel = Mary)') ? 'Garrett' : 'Mary';
+  db.from('chores').insert([{ chore: name.trim(), who, logged_at: new Date().toISOString() }])
+    .then(function(){ showToast(name + ' logged!'); loadChores(); })
+    .catch(function(e){ console.error(e); showToast('could not save'); });
+}
+
 
 function getChoreStatus(chore){
   if(!chore.last_done) return 'unknown';
@@ -1946,34 +2014,6 @@ async function markChoreDone(chore, btn){
   }
 }
 
-async function showAddChore(){
-  const name = prompt('Chore name:');
-  if(!name || !name.trim()) return;
-  const area = prompt('Area: Kitchen / Bathroom / Laundry Room / Living Room / Bedroom / Office / Exterior / Vehicles / Other', 'Kitchen') || 'Other';
-  const freq = prompt('Frequency: daily / weekly / bi-weekly / monthly / as_needed', 'weekly') || 'weekly';
-  const assigned = prompt('Assigned to: Mary / Garrett / Both', 'Both') || 'Both';
-
-  try {
-    const { data, error } = await db.from('chores').insert([{
-      name: name.trim(),
-      category: area,
-      frequency: freq,
-      assigned_to: assigned,
-      status: 'Due'
-    }]).select();
-    if(error) throw error;
-    chores.push(data[0]);
-    renderChores();
-    showToast(name + ' added!');
-  } catch(e){
-    showToast('could not add chore');
-  }
-}
-
-
-// ============================================================
-// ASK CLAUDE — financial Q&A
-// ============================================================
 async function askClaude(prefill) {
   const input = document.getElementById('ask-input');
   const question = prefill || input.value.trim();
@@ -2056,7 +2096,7 @@ async function askClaude(prefill) {
     input.value = '';
   } catch(err) {
     console.error('Ask Claude error:', err);
-    answerText.textContent = 'Sorry, could not connect right now. Try again in a sec.';
+    answerText.textContent = 'Could not connect — make sure the claude-chat Edge Function is deployed in Supabase. Error: ' + (err.message || 'unknown');
   }
 }
 
