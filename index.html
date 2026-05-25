@@ -312,38 +312,6 @@ html,body{height:100%;background:#FAF8F4;font-family:'Nunito',sans-serif;color:v
 .collapse-btn:hover{color:var(--lav-d);}
 .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 20px;border-radius:var(--r-full);font-size:12px;font-weight:800;opacity:0;transition:all 0.3s;pointer-events:none;white-space:nowrap;z-index:999;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-/* SCAN TAB */
-.scan-drop{border:2.5px dashed rgba(61,48,80,0.18);border-radius:var(--r-xl);padding:32px 20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--surface);margin-bottom:10px;position:relative;overflow:hidden;}
-.scan-drop:active{transform:scale(0.97);}
-.scan-drop.has-image{border-color:var(--lav-d);background:var(--lav-l);}
-.scan-camera-icon{font-size:44px;margin-bottom:10px;display:block;}
-.scan-drop-label{font-size:14px;font-weight:800;color:var(--ink-mid);margin-bottom:4px;}
-.scan-drop-sub{font-size:11px;color:var(--ink-light);font-weight:600;}
-.scan-preview{width:100%;max-height:220px;object-fit:contain;border-radius:var(--r-lg);margin-top:12px;display:none;}
-.scan-result-card{background:var(--surface);border-radius:var(--r-lg);border:2px solid var(--lav);padding:16px;margin-bottom:10px;}
-.scan-result-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1.5px dashed rgba(61,48,80,0.07);}
-.scan-result-row:last-child{border-bottom:none;}
-.scan-result-label{font-size:11px;font-weight:900;color:var(--ink-light);text-transform:uppercase;letter-spacing:0.07em;}
-.scan-result-val{font-size:14px;font-weight:800;color:var(--ink);}
-.scan-result-val.editable{border:none;border-bottom:1.5px dashed var(--lav-d);background:transparent;font-size:14px;font-weight:800;color:var(--ink);font-family:'Nunito',sans-serif;outline:none;text-align:right;max-width:180px;}
-.scan-btn{width:100%;padding:14px;border-radius:var(--r-full);border:none;font-size:14px;font-weight:900;font-family:'Nunito',sans-serif;cursor:pointer;transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1);margin-bottom:8px;}
-.scan-btn:active{transform:scale(0.94);}
-.scan-btn.primary{background:var(--lav-d);color:#fff;}
-.scan-btn.secondary{background:transparent;border:2px solid rgba(61,48,80,0.15);color:var(--ink-light);}
-.scan-btn.success{background:var(--butter-d);color:#fff;}
-.scan-status{text-align:center;padding:16px;font-size:13px;font-weight:700;color:var(--ink-mid);}
-.scan-status .spin{display:inline-block;animation:spin 1s linear infinite;margin-right:6px;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.scan-history-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1.5px dashed rgba(61,48,80,0.07);}
-.scan-history-item:last-child{border-bottom:none;}
-.scan-history-thumb{width:42px;height:42px;border-radius:10px;object-fit:cover;background:var(--lav-l);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;}
-.scan-oauth-setup{background:var(--lav-l);border:2px solid var(--lav);border-radius:var(--r-lg);padding:16px;margin-bottom:10px;}
-.scan-oauth-title{font-size:13px;font-weight:900;color:var(--lav-d);margin-bottom:4px;}
-.scan-oauth-sub{font-size:11px;color:var(--ink-mid);font-weight:600;line-height:1.5;margin-bottom:12px;}
-.scan-oauth-inp{width:100%;background:var(--surface);border:2px solid var(--lav);border-radius:var(--r-md);padding:10px 12px;font-size:12px;font-weight:700;color:var(--ink);font-family:'Nunito',sans-serif;outline:none;margin-bottom:8px;}
-.scan-oauth-inp:focus{border-color:var(--lav-d);}
-.retention-badge{display:inline-block;font-size:9px;font-weight:900;padding:3px 8px;border-radius:99px;background:var(--mint-l);color:var(--mint-d);margin-top:4px;text-transform:uppercase;letter-spacing:0.06em;}
-.drive-folder-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:800;color:var(--lav-d);background:var(--lav-l);border:1.5px solid var(--lav);padding:3px 9px;border-radius:99px;margin-top:4px;}
 </style>
 </head>
 <body>
@@ -363,7 +331,6 @@ html,body{height:100%;background:#FAF8F4;font-family:'Nunito',sans-serif;color:v
   <button class="bnav" onclick="nav('calendar',this)">&#128467; calendar</button>
   <button class="bnav" onclick="nav('dashboard',this)">&#128202; stats</button>
   <button class="bnav" onclick="nav('score',this)">&#127942; score</button>
-  <button class="bnav" onclick="nav('scan',this)" style="grid-column:1/-1;background:var(--lav-l);color:var(--lav-d);border:2px solid var(--lav);">&#128247; scan a bill or receipt</button>
 </div>
 <div id="home" class="screen active">
   <div class="balance-blob">
@@ -658,90 +625,15 @@ html,body{height:100%;background:#FAF8F4;font-family:'Nunito',sans-serif;color:v
   </div>
 </div>
 <div class="toast" id="toast"></div>
-<div id="scan" class="screen">
-  <div class="scan-oauth-setup" id="scan-oauth-setup" style="display:none;">
-    <div class="scan-oauth-title">🔑 connect google drive</div>
-    <div class="scan-oauth-sub">paste your Google OAuth Client ID to enable automatic filing to Drive. one-time setup.</div>
-    <input class="scan-oauth-inp" id="scan-client-id-inp" type="text" placeholder="paste Client ID here (ends in .apps.googleusercontent.com)" value="625060801711-sc2u62erhhsrf79a0p1eo4hcgj6guja5.apps.googleusercontent.com">
-    <button class="scan-btn primary" style="margin-bottom:0;" onclick="saveOAuthClientId()">connect drive →</button>
-  </div>
-  <div class="scan-oauth-setup" id="scan-drive-connected" style="display:none;background:var(--butter-l);border-color:var(--butter);">
-    <div style="display:flex;align-items:center;justify-content:space-between;">
-      <div>
-        <div class="scan-oauth-title" style="color:var(--butter-d);">✓ google drive connected</div>
-        <div class="scan-oauth-sub" style="margin-bottom:0;">bills will auto-file to Jones Household/Finances/</div>
-      </div>
-      <button onclick="disconnectDrive()" style="background:none;border:none;font-size:10px;color:var(--ink-light);font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;">disconnect</button>
-    </div>
-  </div>
-  <div class="scan-drop" id="scan-drop" onclick="triggerScanInput()" style="margin-top:6px;">
-    <span class="scan-camera-icon">📷</span>
-    <div class="scan-drop-label">tap to photograph a bill or receipt</div>
-    <div class="scan-drop-sub">camera opens automatically · or choose from photos</div>
-    <img id="scan-preview" class="scan-preview" alt="preview">
-  </div>
-  <input type="file" id="scan-file-inp" accept="image/*" capture="environment" style="display:none;" onchange="handleScanFile(this)">
-  <button class="scan-btn primary" id="scan-go-btn" style="display:none;" onclick="runScan()">✨ read with claude</button>
-  <div class="scan-status" id="scan-status" style="display:none;"></div>
-  <div id="scan-result-wrap" style="display:none;">
-    <div class="section-head">claude read this as:</div>
-    <div class="scan-result-card">
-      <div class="scan-result-row">
-        <span class="scan-result-label">vendor</span>
-        <input class="scan-result-val editable" id="sr-vendor" type="text" placeholder="vendor name">
-      </div>
-      <div class="scan-result-row">
-        <span class="scan-result-label">amount</span>
-        <div style="display:flex;align-items:center;gap:4px;">
-          <span style="font-size:13px;color:var(--ink-light);font-weight:700;">$</span>
-          <input class="scan-result-val editable" id="sr-amount" type="number" step="0.01" placeholder="0.00">
-        </div>
-      </div>
-      <div class="scan-result-row">
-        <span class="scan-result-label">date</span>
-        <input class="scan-result-val editable" id="sr-date" type="date">
-      </div>
-      <div class="scan-result-row">
-        <span class="scan-result-label">category</span>
-        <select class="scan-result-val editable" id="sr-cat" style="border:none;border-bottom:1.5px dashed var(--lav-d);background:transparent;font-family:'Nunito',sans-serif;outline:none;">
-          <option>bills</option><option>groceries</option><option>transport</option><option>health</option>
-          <option>eating out</option><option>household</option><option>personal</option><option>other</option>
-        </select>
-      </div>
-      <div class="scan-result-row">
-        <span class="scan-result-label">type</span>
-        <select class="scan-result-val editable" id="sr-type" style="border:none;border-bottom:1.5px dashed var(--lav-d);background:transparent;font-family:'Nunito',sans-serif;outline:none;">
-          <option value="exp">expense</option><option value="inc">income</option>
-        </select>
-      </div>
-      <div class="scan-result-row" style="flex-direction:column;align-items:flex-start;gap:4px;">
-        <span class="scan-result-label">note from claude</span>
-        <div id="sr-note" style="font-size:12px;color:var(--ink-mid);font-weight:600;line-height:1.5;"></div>
-      </div>
-      <div id="sr-retention-wrap" style="padding-top:8px;">
-        <span class="retention-badge" id="sr-retention"></span>
-        <span class="drive-folder-badge" id="sr-folder"><span>📁</span><span id="sr-folder-text"></span></span>
-      </div>
-    </div>
-    <div id="sr-bill-match" style="display:none;background:var(--mint-l);border:1.5px solid var(--mint);border-radius:var(--r-md);padding:11px 13px;margin-bottom:8px;display:none;">
-      <div style="display:flex;align-items:flex-start;gap:9px;">
-        <span style="font-size:15px;">🔗</span>
-        <div><div style="font-size:12px;font-weight:900;color:var(--ink);" id="sr-bill-match-title">matches a known bill</div><div style="font-size:11px;color:var(--ink-mid);font-weight:600;" id="sr-bill-match-sub"></div></div>
-      </div>
-    </div>
-    <button class="scan-btn success" onclick="confirmScan()">✓ log it + file to drive</button>
-    <button class="scan-btn secondary" onclick="resetScan()">↩ scan another</button>
-  </div>
-  <div id="scan-history-wrap" style="margin-top:4px;">
-    <div class="section-head">recent scans</div>
-    <div class="card" id="scan-history-list"><div class="empty-state">no scans yet</div></div>
-  </div>
-</div>
 </div>
 <script>
 // ============================================================
-// SUPABASE — replaces Google Apps Script entirely
+// FLOAT APP — SUPABASE DATA LAYER (full localStorage migration)
+// Replace the entire <script> block in index.html with this
+// Branch: dev → PR → main
+// Updated: May 24, 2026
 // ============================================================
+
 const SUPABASE_URL = 'https://mpwnbsztpulwwmtuabtd.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_wKtxou7d4xd9eVomBOBC1A_KjTpmtVa';
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -751,6 +643,21 @@ let qType = 'exp';
 let shopItems = [];
 let whoVisible = false;
 
+// These are now loaded from Supabase instead of localStorage
+let paidBills = {};       // keyed by month_key → bill_name → {date,amt,acct}
+let depositedItems = {};  // keyed by month_key → bill_name → {date,amt,acct}
+let goalSaved = {};       // keyed by goal_id → saved amount
+let customCalEvents = []; // array of event objects
+let pendingIncome = [];   // array of pending income objects
+
+let payModalBill = null;
+let depositModalBill = null;
+let pendingDepositItem = null;
+let calFilterActive = 'all';
+
+// ============================================================
+// BILLS & CALENDAR (static data — unchanged)
+// ============================================================
 const BILLS = [
   { name:'Student Loans x2', icon:'🎓', amt:340.11, day:5, acct:'Bills *0304', defAcct:'Bills *0304', gcal:'Student+Loan+Payments', gcalDetail:'$340+from+Bills+*0304' },
   { name:'Bronco Loan (ORNL)', icon:'🚙', amt:915.59, day:3, acct:'Bills *0304 only', defAcct:'Bills *0304', gcal:'Bronco+Loan+ORNL', gcalDetail:'$915.59+Bills+*0304+ONLY' },
@@ -812,27 +719,11 @@ const CATS={produce:['tomatoes','lettuce','spinach','carrots','potatoes','apples
 function guessPrice(n){const k=n.toLowerCase().trim();if(PRICES[k])return PRICES[k];for(const[p,v]of Object.entries(PRICES)){if(k.includes(p)||p.includes(k))return v;}return 3.99;}
 function guessCat(n){const k=n.toLowerCase().trim();for(const[c,items]of Object.entries(CATS)){if(items.some(i=>k.includes(i)||i.includes(k)))return c;}return 'other';}
 
-let paidBills = {};
-let depositedItems = {};
-let goalSaved = {};
-let customCalEvents = [];
-let calFilterActive = 'all';
-let payModalBill = null;
-let depositModalBill = null;
-let pendingIncome = [];
-let pendingDepositItem = null;
-
-try { paidBills = JSON.parse(localStorage.getItem('float-paid-bills') || '{}'); } catch(e) {}
-try { depositedItems = JSON.parse(localStorage.getItem('float-deposits') || '{}'); } catch(e) {}
-try { goalSaved = JSON.parse(localStorage.getItem('float-goal-saved') || '{}'); } catch(e) {}
-try { customCalEvents = JSON.parse(localStorage.getItem('float-cal-events') || '[]'); } catch(e) {}
-try { pendingIncome = JSON.parse(localStorage.getItem('float-pending-income') || '[]'); } catch(e) {}
-
-document.getElementById('top-date').textContent = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'});
-
 // ============================================================
 // SYNC DOT & TOAST
 // ============================================================
+document.getElementById('top-date').textContent = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'});
+
 function setSyncDot(s){
   const dot = document.getElementById('sync-dot');
   dot.className = 'sync-dot ' + s;
@@ -842,35 +733,59 @@ function setSyncDot(s){
 function showToast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
 
 // ============================================================
-// SUPABASE DATA LAYER
+// HELPERS
 // ============================================================
-async function loadEntries(){
+function currentMonthKey(){ const n=new Date(); return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0'); }
+function getMonthKey(dateStr){ return dateStr ? dateStr.slice(0,7) : currentMonthKey(); }
+function getBillPaidStatus(name){ const mk=currentMonthKey(); return paidBills[mk]?.[name] || null; }
+function getDepositStatus(name){ const mk=currentMonthKey(); return depositedItems[mk]?.[name] || null; }
+
+// ============================================================
+// BOOT — load everything from Supabase on startup
+// ============================================================
+async function bootApp() {
   setSyncDot('syncing');
   try {
-    const { data, error } = await db
-      .from('entries')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (error) throw error;
-    if (data && data.length) {
-      entries = data.map(e => ({
-        ...e,
-        id: String(e.id),
-        amount: parseFloat(e.amount) || 0,
-        necessity: parseFloat(e.necessity) || 70,
-        date: e.date ? new Date(e.date + 'T12:00:00').toISOString() : new Date(e.created_at).toISOString()
-      }));
-      renderHome();
-      setSyncDot('synced');
-    } else {
-      document.getElementById('r-empty').textContent = 'nothing yet - use quick log above!';
-      setSyncDot('synced');
-    }
+    await Promise.all([
+      loadEntries(),
+      loadShopItems(),
+      loadPaidBills(),
+      loadBillDeposits(),
+      loadGoalSavings(),
+      loadPendingIncome(),
+      loadCalendarEvents(),
+    ]);
+    setSyncDot('synced');
+    subscribeShopItems();   // realtime: shopping list updates live on both phones
+    subscribeKeyTables();   // realtime: paid bills, deposits, goals
+    checkMonthRollover();
   } catch(err) {
-    console.error('Load error:', err);
-    document.getElementById('r-empty').textContent = 'nothing yet - use quick log above!';
+    console.error('Boot error:', err);
     setSyncDot('error');
-    showToast('could not load - check connection');
+    showToast('connection issue — some data may be stale');
+  }
+}
+
+// ============================================================
+// ENTRIES (financial log — already on Supabase, unchanged)
+// ============================================================
+async function loadEntries(){
+  const { data, error } = await db
+    .from('entries')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  if (data && data.length) {
+    entries = data.map(e => ({
+      ...e,
+      id: String(e.id),
+      amount: parseFloat(e.amount) || 0,
+      necessity: parseFloat(e.necessity) || 70,
+      date: e.date ? new Date(e.date + 'T12:00:00').toISOString() : new Date(e.created_at).toISOString()
+    }));
+    renderHome();
+  } else {
+    document.getElementById('r-empty').textContent = 'nothing yet - use quick log above!';
   }
 }
 
@@ -895,7 +810,7 @@ async function saveEntry(entry){
     setSyncDot('synced');
     return true;
   } catch(err) {
-    console.error('Save error:', err);
+    console.error('Save entry error:', err);
     setSyncDot('error');
     showToast('sync failed - try again');
     return false;
@@ -915,34 +830,391 @@ async function deleteEntryFromDB(id){
 }
 
 // ============================================================
-// HELPERS
+// SHOP ITEMS — now fully synced via Supabase + realtime
 // ============================================================
-function getMonthKey(dateStr){ return dateStr ? dateStr.slice(0,7) : new Date().toISOString().slice(0,7); }
-function currentMonthKey(){ const n=new Date(); return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0'); }
-function getBillPaidStatus(name){ const mk=currentMonthKey(); return paidBills[mk] && paidBills[mk][name] ? paidBills[mk][name] : null; }
-function getDepositStatus(name){ const mk=currentMonthKey(); return depositedItems[mk] && depositedItems[mk][name] ? depositedItems[mk][name] : null; }
-function savePendingIncome(){ localStorage.setItem('float-pending-income', JSON.stringify(pendingIncome)); }
+async function loadShopItems(){
+  const { data, error } = await db
+    .from('shop_items')
+    .select('*')
+    .order('created_at', { ascending: true });
+  if (error) throw error;
+  shopItems = (data || []).map(i => ({
+    id: i.id,
+    name: i.name,
+    price: parseFloat(i.price) || 0,
+    cat: i.cat,
+    checked: i.checked,
+    added_by: i.added_by
+  }));
+  renderShop();
+}
+
+function subscribeShopItems(){
+  db.channel('shop_items_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'shop_items' }, () => {
+      loadShopItems(); // reload the whole list on any change from any device
+    })
+    .subscribe();
+}
+
+async function addShopItem(){
+  const inp = document.getElementById('shop-inp');
+  const name = inp.value.trim();
+  if (!name) return;
+  const newItem = { name, price: guessPrice(name), cat: guessCat(name), checked: false, added_by: 'Mary' };
+  inp.value = '';
+  // Optimistic local add
+  shopItems.push({ ...newItem, id: 'tmp-' + Date.now() });
+  renderShop();
+  inp.focus();
+  // Persist to Supabase
+  const { data, error } = await db.from('shop_items').insert([newItem]).select();
+  if (error) { showToast('could not save item'); return; }
+  // Replace temp id with real id
+  const tmp = shopItems.find(i => i.id.startsWith('tmp-'));
+  if (tmp && data[0]) tmp.id = data[0].id;
+  renderShop();
+}
+
+async function toggleShopItem(id){
+  const item = shopItems.find(i => i.id === id);
+  if (!item) return;
+  item.checked = !item.checked;
+  renderShop();
+  await db.from('shop_items').update({ checked: item.checked }).eq('id', id);
+}
+
+async function updateShopPrice(id, val){
+  const item = shopItems.find(i => i.id === id);
+  if (!item) return;
+  item.price = parseFloat(val) || 0;
+  renderShop();
+  await db.from('shop_items').update({ price: item.price }).eq('id', id);
+}
+
+async function deleteShopItem(id){
+  shopItems = shopItems.filter(i => i.id !== id);
+  renderShop();
+  await db.from('shop_items').delete().eq('id', id);
+}
+
+async function clearChecked(){
+  const checkedIds = shopItems.filter(i => i.checked).map(i => i.id);
+  shopItems = shopItems.filter(i => !i.checked);
+  renderShop();
+  if (checkedIds.length) {
+    await db.from('shop_items').delete().in('id', checkedIds);
+  }
+}
+
+async function logShopAsExpense(){
+  const total = shopItems.reduce((a, i) => a + i.price, 0);
+  if (total <= 0) return;
+  const entry = {
+    id: 'tmp-' + Date.now().toString(),
+    type: 'exp', amount: parseFloat(total.toFixed(2)),
+    who: 'Mary', cat: 'groceries', note: 'shopping list',
+    necessity: 80, date: new Date().toISOString()
+  };
+  entries.unshift(entry);
+  // Clear all shop items from Supabase
+  const ids = shopItems.map(i => i.id);
+  shopItems = [];
+  document.getElementById('s-icon').textContent = '🛒';
+  document.getElementById('s-title').textContent = 'shopping logged!';
+  document.getElementById('s-sub').textContent = '$' + total.toFixed(2) + ' added';
+  renderHome();
+  nav('success', null);
+  await saveEntry(entry);
+  if (ids.length) await db.from('shop_items').delete().in('id', ids);
+}
+
+// ============================================================
+// PAID BILLS — replaces localStorage 'float-paid-bills'
+// ============================================================
+async function loadPaidBills(){
+  const { data, error } = await db.from('paid_bills').select('*');
+  if (error) throw error;
+  paidBills = {};
+  (data || []).forEach(row => {
+    if (!paidBills[row.month_key]) paidBills[row.month_key] = {};
+    paidBills[row.month_key][row.bill_name] = {
+      date: row.paid_date,
+      amt: parseFloat(row.amount),
+      acct: row.account
+    };
+  });
+}
+
+async function savePaidBill(monthKey, billName, paidDate, amt, acct){
+  setSyncDot('syncing');
+  const { error } = await db.from('paid_bills').upsert([{
+    month_key: monthKey,
+    bill_name: billName,
+    paid_date: paidDate,
+    amount: amt,
+    account: acct
+  }], { onConflict: 'month_key,bill_name' });
+  if (error) { setSyncDot('error'); showToast('sync failed'); return false; }
+  setSyncDot('synced');
+  return true;
+}
+
+// ============================================================
+// BILL DEPOSITS — replaces localStorage 'float-deposits'
+// ============================================================
+async function loadBillDeposits(){
+  const { data, error } = await db.from('bill_deposits').select('*');
+  if (error) throw error;
+  depositedItems = {};
+  (data || []).forEach(row => {
+    if (!depositedItems[row.month_key]) depositedItems[row.month_key] = {};
+    depositedItems[row.month_key][row.bill_name] = {
+      date: row.deposit_date,
+      amt: parseFloat(row.amount),
+      acct: row.account
+    };
+  });
+}
+
+async function saveBillDeposit(monthKey, billName, depositDate, amt, acct){
+  setSyncDot('syncing');
+  const { error } = await db.from('bill_deposits').upsert([{
+    month_key: monthKey,
+    bill_name: billName,
+    deposit_date: depositDate,
+    amount: amt,
+    account: acct
+  }], { onConflict: 'month_key,bill_name' });
+  if (error) { setSyncDot('error'); showToast('sync failed'); return false; }
+  setSyncDot('synced');
+  return true;
+}
+
+// ============================================================
+// GOAL SAVINGS — replaces localStorage 'float-goal-saved'
+// ============================================================
+async function loadGoalSavings(){
+  const { data, error } = await db.from('goal_savings').select('*');
+  if (error) throw error;
+  goalSaved = {};
+  (data || []).forEach(row => {
+    goalSaved[row.goal_id] = parseFloat(row.saved) || 0;
+  });
+}
+
+async function saveGoalAmount(goalId, newTotal){
+  setSyncDot('syncing');
+  const goal = GOALS.find(g => g.id === goalId);
+  const { error } = await db.from('goal_savings').upsert([{
+    goal_id: goalId,
+    goal_name: goal ? goal.name : goalId,
+    saved: newTotal
+  }], { onConflict: 'goal_id' });
+  if (error) { setSyncDot('error'); showToast('sync failed'); return false; }
+  setSyncDot('synced');
+  return true;
+}
+
+async function addToGoal(id){
+  const inp = document.getElementById('gi-' + id);
+  const amt = parseFloat(inp.value);
+  if (!amt || amt <= 0) return;
+  goalSaved[id] = (goalSaved[id] || 0) + amt;
+  inp.value = '';
+  renderGoals();
+  showToast('$' + amt.toFixed(0) + ' added to goal');
+  await saveGoalAmount(id, goalSaved[id]);
+}
+
+// ============================================================
+// PENDING INCOME — replaces localStorage 'float-pending-income'
+// ============================================================
+async function loadPendingIncome(){
+  const { data, error } = await db
+    .from('pending_income')
+    .select('*')
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  pendingIncome = (data || []).map(row => ({
+    id: row.id,
+    amt: parseFloat(row.amount),
+    client: row.client,
+    invoice: row.invoice_num,
+    note: row.note,
+    invoicedDate: row.invoiced_date,
+    status: row.status
+  }));
+}
+
+async function savePendingIncomeItem(item){
+  setSyncDot('syncing');
+  const { data, error } = await db.from('pending_income').insert([{
+    client: item.client,
+    invoice_num: item.invoice || '',
+    amount: item.amt,
+    note: item.note || '',
+    invoiced_date: new Date().toISOString().slice(0, 10),
+    status: 'pending'
+  }]).select();
+  if (error) { setSyncDot('error'); showToast('sync failed'); return null; }
+  setSyncDot('synced');
+  return data[0];
+}
+
+async function deletePending(id){
+  pendingIncome = pendingIncome.filter(p => p.id !== id);
+  renderPendingIncome();
+  showToast('removed');
+  await db.from('pending_income').update({ status: 'removed' }).eq('id', id);
+}
+
+async function confirmPendingDeposit(el){
+  const id = el.dataset.pendingId;
+  const amt = parseFloat(el.dataset.pendingAmt);
+  const client = el.dataset.pendingClient;
+  pendingDepositItem = { id, amt, client };
+  document.getElementById('dm-title').textContent = 'Confirm payment from ' + client;
+  document.getElementById('dm-sub').textContent = 'Log when this actually hit your account';
+  document.getElementById('dm-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('dm-amt').value = amt.toFixed(2);
+  document.getElementById('dm-acct').value = 'MMJ Freelance *4146';
+  document.getElementById('deposit-modal').style.display = 'flex';
+}
+
+// ============================================================
+// CALENDAR EVENTS — replaces localStorage 'float-cal-events'
+// ============================================================
+async function loadCalendarEvents(){
+  const { data, error } = await db.from('calendar_events').select('*').order('created_at', { ascending: true });
+  if (error) throw error;
+  customCalEvents = (data || []).map(row => ({
+    id: row.id,
+    name: row.name,
+    month: row.month,
+    day: row.day,
+    year: row.year || undefined,
+    type: row.event_type,
+    repeat: row.repeat,
+    sub: row.sub
+  }));
+}
+
+async function showAddCalEvent(){
+  const name = prompt('Event name:');
+  if (!name || !name.trim()) return;
+  const dateStr = prompt('Date (MM/DD/YYYY or MM/DD for yearly):');
+  if (!dateStr) return;
+  const parts = dateStr.split('/');
+  const month = parseInt(parts[0]);
+  const day = parseInt(parts[1]);
+  const year = parts[2] ? parseInt(parts[2]) : null;
+  const type = prompt('Type: birthday / event / reminder / holiday / goal', 'event') || 'event';
+  const sub = prompt('Note (optional):') || '';
+  const newEvent = {
+    name: name.trim(), month, day,
+    event_type: type,
+    repeat: year ? 'once' : 'yearly',
+    sub, year: year || null,
+    created_by: 'Mary'
+  };
+  setSyncDot('syncing');
+  const { data, error } = await db.from('calendar_events').insert([newEvent]).select();
+  if (error) { setSyncDot('error'); showToast('could not save event'); return; }
+  setSyncDot('synced');
+  customCalEvents.push({
+    id: data[0].id,
+    name: data[0].name,
+    month: data[0].month,
+    day: data[0].day,
+    year: data[0].year || undefined,
+    type: data[0].event_type,
+    repeat: data[0].repeat,
+    sub: data[0].sub
+  });
+  renderCalendar();
+  showToast('added to calendar');
+}
+
+// ============================================================
+// REALTIME — subscribe to key tables for cross-device sync
+// ============================================================
+function subscribeKeyTables(){
+  // Paid bills — if Garrett marks something paid on his phone, Mary sees it
+  db.channel('paid_bills_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'paid_bills' }, () => {
+      loadPaidBills().then(() => {
+        if (document.getElementById('bills').classList.contains('active')) renderBills();
+      });
+    }).subscribe();
+
+  // Deposits
+  db.channel('bill_deposits_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'bill_deposits' }, () => {
+      loadBillDeposits().then(() => {
+        if (document.getElementById('bills').classList.contains('active')) renderBills();
+      });
+    }).subscribe();
+
+  // Goal savings
+  db.channel('goal_savings_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'goal_savings' }, () => {
+      loadGoalSavings().then(() => {
+        if (document.getElementById('calendar').classList.contains('active')) renderGoals();
+      });
+    }).subscribe();
+
+  // Pending income
+  db.channel('pending_income_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'pending_income' }, () => {
+      loadPendingIncome().then(() => {
+        renderPendingIncome();
+      });
+    }).subscribe();
+
+  // Calendar events
+  db.channel('calendar_events_changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'calendar_events' }, () => {
+      loadCalendarEvents().then(() => {
+        if (document.getElementById('calendar').classList.contains('active')) renderCalendar();
+      });
+    }).subscribe();
+}
+
+// ============================================================
+// MONTH ROLLOVER CHECK (now uses Supabase app_settings)
+// ============================================================
+async function checkMonthRollover(){
+  const mk = currentMonthKey();
+  try {
+    const { data } = await db.from('app_settings').select('value').eq('key', 'current_month').single();
+    if (data && data.value !== mk) {
+      showToast('New month! Bills and goals reset.');
+      await db.from('app_settings').update({ value: mk }).eq('key', 'current_month');
+    }
+  } catch(e) { /* non-critical */ }
+}
 
 // ============================================================
 // NAV
 // ============================================================
-function nav(id,btn){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+function nav(id, btn){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  document.querySelectorAll('.bnav').forEach(b=>b.classList.remove('active'));
-  if(btn)btn.classList.add('active');
-  if(id==='dashboard')renderDash();
-  if(id==='score')renderScore();
-  if(id==='bills'){renderBills();renderAllEntries();}
-  if(id==='calendar'){renderCalendar();renderGoals();}
-  if(id==='scan'){initScanTab();}
+  document.querySelectorAll('.bnav').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (id === 'dashboard') renderDash();
+  if (id === 'score') renderScore();
+  if (id === 'bills') { renderBills(); renderAllEntries(); }
+  if (id === 'calendar') { renderCalendar(); renderGoals(); }
 }
 
 // ============================================================
 // QUICK LOG
 // ============================================================
 function setQT(t){
-  qType=t;
+  qType = t;
   const qz=document.getElementById('qz'),qzw=document.getElementById('qz-wrap'),qs=document.getElementById('q-sub'),ql=document.getElementById('qz-label');
   const pendingWrap=document.getElementById('q-pending-wrap');
   if(t==='exp'){
@@ -951,7 +1223,7 @@ function setQT(t){
     qz.style.background='var(--pink-l)';qz.style.borderColor='var(--pink)';
     qzw.style.borderColor='var(--pink)';qs.style.background='var(--pink-d)';ql.style.color='var(--pink-d)';
     if(pendingWrap) pendingWrap.style.display='none';
-  }else{
+  } else {
     document.getElementById('qt-e').className='type-btn exp';
     document.getElementById('qt-i').className='type-btn inc sel-inc';
     qz.style.background='var(--mint-l)';qz.style.borderColor='var(--mint)';
@@ -959,59 +1231,54 @@ function setQT(t){
     if(pendingWrap) pendingWrap.style.display='block';
   }
 }
-function toggleWho(){
-  whoVisible=!whoVisible;
-  document.getElementById('q-who-wrap').style.display=whoVisible?'block':'none';
-  document.getElementById('who-toggle-label').textContent=whoVisible?'- hide who paid':'+ who paid?';
-}
+function toggleWho(){ whoVisible=!whoVisible; document.getElementById('q-who-wrap').style.display=whoVisible?'block':'none'; document.getElementById('who-toggle-label').textContent=whoVisible?'- hide who paid':'+ who paid?'; }
 function selC(el,g){ document.querySelectorAll('[data-'+g+']').forEach(c=>c.classList.remove('sel')); el.classList.add('sel'); }
 function selTag(el){ el.classList.toggle('sel'); }
 function showTagInput(){ document.getElementById('tag-input-wrap').classList.add('show'); document.getElementById('tag-inp').focus(); }
 function hideTagInput(){ document.getElementById('tag-input-wrap').classList.remove('show'); document.getElementById('tag-inp').value=''; }
 function submitNewTag(){
   const inp=document.getElementById('tag-inp');const name=inp.value.trim();if(!name)return;
-  const tag=name.toLowerCase();const row=document.getElementById('q-tags-row');
-  if(!row)return;
+  const tag=name.toLowerCase();const row=document.getElementById('q-tags-row');if(!row)return;
   if([...row.querySelectorAll('[data-tag]')].some(t=>t.dataset.tag===tag)){showToast('tag already exists');hideTagInput();return;}
   const addBtn=row.querySelector('.tag-add');
   const btn=document.createElement('button');btn.className='tag sel';btn.dataset.tag=tag;btn.textContent=tag;btn.onclick=function(){selTag(this);};
   row.insertBefore(btn,addBtn);hideTagInput();showToast(tag+' added');
 }
-function togglePendingFields(){
-  const chk=document.getElementById('q-pending-chk');const fields=document.getElementById('q-pending-fields');
-  if(fields) fields.style.display=chk.checked?'block':'none';
-}
+function togglePendingFields(){ const chk=document.getElementById('q-pending-chk');const fields=document.getElementById('q-pending-fields'); if(fields) fields.style.display=chk.checked?'block':'none'; }
 
 async function quickLog(){
-  const isPending=document.getElementById('q-pending-chk')&&document.getElementById('q-pending-chk').checked;
-  if(qType==='inc'&&isPending){
-    const amt=parseFloat(document.getElementById('q-amt').value);
-    if(!amt||amt<=0){document.getElementById('q-amt').focus();return;}
-    const client=document.getElementById('q-client')?document.getElementById('q-client').value.trim():'';
-    const invoice=document.getElementById('q-invoice')?document.getElementById('q-invoice').value.trim():'';
-    const note=document.getElementById('q-note').value.trim();
-    pendingIncome.push({id:Date.now().toString(),amt,client:client||note||'Unknown client',invoice,note,invoicedDate:new Date().toISOString(),status:'pending'});
-    savePendingIncome();
-    document.getElementById('q-amt').value='';document.getElementById('q-note').value='';
-    document.getElementById('q-nec').value=70;document.getElementById('q-nec-pct').textContent='70%';
-    document.getElementById('q-pending-chk').checked=false;togglePendingFields();
-    if(document.getElementById('q-client'))document.getElementById('q-client').value='';
-    if(document.getElementById('q-invoice'))document.getElementById('q-invoice').value='';
+  const isPending = document.getElementById('q-pending-chk')?.checked;
+  if (qType === 'inc' && isPending) {
+    const amt = parseFloat(document.getElementById('q-amt').value);
+    if (!amt || amt <= 0) { document.getElementById('q-amt').focus(); return; }
+    const client = document.getElementById('q-client')?.value.trim();
+    const invoice = document.getElementById('q-invoice')?.value.trim();
+    const note = document.getElementById('q-note').value.trim();
+    const newItem = { id: 'tmp-' + Date.now(), amt, client: client || note || 'Unknown client', invoice: invoice || '', note, invoicedDate: new Date().toISOString(), status: 'pending' };
+    pendingIncome.push(newItem);
+    document.getElementById('q-amt').value=''; document.getElementById('q-note').value='';
+    document.getElementById('q-nec').value=70; document.getElementById('q-nec-pct').textContent='70%';
+    document.getElementById('q-pending-chk').checked=false; togglePendingFields();
+    if(document.getElementById('q-client')) document.getElementById('q-client').value='';
+    if(document.getElementById('q-invoice')) document.getElementById('q-invoice').value='';
     showToast('invoice logged as pending');
-    if(document.getElementById('bills').classList.contains('active'))renderBills();
+    if(document.getElementById('bills').classList.contains('active')) renderBills();
+    // Save to Supabase
+    const saved = await savePendingIncomeItem(newItem);
+    if (saved) { const tmp = pendingIncome.find(p => p.id === newItem.id); if(tmp) tmp.id = saved.id; }
     return;
   }
-  const amt=parseFloat(document.getElementById('q-amt').value);
-  if(!amt||amt<=0){document.getElementById('q-amt').focus();return;}
-  const nec=parseInt(document.getElementById('q-nec').value)||70;
-  const note=document.getElementById('q-note').value.trim();
-  const selTags=[...document.querySelectorAll('#q-tags-row .tag.sel')].map(t=>t.dataset.tag);
-  const cat=selTags.length?selTags[0]:'other';
-  const who=document.querySelector('[data-who].sel')?.dataset.who||'Mary';
-  const entry={id:'tmp-'+Date.now().toString(),type:qType,amount:amt,who,cat,note:note||(selTags.join(', ')),necessity:nec,date:new Date().toISOString()};
+  const amt = parseFloat(document.getElementById('q-amt').value);
+  if (!amt || amt <= 0) { document.getElementById('q-amt').focus(); return; }
+  const nec = parseInt(document.getElementById('q-nec').value) || 70;
+  const note = document.getElementById('q-note').value.trim();
+  const selTags = [...document.querySelectorAll('#q-tags-row .tag.sel')].map(t => t.dataset.tag);
+  const cat = selTags.length ? selTags[0] : 'other';
+  const who = document.querySelector('[data-who].sel')?.dataset.who || 'Mary';
+  const entry = { id:'tmp-'+Date.now().toString(), type:qType, amount:amt, who, cat, note:note||(selTags.join(', ')), necessity:nec, date:new Date().toISOString() };
   entries.unshift(entry);
-  document.getElementById('q-amt').value='';document.getElementById('q-note').value='';
-  document.getElementById('q-nec').value=70;document.getElementById('q-nec-pct').textContent='70%';
+  document.getElementById('q-amt').value=''; document.getElementById('q-note').value='';
+  document.getElementById('q-nec').value=70; document.getElementById('q-nec-pct').textContent='70%';
   document.querySelectorAll('#q-tags-row .tag.sel').forEach(t=>t.classList.remove('sel'));
   renderHome();
   const btn=document.getElementById('q-sub');const origBg=btn.style.background;
@@ -1023,13 +1290,87 @@ async function quickLog(){
 
 async function deleteEntry(id){
   entries=entries.filter(e=>e.id!==id);
-  renderHome();renderAllEntries();
+  renderHome(); renderAllEntries();
   await deleteEntryFromDB(id);
   showToast('deleted');
 }
 
 // ============================================================
-// RENDER
+// MARK BILL PAID — now saves to Supabase
+// ============================================================
+function markBillPaid(el){
+  payModalBill={name:el.dataset.name,amt:parseFloat(el.dataset.amt),acct:el.dataset.acct};
+  document.getElementById('pm-title').textContent='Mark paid: '+payModalBill.name;
+  document.getElementById('pm-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('pm-amt').value=payModalBill.amt.toFixed(2);
+  document.getElementById('pm-acct').value=payModalBill.acct;
+  document.getElementById('pay-modal').style.display='flex';
+}
+function closePayModal(){ document.getElementById('pay-modal').style.display='none'; payModalBill=null; }
+
+async function confirmPaid(){
+  if(!payModalBill) return;
+  const postDate=document.getElementById('pm-date').value;
+  const amt=parseFloat(document.getElementById('pm-amt').value);
+  const acct=document.getElementById('pm-acct').value;
+  if(!postDate||!amt){showToast('fill in date and amount');return;}
+  const mk=getMonthKey(postDate);
+  if(!paidBills[mk]) paidBills[mk]={};
+  paidBills[mk][payModalBill.name]={date:postDate,amt,acct};
+  const entry={id:'tmp-'+Date.now().toString(),type:'exp',amount:amt,who:'Mary',cat:'bills',note:payModalBill.name+' (bill)',necessity:100,date:new Date(postDate+'T12:00:00').toISOString()};
+  entries.unshift(entry);
+  renderHome(); closePayModal(); renderBills();
+  showToast(payModalBill.name+' marked paid');
+  await savePaidBill(mk, payModalBill.name, postDate, amt, acct);
+  await saveEntry(entry);
+}
+
+// ============================================================
+// DEPOSIT MODAL — now saves to Supabase
+// ============================================================
+function confirmDepositModal(el){
+  depositModalBill={name:el.dataset.name,amt:parseFloat(el.dataset.amt),acct:el.dataset.acct};
+  document.getElementById('dm-title').textContent='Confirm: '+depositModalBill.name;
+  document.getElementById('dm-sub').textContent='Log when this actually hit your account';
+  document.getElementById('dm-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('dm-amt').value=depositModalBill.amt.toFixed(2);
+  document.getElementById('dm-acct').value=depositModalBill.acct;
+  document.getElementById('deposit-modal').style.display='flex';
+}
+function closeDepositModal(){ document.getElementById('deposit-modal').style.display='none'; depositModalBill=null; pendingDepositItem=null; }
+
+async function confirmDeposit(){
+  const postDate=document.getElementById('dm-date').value;
+  const amt=parseFloat(document.getElementById('dm-amt').value);
+  const acct=document.getElementById('dm-acct').value;
+  if(!postDate||!amt){showToast('fill in date and amount');return;}
+
+  if(pendingDepositItem){
+    // Confirm a pending invoice
+    await db.from('pending_income').update({status:'confirmed'}).eq('id',pendingDepositItem.id);
+    pendingIncome=pendingIncome.filter(p=>p.id!==pendingDepositItem.id);
+    const entry={id:'tmp-'+Date.now().toString(),type:'inc',amount:amt,who:'Mary',cat:'income',note:pendingDepositItem.client+' (confirmed)',necessity:100,date:new Date(postDate+'T12:00:00').toISOString()};
+    entries.unshift(entry);
+    renderHome(); closeDepositModal(); renderBills();
+    showToast('payment confirmed and logged!');
+    await saveEntry(entry);
+    return;
+  }
+
+  if(!depositModalBill) return;
+  const mk=getMonthKey(postDate);
+  if(!depositedItems[mk]) depositedItems[mk]={};
+  depositedItems[mk][depositModalBill.name]={date:postDate,amt,acct};
+  const entry={id:'tmp-'+Date.now().toString(),type:'inc',amount:amt,who:'Mary',cat:'income',note:depositModalBill.name,necessity:100,date:new Date(postDate+'T12:00:00').toISOString()};
+  entries.unshift(entry);
+  renderHome(); closeDepositModal(); renderBills();
+  showToast(depositModalBill.name+' confirmed');
+  await saveBillDeposit(mk, depositModalBill.name, postDate, amt, acct);
+  await saveEntry(entry);
+}
+
+// ============================================================
+// ALL RENDER FUNCTIONS (unchanged from original)
 // ============================================================
 function renderEntryRow(e,c){
   const d=new Date(e.date),ds=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
@@ -1070,12 +1411,7 @@ function renderDash(){
   const na=exps.length?Math.round(exps.reduce((a,e)=>a+e.necessity,0)/exps.length):null;
   document.getElementById('d-nec').textContent=na!==null?na+'%':'--';
   const nb=document.getElementById('d-nec-bars');nb.innerHTML='';
-  if(exps.length){
-    const es=exps.filter(e=>e.necessity>=70).reduce((a,e)=>a+e.amount,0);
-    const sp=exps.filter(e=>e.necessity<70).reduce((a,e)=>a+e.amount,0);
-    const tot=es+sp||1;
-    nb.innerHTML='<div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:var(--ink-mid);margin-bottom:4px;"><span>essential</span><span>$'+es.toFixed(0)+' - '+Math.round(es/tot*100)+'%</span></div><div class="prog-track"><div class="prog-fill" style="width:'+Math.round(es/tot*100)+'%;background:var(--lav-d);"></div></div></div><div><div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:var(--ink-mid);margin-bottom:4px;"><span>splurge</span><span>$'+sp.toFixed(0)+' - '+Math.round(sp/tot*100)+'%</span></div><div class="prog-track"><div class="prog-fill" style="width:'+Math.round(sp/tot*100)+'%;background:var(--pink-d);"></div></div></div>';
-  }
+  if(exps.length){const es=exps.filter(e=>e.necessity>=70).reduce((a,e)=>a+e.amount,0);const sp=exps.filter(e=>e.necessity<70).reduce((a,e)=>a+e.amount,0);const tot=es+sp||1;nb.innerHTML='<div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:var(--ink-mid);margin-bottom:4px;"><span>essential</span><span>$'+es.toFixed(0)+' - '+Math.round(es/tot*100)+'%</span></div><div class="prog-track"><div class="prog-fill" style="width:'+Math.round(es/tot*100)+'%;background:var(--lav-d);"></div></div></div><div><div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:var(--ink-mid);margin-bottom:4px;"><span>splurge</span><span>$'+sp.toFixed(0)+' - '+Math.round(sp/tot*100)+'%</span></div><div class="prog-track"><div class="prog-fill" style="width:'+Math.round(sp/tot*100)+'%;background:var(--pink-d);"></div></div></div>';}
   const cp=document.getElementById('d-cat');cp.innerHTML='';
   if(!exps.length){cp.innerHTML='<div class="empty-state" style="padding:8px 0;text-align:left;font-size:12px;">log entries to see this</div>';}
   else{const cats={};exps.forEach(e=>{cats[e.cat]=(cats[e.cat]||0)+e.amount;});const mx=Math.max(...Object.values(cats));const colors=['#C47080','#AAC4BC','#8A7020','#7A6A4A','#4A7A62','#6A7A5A'];Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,6).forEach(([c,a],i)=>{const pct=Math.round((a/mx)*100);const div=document.createElement('div');div.style.marginBottom='10px';div.innerHTML='<div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--ink);margin-bottom:4px;"><span>'+c+'</span><span style="color:var(--ink-mid);">$'+a.toFixed(0)+'</span></div><div class="prog-track" style="height:8px;"><div class="prog-fill" style="width:'+pct+'%;background:'+colors[i%colors.length]+';"></div></div>';cp.appendChild(div);});}
@@ -1101,12 +1437,7 @@ function renderBills(){
   ordered.forEach(bill=>{
     const{dueDate:bd2,diffDays:dd2}=bill;
     const isPassedBill=dd2<0&&bill.type!=='income';
-    if(isPassedBill&&!passedSeparatorAdded){
-      passedSeparatorAdded=true;
-      const sep=document.createElement('div');sep.style.cssText='display:flex;align-items:center;gap:10px;padding:12px 0 8px;';
-      sep.innerHTML='<div style="flex:1;height:1.5px;background:rgba(61,48,80,0.1);border-radius:2px;"></div><div style="font-size:10px;font-weight:900;color:var(--ink-light);text-transform:uppercase;letter-spacing:0.1em;white-space:nowrap;">already passed this month</div><div style="flex:1;height:1.5px;background:rgba(61,48,80,0.1);border-radius:2px;"></div>';
-      tl.appendChild(sep);
-    }
+    if(isPassedBill&&!passedSeparatorAdded){passedSeparatorAdded=true;const sep=document.createElement('div');sep.style.cssText='display:flex;align-items:center;gap:10px;padding:12px 0 8px;';sep.innerHTML='<div style="flex:1;height:1.5px;background:rgba(61,48,80,0.1);border-radius:2px;"></div><div style="font-size:10px;font-weight:900;color:var(--ink-light);text-transform:uppercase;letter-spacing:0.1em;white-space:nowrap;">already passed this month</div><div style="flex:1;height:1.5px;background:rgba(61,48,80,0.1);border-radius:2px;"></div>';tl.appendChild(sep);}
     const{dueDate,diffDays}=bill;const isIncome=bill.type==='income';const isPassed=diffDays<0&&!isIncome;
     const paidStatus=getBillPaidStatus(bill.name);const depositStatus=isIncome?getDepositStatus(bill.name):null;
     let urgency;if(isIncome)urgency='income';else if(isPassed)urgency='ok';else if(diffDays<=5)urgency='urgent';else if(diffDays<=14)urgency='soon';else urgency='ok';
@@ -1134,16 +1465,8 @@ function renderBills(){
     rightDiv.appendChild(aw);rightDiv.appendChild(dd);tl.appendChild(item);
   });
   const sepDiv=[...tl.children].find(el=>el.innerHTML&&el.innerHTML.includes('already passed'));
-  if(sepDiv){
-    const passedItems=[];let el=sepDiv.nextElementSibling;
-    while(el){if(el.classList&&el.classList.contains('tl-item'))passedItems.push(el);el=el.nextElementSibling;}
-    if(passedItems.length>0){
-      passedItems.forEach(item=>item.style.display='none');
-      const passBtn=document.createElement('button');passBtn.className='collapse-btn';passBtn.textContent=passedItems.length+' passed this month ↓';passBtn.style.color='var(--ink-light)';passBtn.style.fontSize='10px';
-      passBtn.onclick=function(){const isOpen=this.textContent.includes('hide');passedItems.forEach(item=>item.style.display=isOpen?'none':'flex');this.textContent=isOpen?passedItems.length+' passed this month ↓':'hide passed ↑';};
-      tl.appendChild(passBtn);
-    }
-  }
+  if(sepDiv){const passedItems=[];let el=sepDiv.nextElementSibling;while(el){if(el.classList&&el.classList.contains('tl-item'))passedItems.push(el);el=el.nextElementSibling;}
+  if(passedItems.length>0){passedItems.forEach(item=>item.style.display='none');const passBtn=document.createElement('button');passBtn.className='collapse-btn';passBtn.textContent=passedItems.length+' passed this month ↓';passBtn.style.color='var(--ink-light)';passBtn.style.fontSize='10px';passBtn.onclick=function(){const isOpen=this.textContent.includes('hide');passedItems.forEach(item=>item.style.display=isOpen?'none':'flex');this.textContent=isOpen?passedItems.length+' passed this month ↓':'hide passed ↑';};tl.appendChild(passBtn);}}
   const pct=Math.min(100,Math.round((monthIncome/monthTotal)*100));
   document.getElementById('flow-in').textContent='$'+monthIncome.toLocaleString();document.getElementById('flow-out').textContent='$'+monthTotal.toLocaleString();
   document.getElementById('flow-pct').textContent=pct+'% of bills covered';document.getElementById('flow-bar').style.width=pct+'%';
@@ -1154,59 +1477,11 @@ function renderAllEntries(){
   if(!entries.length){ae.innerHTML='<div class="empty-state">no entries yet</div>';return;}
   const SHOW=8;
   entries.forEach((e,i)=>{renderEntryRow(e,ae);if(i>=SHOW)ae.lastChild.style.display='none';});
-  if(entries.length>SHOW){
-    const btn=document.createElement('button');btn.className='collapse-btn';btn.textContent='see all '+entries.length+' entries ↓';
-    btn.onclick=function(){const expanded=this.textContent.includes('collapse');[...ae.querySelectorAll('.entry-row')].forEach((r,i)=>{if(i>=SHOW)r.style.display=expanded?'none':'flex';});this.textContent=expanded?'see all '+entries.length+' entries ↓':'collapse ↑';};
-    ae.appendChild(btn);
-  }
+  if(entries.length>SHOW){const btn=document.createElement('button');btn.className='collapse-btn';btn.textContent='see all '+entries.length+' entries ↓';btn.onclick=function(){const expanded=this.textContent.includes('collapse');[...ae.querySelectorAll('.entry-row')].forEach((r,i)=>{if(i>=SHOW)r.style.display=expanded?'none':'flex';});this.textContent=expanded?'see all '+entries.length+' entries ↓':'collapse ↑';};ae.appendChild(btn);}
 }
 
-function markBillPaid(el){
-  payModalBill={name:el.dataset.name,amt:parseFloat(el.dataset.amt),acct:el.dataset.acct};
-  document.getElementById('pm-title').textContent='Mark paid: '+payModalBill.name;
-  document.getElementById('pm-date').value=new Date().toISOString().split('T')[0];
-  document.getElementById('pm-amt').value=payModalBill.amt.toFixed(2);
-  document.getElementById('pm-acct').value=payModalBill.acct;
-  document.getElementById('pay-modal').style.display='flex';
-}
-function closePayModal(){ document.getElementById('pay-modal').style.display='none'; payModalBill=null; }
-async function confirmPaid(){
-  if(!payModalBill)return;
-  const postDate=document.getElementById('pm-date').value;const amt=parseFloat(document.getElementById('pm-amt').value);const acct=document.getElementById('pm-acct').value;
-  if(!postDate||!amt){showToast('fill in date and amount');return;}
-  const mk=getMonthKey(postDate);if(!paidBills[mk])paidBills[mk]={};
-  paidBills[mk][payModalBill.name]={date:postDate,amt,acct};localStorage.setItem('float-paid-bills',JSON.stringify(paidBills));
-  const entry={id:'tmp-'+Date.now().toString(),type:'exp',amount:amt,who:'Mary',cat:'bills',note:payModalBill.name+' (bill)',necessity:100,date:new Date(postDate+'T12:00:00').toISOString()};
-  entries.unshift(entry);renderHome();closePayModal();renderBills();showToast(payModalBill.name+' marked paid');
-  await saveEntry(entry);
-}
-function confirmDepositModal(el){
-  depositModalBill={name:el.dataset.name,amt:parseFloat(el.dataset.amt),acct:el.dataset.acct};
-  document.getElementById('dm-title').textContent='Confirm: '+depositModalBill.name;document.getElementById('dm-sub').textContent='Log when this actually hit your account';
-  document.getElementById('dm-date').value=new Date().toISOString().split('T')[0];document.getElementById('dm-amt').value=depositModalBill.amt.toFixed(2);document.getElementById('dm-acct').value=depositModalBill.acct;
-  document.getElementById('deposit-modal').style.display='flex';
-}
-function closeDepositModal(){ document.getElementById('deposit-modal').style.display='none'; depositModalBill=null; pendingDepositItem=null; }
-async function confirmDeposit(){
-  if(pendingDepositItem){
-    const postDate=document.getElementById('dm-date').value;const amt=parseFloat(document.getElementById('dm-amt').value);const acct=document.getElementById('dm-acct').value;
-    if(!postDate||!amt){showToast('fill in date and amount');return;}
-    pendingIncome=pendingIncome.filter(p=>p.id!==pendingDepositItem.id);savePendingIncome();
-    const entry={id:'tmp-'+Date.now().toString(),type:'inc',amount:amt,who:'Mary',cat:'income',note:pendingDepositItem.client+' (confirmed)',necessity:100,date:new Date(postDate+'T12:00:00').toISOString()};
-    entries.unshift(entry);renderHome();closeDepositModal();renderBills();showToast('payment confirmed and logged!');
-    await saveEntry(entry);return;
-  }
-  if(!depositModalBill)return;
-  const postDate=document.getElementById('dm-date').value;const amt=parseFloat(document.getElementById('dm-amt').value);const acct=document.getElementById('dm-acct').value;
-  if(!postDate||!amt){showToast('fill in date and amount');return;}
-  const mk=getMonthKey(postDate);if(!depositedItems[mk])depositedItems[mk]={};
-  depositedItems[mk][depositModalBill.name]={date:postDate,amt,acct};localStorage.setItem('float-deposits',JSON.stringify(depositedItems));
-  const entry={id:'tmp-'+Date.now().toString(),type:'inc',amount:amt,who:'Mary',cat:'income',note:depositModalBill.name,necessity:100,date:new Date(postDate+'T12:00:00').toISOString()};
-  entries.unshift(entry);renderHome();closeDepositModal();renderBills();showToast(depositModalBill.name+' confirmed');
-  await saveEntry(entry);
-}
 function updateBillAmt(inp){const name=inp.dataset.billName;const newAmt=parseFloat(inp.value);if(!name||isNaN(newAmt)||newAmt<0)return;const bill=BILLS.find(b=>b.name===name);if(bill){bill.amt=newAmt;showToast(name+' updated to $'+newAmt.toFixed(2));}}
-function checkMonthRollover(){const mk=currentMonthKey();const stored=localStorage.getItem('float-current-month');if(stored&&stored!==mk)showToast('New month! Bills reset.');localStorage.setItem('float-current-month',mk);}
+
 function getCalDate(ev,now){if(!ev||!ev.repeat)return null;const year=ev.repeat==='yearly'?(new Date(now.getFullYear(),ev.month-1,ev.day)<now?now.getFullYear()+1:now.getFullYear()):(ev.year||now.getFullYear());return new Date(year,ev.month-1,ev.day);}
 function filterCal(f,btn){calFilterActive=f;document.querySelectorAll('.cal-filter').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderCalendar();}
 
@@ -1218,26 +1493,10 @@ function renderCalendar(){
   const upcoming=withDates.filter(e=>e.diffDays>=0);const past=withDates.filter(e=>e.diffDays<0);
   if(!upcoming.length&&!past.length){listEl.innerHTML='<div class="empty-state">no events - add some!</div>';return;}
   const icons={bill:'💳',birthday:'🎂',event:'🎉',reminder:'📌',holiday:'🏖',goal:'🎯'};let lastMonth=null;
-  function makeItem(ev){
-    const urgency=ev.diffDays<0?'past':ev.diffDays<=5?'urgent':ev.diffDays<=14?'soon':'ok';
-    const daysLabel=ev.diffDays<0?Math.abs(ev.diffDays)+'d ago':ev.diffDays===0?'today!':ev.diffDays===1?'tomorrow!':ev.diffDays+' days';
-    const div=document.createElement('div');div.className='cal-item';
-    div.innerHTML='<div class="cal-date-col"><div class="cal-day '+(urgency!=='ok'&&urgency!=='past'?urgency:'')+'">' +ev.date.getDate()+'</div><div class="cal-month-short">'+ev.date.toLocaleDateString('en-US',{month:'short'})+'</div></div><div class="cal-dot '+ev.type+'">'+(icons[ev.type]||'📌')+'</div><div class="cal-body"><div class="cal-name">'+ev.name+'</div>'+(ev.sub?'<div class="cal-sub">'+ev.sub+'</div>':'')+'<span class="cal-tag '+ev.type+'">'+ev.type+'</span></div><div class="cal-days-away '+urgency+'">'+daysLabel+'</div>';
-    return div;
-  }
+  function makeItem(ev){const urgency=ev.diffDays<0?'past':ev.diffDays<=5?'urgent':ev.diffDays<=14?'soon':'ok';const daysLabel=ev.diffDays<0?Math.abs(ev.diffDays)+'d ago':ev.diffDays===0?'today!':ev.diffDays===1?'tomorrow!':ev.diffDays+' days';const div=document.createElement('div');div.className='cal-item';div.innerHTML='<div class="cal-date-col"><div class="cal-day '+(urgency!=='ok'&&urgency!=='past'?urgency:'')+'">' +ev.date.getDate()+'</div><div class="cal-month-short">'+ev.date.toLocaleDateString('en-US',{month:'short'})+'</div></div><div class="cal-dot '+ev.type+'">'+(icons[ev.type]||'📌')+'</div><div class="cal-body"><div class="cal-name">'+ev.name+'</div>'+(ev.sub?'<div class="cal-sub">'+ev.sub+'</div>':'')+'<span class="cal-tag '+ev.type+'">'+ev.type+'</span></div><div class="cal-days-away '+urgency+'">'+daysLabel+'</div>';return div;}
   upcoming.forEach(ev=>{const mk=ev.date.toLocaleDateString('en-US',{month:'long',year:'numeric'});if(mk!==lastMonth){const mh=document.createElement('div');mh.className='cal-month-head';mh.textContent=mk;listEl.appendChild(mh);lastMonth=mk;}listEl.appendChild(makeItem(ev));});
   if(past.length){const ph=document.createElement('div');ph.className='cal-month-head';ph.textContent='past';listEl.appendChild(ph);past.slice().reverse().forEach(ev=>listEl.appendChild(makeItem(ev)));}
   listEl.querySelectorAll('.cal-month-head').forEach(head=>{const items=[];let el=head.nextElementSibling;while(el&&!el.classList.contains('cal-month-head')){if(el.classList.contains('cal-item'))items.push(el);el=el.nextElementSibling;}if(items.length>3){items.slice(3).forEach(i=>i.style.display='none');const btn=document.createElement('button');btn.className='collapse-btn';btn.textContent='see '+(items.length-3)+' more ↓';btn.style.cssText='padding:6px 0;font-size:10px;';btn.onclick=function(){const isOpen=this.textContent.includes('less')||this.textContent.includes('↑');items.slice(3).forEach(i=>i.style.display=isOpen?'none':'flex');this.textContent=isOpen?'see '+(items.length-3)+' more ↓':'show less ↑';};items[items.length-1].after(btn);}});
-}
-
-function showAddCalEvent(){
-  const name=prompt('Event name:');if(!name||!name.trim())return;
-  const dateStr=prompt('Date (MM/DD/YYYY or MM/DD for yearly):');if(!dateStr)return;
-  const parts=dateStr.split('/');const month=parseInt(parts[0]);const day=parseInt(parts[1]);const year=parts[2]?parseInt(parts[2]):null;
-  const type=prompt('Type: birthday / event / reminder / holiday / goal','event')||'event';
-  const sub=prompt('Note (optional):')||'';
-  customCalEvents.push({name:name.trim(),month,day,type,repeat:year?'once':'yearly',sub,year:year||undefined});
-  localStorage.setItem('float-cal-events',JSON.stringify(customCalEvents));renderCalendar();showToast('added to calendar');
 }
 
 function renderGoals(){
@@ -1252,7 +1511,6 @@ function renderGoals(){
     container.appendChild(card);
   });
 }
-function addToGoal(id){const inp=document.getElementById('gi-'+id);const amt=parseFloat(inp.value);if(!amt||amt<=0)return;goalSaved[id]=(goalSaved[id]||0)+amt;localStorage.setItem('float-goal-saved',JSON.stringify(goalSaved));inp.value='';renderGoals();showToast('$'+amt.toFixed(0)+' added to goal');}
 
 function renderScore(){
   document.getElementById('s-tot').textContent=entries.length;const mn=new Date();
@@ -1271,17 +1529,6 @@ function renderScore(){
   awards.forEach(a=>{const r=document.createElement('div');r.className='award-row';r.innerHTML='<div class="award-blob" style="background:'+a.bg+';">'+a.ic+'</div><div><div class="award-title">'+a.t+'</div><div class="award-sub">'+a.s+'</div></div>';al.appendChild(r);});
 }
 
-function addShopItem(){const inp=document.getElementById('shop-inp');const name=inp.value.trim();if(!name)return;shopItems.push({id:Date.now().toString(),name,price:guessPrice(name),cat:guessCat(name),checked:false});inp.value='';renderShop();inp.focus();}
-function toggleShopItem(id){const i=shopItems.find(x=>x.id===id);if(i)i.checked=!i.checked;renderShop();}
-function updateShopPrice(id,val){const i=shopItems.find(x=>x.id===id);if(i){i.price=parseFloat(val)||0;renderShop();}}
-function deleteShopItem(id){shopItems=shopItems.filter(i=>i.id!==id);renderShop();}
-function clearChecked(){shopItems=shopItems.filter(i=>!i.checked);renderShop();}
-async function logShopAsExpense(){
-  const total=shopItems.reduce((a,i)=>a+i.price,0);if(total<=0)return;
-  const entry={id:'tmp-'+Date.now().toString(),type:'exp',amount:parseFloat(total.toFixed(2)),who:'Mary',cat:'groceries',note:'shopping list',necessity:80,date:new Date().toISOString()};
-  entries.unshift(entry);shopItems=[];document.getElementById('s-icon').textContent='🛒';document.getElementById('s-title').textContent='shopping logged!';document.getElementById('s-sub').textContent='$'+total.toFixed(2)+' added';
-  renderHome();nav('success',null);await saveEntry(entry);
-}
 function renderShop(){
   const sl=document.getElementById('shop-list');sl.innerHTML='';
   if(!shopItems.length){sl.innerHTML='<div class="empty-state">your list is empty!</div>';document.getElementById('shop-total-row').style.display='none';document.getElementById('shop-actions').style.display='none';return;}
@@ -1317,379 +1564,13 @@ function renderPendingIncome(){
     list.appendChild(card);
   });
 }
-function deletePending(id){pendingIncome=pendingIncome.filter(p=>p.id!==id);savePendingIncome();renderPendingIncome();showToast('removed');}
+
 function markFollowUp(id){const p=pendingIncome.find(p=>p.id===id);if(!p)return;showToast('reminder set for '+p.client);}
-function confirmPendingDeposit(el){
-  const id=el.dataset.pendingId;const amt=parseFloat(el.dataset.pendingAmt);const client=el.dataset.pendingClient;
-  pendingDepositItem={id,amt,client};
-  document.getElementById('dm-title').textContent='Confirm payment from '+client;document.getElementById('dm-sub').textContent='Log when this actually hit your account';
-  document.getElementById('dm-date').value=new Date().toISOString().split('T')[0];document.getElementById('dm-amt').value=amt.toFixed(2);document.getElementById('dm-acct').value='MMJ Freelance *4146';
-  document.getElementById('deposit-modal').style.display='flex';
-}
-
-checkMonthRollover();
-loadEntries();
-checkOAuthCallback();
 
 // ============================================================
-// SCAN TAB
+// BOOT
 // ============================================================
-const CLAUDE_API_KEY_STORAGE = 'float-claude-key';
-const GDRIVE_CLIENT_ID_STORAGE = 'float-gdrive-client-id';
-const GDRIVE_CLIENT_ID_DEFAULT = '625060801711-sc2u62erhhsrf79a0p1eo4hcgj6guja5.apps.googleusercontent.com';
-const GDRIVE_TOKEN_STORAGE = 'float-gdrive-token';
-const SCAN_HISTORY_STORAGE = 'float-scan-history';
-const DRIVE_FOLDER_ROOT = 'Jones Household/Finances';
-
-const RETENTION_RULES = {
-  utility: { keep: '5 years digital / 1 year paper', shred: 'shred after 1 year' },
-  insurance: { keep: 'forever', shred: 'keep permanently' },
-  tax: { keep: 'forever (7 years minimum)', shred: 'keep permanently' },
-  medical: { keep: '7 years', shred: 'shred after 7 years' },
-  mortgage: { keep: 'forever', shred: 'keep permanently' },
-  bills: { keep: '1 year', shred: 'shred after 1 year' },
-  grocery: { keep: '30 days', shred: 'shred immediately' },
-  other: { keep: '1 year', shred: 'shred after 1 year' },
-};
-
-const DRIVE_FOLDER_MAP = {
-  bills: 'Bills & Subscriptions',
-  utility: 'Utilities',
-  insurance: 'Insurance',
-  tax: 'Taxes',
-  medical: 'Medical',
-  mortgage: 'Mortgage & Property',
-  grocery: 'Groceries & Receipts',
-  transport: 'Vehicles & Transport',
-  other: 'Other',
-};
-
-let scanImageBase64 = null;
-let scanImageMime = null;
-let scanResult = null;
-let scanHistory = [];
-
-try { scanHistory = JSON.parse(localStorage.getItem(SCAN_HISTORY_STORAGE) || '[]'); } catch(e) {}
-
-function initScanTab() {
-  // Always ensure default client ID is saved
-  if (!localStorage.getItem(GDRIVE_CLIENT_ID_STORAGE)) {
-    localStorage.setItem(GDRIVE_CLIENT_ID_STORAGE, GDRIVE_CLIENT_ID_DEFAULT);
-  }
-  const clientId = localStorage.getItem(GDRIVE_CLIENT_ID_STORAGE);
-  const token = localStorage.getItem(GDRIVE_TOKEN_STORAGE);
-  if (!clientId) {
-    document.getElementById('scan-oauth-setup').style.display = 'block';
-    document.getElementById('scan-drive-connected').style.display = 'none';
-  } else {
-    document.getElementById('scan-oauth-setup').style.display = 'none';
-    document.getElementById('scan-drive-connected').style.display = 'block';
-  }
-  renderScanHistory();
-}
-
-function saveOAuthClientId() {
-  const val = document.getElementById('scan-client-id-inp').value.trim();
-  if (!val || !val.includes('apps.googleusercontent.com')) { showToast('paste a valid Client ID'); return; }
-  localStorage.setItem(GDRIVE_CLIENT_ID_STORAGE, val);
-  initScanTab();
-  showToast('client ID saved — tap connect to sign in');
-  triggerGoogleAuth();
-}
-
-function disconnectDrive() {
-  localStorage.removeItem(GDRIVE_CLIENT_ID_STORAGE);
-  localStorage.removeItem(GDRIVE_TOKEN_STORAGE);
-  initScanTab();
-  showToast('drive disconnected');
-}
-
-function triggerGoogleAuth() {
-  const clientId = localStorage.getItem(GDRIVE_CLIENT_ID_STORAGE);
-  if (!clientId) { showToast('set up client ID first'); return; }
-  const redirectUri = 'https://mmmhomestuff.github.io/FloatApp';
-  const scope = 'https://www.googleapis.com/auth/drive.file';
-  const authUrl = 'https://accounts.google.com/o/oauth2/v2/auth' +
-    '?client_id=' + encodeURIComponent(clientId) +
-    '&redirect_uri=' + encodeURIComponent(redirectUri) +
-    '&response_type=token' +
-    '&scope=' + encodeURIComponent(scope);
-  window.open(authUrl, '_blank');
-  showToast('sign in to Google in the new tab, then come back');
-}
-
-// Check for token in URL hash on load (OAuth implicit flow callback)
-function checkOAuthCallback() {
-  const hash = window.location.hash;
-  if (hash && hash.includes('access_token')) {
-    const params = new URLSearchParams(hash.substring(1));
-    const token = params.get('access_token');
-    if (token) {
-      localStorage.setItem(GDRIVE_TOKEN_STORAGE, token);
-      window.location.hash = '';
-      showToast('✓ Google Drive connected!');
-      initScanTab();
-    }
-  }
-}
-
-function triggerScanInput() {
-  document.getElementById('scan-file-inp').click();
-}
-
-function handleScanFile(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const dataUrl = e.target.result;
-    scanImageBase64 = dataUrl.split(',')[1];
-    scanImageMime = file.type || 'image/jpeg';
-    const preview = document.getElementById('scan-preview');
-    preview.src = dataUrl;
-    preview.style.display = 'block';
-    document.getElementById('scan-drop').classList.add('has-image');
-    document.getElementById('scan-go-btn').style.display = 'block';
-    document.getElementById('scan-result-wrap').style.display = 'none';
-    document.getElementById('scan-status').style.display = 'none';
-  };
-  reader.readAsDataURL(file);
-}
-
-async function runScan() {
-  if (!scanImageBase64) return;
-  document.getElementById('scan-go-btn').style.display = 'none';
-  document.getElementById('scan-status').style.display = 'block';
-  document.getElementById('scan-status').innerHTML = '<span class="spin">⏳</span> claude is reading your bill...';
-
-  const prompt = `You are a bill/receipt scanner for a personal finance app. Analyze this image and extract:
-1. vendor/company name
-2. total amount due or paid (just the number, no $)
-3. bill date or due date (ISO format YYYY-MM-DD, use today if unclear)
-4. category (one of: bills, groceries, transport, health, eating out, household, personal, mortgage, insurance, utility, tax, medical, other)
-5. document type for retention (utility, insurance, tax, medical, mortgage, bills, grocery, other)
-6. Drive folder suggestion from: Bills & Subscriptions, Utilities, Insurance, Taxes, Medical, Mortgage & Property, Groceries & Receipts, Vehicles & Transport, Other
-7. A short friendly note (1 sentence) about what this is
-8. whether this is an expense or income (almost always expense)
-
-Respond ONLY with valid JSON, no markdown, no backticks:
-{"vendor":"","amount":0,"date":"","category":"","docType":"","driveFolder":"","note":"","type":"exp"}`;
-
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 400,
-        messages: [{
-          role: 'user',
-          content: [{
-            type: 'image',
-            source: { type: 'base64', media_type: scanImageMime, data: scanImageBase64 }
-          }, {
-            type: 'text',
-            text: prompt
-          }]
-        }]
-      })
-    });
-    const data = await response.json();
-    const text = data.content && data.content[0] && data.content[0].text;
-    if (!text) throw new Error('no response');
-    const clean = text.replace(/```json|```/g, '').trim();
-    scanResult = JSON.parse(clean);
-    showScanResult(scanResult);
-  } catch(err) {
-    console.error('Scan error:', err);
-    document.getElementById('scan-status').innerHTML = '❌ could not read — try a clearer photo';
-    document.getElementById('scan-go-btn').style.display = 'block';
-    document.getElementById('scan-go-btn').textContent = '↺ try again';
-  }
-}
-
-function showScanResult(r) {
-  document.getElementById('scan-status').style.display = 'none';
-  document.getElementById('scan-result-wrap').style.display = 'block';
-  document.getElementById('sr-vendor').value = r.vendor || '';
-  document.getElementById('sr-amount').value = r.amount || '';
-  document.getElementById('sr-date').value = r.date || new Date().toISOString().slice(0,10);
-  document.getElementById('sr-cat').value = r.category || 'other';
-  document.getElementById('sr-type').value = r.type || 'exp';
-  document.getElementById('sr-note').textContent = r.note || '';
-  const retRule = RETENTION_RULES[r.docType] || RETENTION_RULES.other;
-  document.getElementById('sr-retention').textContent = '🗓 keep ' + retRule.keep + ' · ' + retRule.shred;
-  document.getElementById('sr-folder-text').textContent = r.driveFolder || 'Other';
-
-  // Check against known bills
-  const vendorLower = (r.vendor || '').toLowerCase();
-  const matchedBill = BILLS.find(b => vendorLower.includes(b.name.toLowerCase().split(' ')[0]) || b.name.toLowerCase().includes(vendorLower.split(' ')[0]));
-  const matchEl = document.getElementById('sr-bill-match');
-  if (matchedBill) {
-    matchEl.style.display = 'block';
-    document.getElementById('sr-bill-match-title').textContent = '🔗 matches: ' + matchedBill.name;
-    document.getElementById('sr-bill-match-sub').textContent = 'expected $' + matchedBill.amt.toFixed(2) + ' · due day ' + matchedBill.day + ' · ' + matchedBill.acct;
-  } else {
-    matchEl.style.display = 'none';
-  }
-}
-
-async function uploadToDrive(base64Data, mimeType, filename, folderName) {
-  const token = localStorage.getItem(GDRIVE_TOKEN_STORAGE);
-  if (!token) return null;
-
-  try {
-    // Find or create folder
-    let folderId = null;
-    const searchRes = await fetch(
-      'https://www.googleapis.com/drive/v3/files?q=' + encodeURIComponent("name='" + folderName + "' and mimeType='application/vnd.google-apps.folder' and trashed=false") + '&fields=files(id,name)',
-      { headers: { 'Authorization': 'Bearer ' + token } }
-    );
-    const searchData = await searchRes.json();
-    if (searchData.files && searchData.files.length > 0) {
-      folderId = searchData.files[0].id;
-    } else {
-      const createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: folderName, mimeType: 'application/vnd.google-apps.folder' })
-      });
-      const createData = await createRes.json();
-      folderId = createData.id;
-    }
-
-    // Upload file
-    const byteChars = atob(base64Data);
-    const byteArr = new Uint8Array(byteChars.length);
-    for (let i = 0; i < byteChars.length; i++) byteArr[i] = byteChars.charCodeAt(i);
-    const blob = new Blob([byteArr], { type: mimeType });
-
-    const meta = JSON.stringify({ name: filename, parents: folderId ? [folderId] : [] });
-    const formData = new FormData();
-    formData.append('metadata', new Blob([meta], { type: 'application/json' }));
-    formData.append('file', blob);
-
-    const uploadRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + token },
-      body: formData
-    });
-    const uploadData = await uploadRes.json();
-    return uploadData;
-  } catch(err) {
-    console.error('Drive upload error:', err);
-    return null;
-  }
-}
-
-async function confirmScan() {
-  const vendor = document.getElementById('sr-vendor').value;
-  const amount = parseFloat(document.getElementById('sr-amount').value);
-  const date = document.getElementById('sr-date').value;
-  const cat = document.getElementById('sr-cat').value;
-  const type = document.getElementById('sr-type').value;
-  const note = vendor + (document.getElementById('sr-note').textContent ? ' · ' + document.getElementById('sr-note').textContent.slice(0,40) : '');
-  const folderName = document.getElementById('sr-folder-text').textContent || 'Other';
-
-  if (!amount || amount <= 0) { showToast('check the amount'); return; }
-
-  document.querySelector('#scan-result-wrap .scan-btn.success').textContent = '⏳ saving...';
-  document.querySelector('#scan-result-wrap .scan-btn.success').disabled = true;
-
-  // 1. Log to Supabase
-  const entry = {
-    id: 'tmp-' + Date.now().toString(),
-    type, amount,
-    who: 'Mary',
-    cat,
-    note: vendor,
-    necessity: cat === 'bills' || cat === 'utility' || cat === 'insurance' ? 100 : 70,
-    date: new Date(date + 'T12:00:00').toISOString()
-  };
-  entries.unshift(entry);
-  renderHome();
-  await saveEntry(entry);
-
-  // 2. Upload to Drive
-  let driveResult = null;
-  const token = localStorage.getItem(GDRIVE_TOKEN_STORAGE);
-  if (token && scanImageBase64) {
-    const dateStr = date || new Date().toISOString().slice(0,10);
-    const filename = dateStr + '_' + (vendor || 'bill').replace(/[^a-zA-Z0-9]/g,'-') + '_$' + amount.toFixed(0) + '.jpg';
-    driveResult = await uploadToDrive(scanImageBase64, scanImageMime || 'image/jpeg', filename, folderName);
-  }
-
-  // 3. Save to scan history
-  const histItem = {
-    id: Date.now().toString(),
-    vendor, amount, date, cat, type,
-    folder: folderName,
-    driveLink: driveResult ? driveResult.webViewLink : null,
-    thumb: 'data:' + (scanImageMime || 'image/jpeg') + ';base64,' + (scanImageBase64 ? scanImageBase64.slice(0, 200) : ''),
-    scannedAt: new Date().toISOString()
-  };
-  scanHistory.unshift(histItem);
-  if (scanHistory.length > 20) scanHistory = scanHistory.slice(0, 20);
-  localStorage.setItem(SCAN_HISTORY_STORAGE, JSON.stringify(scanHistory));
-
-  // 4. Mark matching bill as paid
-  const vendorLower = (vendor || '').toLowerCase();
-  const matchedBill = BILLS.find(b => vendorLower.includes(b.name.toLowerCase().split(' ')[0]) || b.name.toLowerCase().includes(vendorLower.split(' ')[0]));
-  if (matchedBill && type === 'exp') {
-    const mk = currentMonthKey();
-    if (!paidBills[mk]) paidBills[mk] = {};
-    paidBills[mk][matchedBill.name] = { date, amt: amount, acct: matchedBill.defAcct };
-    localStorage.setItem('float-paid-bills', JSON.stringify(paidBills));
-  }
-
-  const driveMsg = driveResult ? ' + filed to Drive ✓' : (token ? ' (Drive upload failed)' : '');
-  showToast('logged' + driveMsg);
-
-  document.getElementById('s-icon').textContent = '📄';
-  document.getElementById('s-title').textContent = 'bill scanned!';
-  document.getElementById('s-sub').textContent = vendor + ' · $' + amount.toFixed(2) + (driveResult ? ' · filed to Drive' : '');
-  nav('success', null);
-  resetScan();
-}
-
-function resetScan() {
-  scanImageBase64 = null;
-  scanImageMime = null;
-  scanResult = null;
-  document.getElementById('scan-preview').style.display = 'none';
-  document.getElementById('scan-preview').src = '';
-  document.getElementById('scan-drop').classList.remove('has-image');
-  document.getElementById('scan-go-btn').style.display = 'none';
-  document.getElementById('scan-go-btn').textContent = '✨ read with claude';
-  document.getElementById('scan-go-btn').disabled = false;
-  document.getElementById('scan-result-wrap').style.display = 'none';
-  document.getElementById('scan-status').style.display = 'none';
-  document.getElementById('scan-file-inp').value = '';
-  renderScanHistory();
-}
-
-function renderScanHistory() {
-  const el = document.getElementById('scan-history-list');
-  if (!el) return;
-  if (!scanHistory.length) { el.innerHTML = '<div class="empty-state">no scans yet</div>'; return; }
-  el.innerHTML = '';
-  scanHistory.slice(0, 8).forEach(h => {
-    const row = document.createElement('div');
-    row.className = 'scan-history-item';
-    const thumb = document.createElement('div');
-    thumb.className = 'scan-history-thumb';
-    thumb.textContent = '📄';
-    const info = document.createElement('div');
-    info.style.flex = '1';
-    info.innerHTML = '<div style="font-size:13px;font-weight:800;color:var(--ink);">' + (h.vendor || 'unknown') + '</div>' +
-      '<div style="font-size:11px;color:var(--ink-light);font-weight:600;">' + h.date + ' · $' + parseFloat(h.amount || 0).toFixed(2) + ' · ' + h.folder + '</div>' +
-      (h.driveLink ? '<a href="' + h.driveLink + '" target="_blank" style="font-size:10px;color:var(--lav-d);font-weight:800;">view in drive →</a>' : '<span style="font-size:10px;color:var(--ink-light);font-weight:600;">not filed to drive</span>');
-    row.appendChild(thumb);
-    row.appendChild(info);
-    el.appendChild(row);
-  });
-}
-
+bootApp();
 </script>
 </body>
 </html>
