@@ -662,7 +662,7 @@ html,body{height:100%;background:#FAF8F4;font-family:'Nunito',sans-serif;color:v
   <div class="scan-oauth-setup" id="scan-oauth-setup" style="display:none;">
     <div class="scan-oauth-title">🔑 connect google drive</div>
     <div class="scan-oauth-sub">paste your Google OAuth Client ID to enable automatic filing to Drive. one-time setup.</div>
-    <input class="scan-oauth-inp" id="scan-client-id-inp" type="text" placeholder="paste Client ID here (ends in .apps.googleusercontent.com)">
+    <input class="scan-oauth-inp" id="scan-client-id-inp" type="text" placeholder="paste Client ID here (ends in .apps.googleusercontent.com)" value="625060801711-sc2u62erhhsrf79a0p1eo4hcgj6guja5.apps.googleusercontent.com">
     <button class="scan-btn primary" style="margin-bottom:0;" onclick="saveOAuthClientId()">connect drive →</button>
   </div>
   <div class="scan-oauth-setup" id="scan-drive-connected" style="display:none;background:var(--butter-l);border-color:var(--butter);">
@@ -1336,6 +1336,7 @@ checkOAuthCallback();
 // ============================================================
 const CLAUDE_API_KEY_STORAGE = 'float-claude-key';
 const GDRIVE_CLIENT_ID_STORAGE = 'float-gdrive-client-id';
+const GDRIVE_CLIENT_ID_DEFAULT = '625060801711-sc2u62erhhsrf79a0p1eo4hcgj6guja5.apps.googleusercontent.com';
 const GDRIVE_TOKEN_STORAGE = 'float-gdrive-token';
 const SCAN_HISTORY_STORAGE = 'float-scan-history';
 const DRIVE_FOLDER_ROOT = 'Jones Household/Finances';
@@ -1371,6 +1372,10 @@ let scanHistory = [];
 try { scanHistory = JSON.parse(localStorage.getItem(SCAN_HISTORY_STORAGE) || '[]'); } catch(e) {}
 
 function initScanTab() {
+  // Always ensure default client ID is saved
+  if (!localStorage.getItem(GDRIVE_CLIENT_ID_STORAGE)) {
+    localStorage.setItem(GDRIVE_CLIENT_ID_STORAGE, GDRIVE_CLIENT_ID_DEFAULT);
+  }
   const clientId = localStorage.getItem(GDRIVE_CLIENT_ID_STORAGE);
   const token = localStorage.getItem(GDRIVE_TOKEN_STORAGE);
   if (!clientId) {
