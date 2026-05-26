@@ -784,8 +784,8 @@ html,body{height:100%;background:#FAF8F4;font-family:'Nunito',sans-serif;color:v
     <div class="scan-drop-sub" id="scan-drop-sub">camera opens automatically &middot; or choose from photos</div>
     <img id="scan-preview" class="scan-preview" alt="preview">
   </div>
-  <input type="file" id="scan-file-inp" accept="image/*" capture="environment" style="display:none;" onchange="handleScanFile(this,false)">
-  <input type="file" id="scan-file-inp-add" accept="image/*" capture="environment" style="display:none;" onchange="handleScanFile(this,true)">
+  <input type="file" id="scan-file-inp" accept="image/*" multiple style="display:none;" onchange="handleScanFileMulti(this,false)">
+  <input type="file" id="scan-file-inp-add" accept="image/*" multiple style="display:none;" onchange="handleScanFileMulti(this,true)">
   <button class="scan-btn primary" id="scan-go-btn" style="display:none;" onclick="runScan()">&#10024; read with claude</button>
   <div class="scan-status" id="scan-status" style="display:none;"></div>
   <div id="scan-result-wrap" style="display:none;">
@@ -2145,32 +2145,14 @@ function handleScanFile(input, isAddPage){
   const reader = new FileReader();
   reader.onload = function(e){
     const dataUrl = e.target.result;
-    // Compress image to under 4MB before sending to Claude
-    const img = new Image();
-    img.onload = function(){
-      const canvas = document.createElement('canvas');
-      const MAX_PX = 1600; // max dimension
-      let w = img.width, h = img.height;
-      if(w > MAX_PX || h > MAX_PX){
-        if(w > h){ h = Math.round(h * MAX_PX / w); w = MAX_PX; }
-        else { w = Math.round(w * MAX_PX / h); h = MAX_PX; }
-      }
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      // Try quality 0.85 first, drop to 0.7 if still too big
-      let compressed = canvas.toDataURL('image/jpeg', 0.85);
-      if(compressed.length > 5000000) compressed = canvas.toDataURL('image/jpeg', 0.7);
-      if(compressed.length > 5000000) compressed = canvas.toDataURL('image/jpeg', 0.5);
-      const page = { base64: compressed.split(',')[1], mime: 'image/jpeg', dataUrl: compressed };
-      if(isAddPage){ scanPages.push(page); scanActivePageIdx = scanPages.length - 1; }
-      else { if(scanPages.length === 0){ scanPages.push(page); scanActivePageIdx = 0; } else { scanPages[scanActivePageIdx] = page; } }
-      input.value = '';
-      renderPageStrip(); updateDropZonePreview();
-      document.getElementById('scan-go-btn').style.display = 'block';
-      document.getElementById('scan-result-wrap').style.display = 'none';
-      document.getElementById('scan-status').style.display = 'none';
-    };
-    img.src = dataUrl;
+    const page = { base64: dataUrl.split(',')[1], mime: file.type || 'image/jpeg', dataUrl };
+    if(isAddPage){ scanPages.push(page); scanActivePageIdx = scanPages.length - 1; }
+    else { if(scanPages.length === 0){ scanPages.push(page); scanActivePageIdx = 0; } else { scanPages[scanActivePageIdx] = page; } }
+    input.value = '';
+    renderPageStrip(); updateDropZonePreview();
+    document.getElementById('scan-go-btn').style.display = 'block';
+    document.getElementById('scan-result-wrap').style.display = 'none';
+    document.getElementById('scan-status').style.display = 'none';
   };
   reader.readAsDataURL(file);
 }
