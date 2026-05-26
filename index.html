@@ -784,8 +784,8 @@ html,body{height:100%;background:#FAF8F4;font-family:'Nunito',sans-serif;color:v
     <div class="scan-drop-sub" id="scan-drop-sub">camera opens automatically &middot; or choose from photos</div>
     <img id="scan-preview" class="scan-preview" alt="preview">
   </div>
-  <input type="file" id="scan-file-inp" accept="image/*" style="display:none;" onchange="handleScanFile(this,false)">
-  <input type="file" id="scan-file-inp-add" accept="image/*" style="display:none;" onchange="handleScanFile(this,true)">
+  <input type="file" id="scan-file-inp" accept="image/*" capture="environment" style="display:none;" onchange="handleScanFile(this,false)">
+  <input type="file" id="scan-file-inp-add" accept="image/*" capture="environment" style="display:none;" onchange="handleScanFile(this,true)">
   <button class="scan-btn primary" id="scan-go-btn" style="display:none;" onclick="runScan()">&#10024; read with claude</button>
   <div class="scan-status" id="scan-status" style="display:none;"></div>
   <div id="scan-result-wrap" style="display:none;">
@@ -2080,7 +2080,6 @@ async function askClaude(prefill) {
 const GDRIVE_CLIENT_ID_STORAGE = 'float-gdrive-client-id';
 const GDRIVE_CLIENT_ID_DEFAULT = '625060801711-sc2u62erhhsrf79a0p1eo4hcgj6guja5.apps.googleusercontent.com';
 const GDRIVE_TOKEN_STORAGE = 'float-gdrive-token';
-let driveConnected = false;
 
 const RETENTION_RULES = {
   utility:{keep:'5 years digital / 1 year paper',shred:'shred after 1 year'},
@@ -2098,66 +2097,44 @@ let scanActivePageIdx = 0;
 let scanResult = null;
 
 function initScanTab(){
-  const cached = localStorage.getItem(GDRIVE_TOKEN_STORAGE);
-  const expiry = localStorage.getItem('float-gdrive-expiry');
-  const hasCache = cached && expiry && parseInt(expiry) > Date.now();
-  document.getElementById('scan-oauth-setup').style.display = hasCache ? 'none' : 'block';
-  document.getElementById('scan-drive-connected').style.display = hasCache ? 'block' : 'none';
-  if(hasCache){ driveConnected = true; }
-  else {
-    getDriveToken().then(token => {
-      if(token){
-        document.getElementById('scan-oauth-setup').style.display = 'none';
-        document.getElementById('scan-drive-connected').style.display = 'block';
-        driveConnected = true;
-      }
-    });
-  }
+  if(!localStorage.getItem(GDRIVE_CLIENT_ID_STORAGE)) localStorage.setItem(GDRIVE_CLIENT_ID_STORAGE, GDRIVE_CLIENT_ID_DEFAULT);
+  const hasId = !!localStorage.getItem(GDRIVE_CLIENT_ID_STORAGE);
+  document.getElementById('scan-oauth-setup').style.display = hasId ? 'none' : 'block';
+  document.getElementById('scan-drive-connected').style.display = hasId ? 'block' : 'none';
   renderScanHistory();
 }
 
-function saveOAuthClientId(){ triggerGoogleAuth(); }
+function saveOAuthClientId(){
+  const val = document.getElementById('scan-client-id-inp').value.trim();
+  if(!val || !val.includes('apps.googleusercontent.com')){ showToast('paste a valid Client ID'); return; }
+  localStorage.setItem(GDRIVE_CLIENT_ID_STORAGE, val);
+  initScanTab(); triggerGoogleAuth();
+}
 
 function disconnectDrive(){
+  localStorage.removeItem(GDRIVE_CLIENT_ID_STORAGE);
   localStorage.removeItem(GDRIVE_TOKEN_STORAGE);
-  localStorage.removeItem('float-gdrive-expiry');
-  driveConnected = false;
   initScanTab(); showToast('drive disconnected');
 }
 
 function triggerGoogleAuth(){
-  window.location.href = 'https://mpwnbsztpulwwmtuabtd.supabase.co/functions/v1/google-auth?action=login&who=Mary';
+  const clientId = localStorage.getItem(GDRIVE_CLIENT_ID_STORAGE); if(!clientId) return;
+  const url = 'https://accounts.google.com/o/oauth2/v2/auth' +
+    '?client_id=' + encodeURIComponent(clientId) +
+    '&redirect_uri=' + encodeURIComponent('https://mmmhomestuff.github.io/FloatApp') +
+    '&response_type=token' +
+    '&scope=' + encodeURIComponent('https://www.googleapis.com/auth/drive.file');
+  window.open(url, '_blank');
+  showToast('sign in to Google in the new tab, then come back');
 }
 
 function checkOAuthCallback(){
-  const params = new URLSearchParams(window.location.search);
-  const connected = params.get('drive_connected');
-  if(connected){
-    window.history.replaceState({}, document.title, window.location.pathname);
-    driveConnected = true;
-    showToast('Google Drive connected permanently!');
-    initScanTab();
+  const hash = window.location.hash;
+  if(hash && hash.includes('access_token')){
+    const params = new URLSearchParams(hash.substring(1));
+    const token = params.get('access_token');
+    if(token){ localStorage.setItem(GDRIVE_TOKEN_STORAGE, token); window.location.hash = ''; showToast('Google Drive connected!'); initScanTab(); }
   }
-}
-
-async function getDriveToken(){
-  const cached = localStorage.getItem(GDRIVE_TOKEN_STORAGE);
-  const expiry = localStorage.getItem('float-gdrive-expiry');
-  if(cached && expiry && parseInt(expiry) > Date.now() + 60000) return cached;
-  try {
-    const res = await fetch('https://mpwnbsztpulwwmtuabtd.supabase.co/functions/v1/google-auth?action=token&who=Mary', {
-      headers: { 'Authorization': 'Bearer sb_publishable_wKtxou7d4xd9eVomBOBC1A_KjTpmtVa' }
-    });
-    const data = await res.json();
-    if(data.access_token){
-      localStorage.setItem(GDRIVE_TOKEN_STORAGE, data.access_token);
-      localStorage.setItem('float-gdrive-expiry', String(Date.now() + 3500000));
-      driveConnected = true;
-      return data.access_token;
-    }
-    if(data.error === 'not_connected'){ driveConnected = false; initScanTab(); }
-  } catch(e){ console.warn('token fetch failed', e); }
-  return null;
 }
 
 function triggerScanInput(){ document.getElementById('scan-file-inp').click(); }
@@ -2168,14 +2145,32 @@ function handleScanFile(input, isAddPage){
   const reader = new FileReader();
   reader.onload = function(e){
     const dataUrl = e.target.result;
-    const page = { base64: dataUrl.split(',')[1], mime: file.type || 'image/jpeg', dataUrl };
-    if(isAddPage){ scanPages.push(page); scanActivePageIdx = scanPages.length - 1; }
-    else { if(scanPages.length === 0){ scanPages.push(page); scanActivePageIdx = 0; } else { scanPages[scanActivePageIdx] = page; } }
-    input.value = '';
-    renderPageStrip(); updateDropZonePreview();
-    document.getElementById('scan-go-btn').style.display = 'block';
-    document.getElementById('scan-result-wrap').style.display = 'none';
-    document.getElementById('scan-status').style.display = 'none';
+    // Compress image to under 4MB before sending to Claude
+    const img = new Image();
+    img.onload = function(){
+      const canvas = document.createElement('canvas');
+      const MAX_PX = 1600; // max dimension
+      let w = img.width, h = img.height;
+      if(w > MAX_PX || h > MAX_PX){
+        if(w > h){ h = Math.round(h * MAX_PX / w); w = MAX_PX; }
+        else { w = Math.round(w * MAX_PX / h); h = MAX_PX; }
+      }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      // Try quality 0.85 first, drop to 0.7 if still too big
+      let compressed = canvas.toDataURL('image/jpeg', 0.85);
+      if(compressed.length > 5000000) compressed = canvas.toDataURL('image/jpeg', 0.7);
+      if(compressed.length > 5000000) compressed = canvas.toDataURL('image/jpeg', 0.5);
+      const page = { base64: compressed.split(',')[1], mime: 'image/jpeg', dataUrl: compressed };
+      if(isAddPage){ scanPages.push(page); scanActivePageIdx = scanPages.length - 1; }
+      else { if(scanPages.length === 0){ scanPages.push(page); scanActivePageIdx = 0; } else { scanPages[scanActivePageIdx] = page; } }
+      input.value = '';
+      renderPageStrip(); updateDropZonePreview();
+      document.getElementById('scan-go-btn').style.display = 'block';
+      document.getElementById('scan-result-wrap').style.display = 'none';
+      document.getElementById('scan-status').style.display = 'none';
+    };
+    img.src = dataUrl;
   };
   reader.readAsDataURL(file);
 }
@@ -2235,7 +2230,7 @@ async function runScan(){
   document.getElementById('scan-status').style.display = 'block';
   document.getElementById('scan-status').innerHTML = '<span class="spin">&#9203;</span> claude is reading ' + (scanPages.length > 1 ? scanPages.length + ' pages' : 'your bill') + '...';
 
-  const prompt = 'You are a bill/receipt scanner for a personal finance app. Analyze ALL images as one document. Extract every piece of useful information. Return ONLY valid JSON with no markdown.\n\nRequired fields:\n- vendor: business/biller name\n- amount: total amount due (number only, no $ sign)\n- statement_date: date printed on the bill/statement (YYYY-MM-DD)\n- due_date: payment due date (YYYY-MM-DD). If no due date visible, use statement_date.\n- date: always set this to due_date\n- category: bills|groceries|transport|health|eating out|household|personal|mortgage|insurance|utility|tax|medical|other\n- docType: utility|insurance|tax|medical|mortgage|bills|grocery|other\n- driveFolder: Bills & Subscriptions|Utilities|Insurance|Taxes|Medical|Mortgage & Property|Groceries & Receipts|Vehicles & Transport|Other\n- type: exp or inc\n- note: one sentence summarizing the bill, mention both dates if they differ\n\nAlso extract if visible (use null if not found):\n- account_number: customer/member/account number\n- account_name: name on the account\n- customer_phone: customer service phone number\n- customer_website: customer service or payment website\n- apr: interest rate or APR as a number (credit cards/loans only)\n- min_payment: minimum payment due (number only)\n- statement_balance: full statement balance (number only)\n\nFor multi-page: synthesize all pages, use final totals.\n\nRespond ONLY with valid JSON:\n{"vendor":"","amount":0,"statement_date":"","due_date":"","date":"","category":"","docType":"","driveFolder":"","type":"exp","note":"","account_number":null,"account_name":null,"customer_phone":null,"customer_website":null,"apr":null,"min_payment":null,"statement_balance":null}';
+  const prompt = 'You are a bill/receipt scanner for a personal finance app. Analyze ALL images as one document. Extract:\n1. vendor name\n2. total amount due (number only)\n3. date (YYYY-MM-DD, today if unclear)\n4. category: bills|groceries|transport|health|eating out|household|personal|mortgage|insurance|utility|tax|medical|other\n5. docType: utility|insurance|tax|medical|mortgage|bills|grocery|other\n6. driveFolder: Bills & Subscriptions|Utilities|Insurance|Taxes|Medical|Mortgage & Property|Groceries & Receipts|Vehicles & Transport|Other\n7. one-sentence note\n8. type: exp or inc\nFor multi-page: synthesize all pages, use final total.\nRespond ONLY with valid JSON no markdown:\n{"vendor":"","amount":0,"date":"","category":"","docType":"","driveFolder":"","note":"","type":"exp"}';
 
   const blocks = scanPages.map(function(p){ return {type:'image',source:{type:'base64',media_type:p.mime,data:p.base64}}; });
   blocks.push({type:'text',text:prompt});
@@ -2267,19 +2262,10 @@ function showScanResult(r){
   document.getElementById('scan-result-wrap').style.display = 'block';
   document.getElementById('sr-vendor').value = r.vendor || '';
   document.getElementById('sr-amount').value = r.amount || '';
-  document.getElementById('sr-date').value = r.due_date || r.date || new Date().toISOString().slice(0,10);
+  document.getElementById('sr-date').value = r.date || new Date().toISOString().slice(0,10);
   document.getElementById('sr-cat').value = r.category || 'other';
   document.getElementById('sr-type').value = r.type || 'exp';
-  // Show both dates + vendor contact info in note
-  let noteText = r.note || '';
-  const dateParts = [];
-  if(r.statement_date) dateParts.push('Statement: ' + r.statement_date);
-  if(r.due_date && r.due_date !== r.statement_date) dateParts.push('Due: ' + r.due_date);
-  if(r.account_number) dateParts.push('Acct: ' + r.account_number);
-  if(r.customer_phone) dateParts.push('Phone: ' + r.customer_phone);
-  if(r.apr) dateParts.push('APR: ' + r.apr + '%');
-  if(dateParts.length) noteText = dateParts.join(' · ') + (noteText ? '\n' + noteText : '');
-  document.getElementById('sr-note').textContent = noteText;
+  document.getElementById('sr-note').textContent = r.note || '';
   const rule = RETENTION_RULES[r.docType] || RETENTION_RULES.other;
   document.getElementById('sr-retention').textContent = 'keep ' + rule.keep + ' - ' + rule.shred;
   document.getElementById('sr-folder-text').textContent = r.driveFolder || 'Other';
@@ -2294,7 +2280,7 @@ function showScanResult(r){
 }
 
 async function uploadToDrive(base64Data, mimeType, filename, folderName){
-  const token = await getDriveToken(); if(!token) return null;
+  const token = localStorage.getItem(GDRIVE_TOKEN_STORAGE); if(!token) return null;
   try {
     let folderId = null;
     const searchRes = await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent("name='"+folderName+"' and mimeType='application/vnd.google-apps.folder' and trashed=false")+'&fields=files(id,name)',{headers:{'Authorization':'Bearer '+token}});
@@ -2329,7 +2315,7 @@ async function confirmScan(){
   entries.unshift(entry); renderHome(); await saveEntry(entry);
 
   let driveResult = null;
-  const token = await getDriveToken();
+  const token = localStorage.getItem(GDRIVE_TOKEN_STORAGE);
   if(token && scanPages.length > 0){
     const base = (date||new Date().toISOString().slice(0,10)) + '_' + (vendor||'bill').replace(/[^a-zA-Z0-9]/g,'-') + '_$' + amount.toFixed(0);
     for(let i=0;i<scanPages.length;i++){
@@ -2340,23 +2326,8 @@ async function confirmScan(){
   }
 
   try {
-    await db.from('scan_history').insert([{
-      vendor, amount, date, cat, type,
-      pages: scanPages.length,
-      folder: folderName,
-      drive_link: driveResult ? driveResult.webViewLink : null,
-      scanned_at: new Date().toISOString(),
-      statement_date: scanResult?.statement_date || null,
-      due_date: scanResult?.due_date || null,
-      account_number: scanResult?.account_number || null,
-      account_name: scanResult?.account_name || null,
-      customer_phone: scanResult?.customer_phone || null,
-      customer_website: scanResult?.customer_website || null,
-      apr: scanResult?.apr || null,
-      min_payment: scanResult?.min_payment || null,
-      statement_balance: scanResult?.statement_balance || null
-    }]);
-  } catch(e){ console.warn('scan history save failed', e); }
+    await db.from('scan_history').insert([{vendor,amount,date,cat,type,pages:scanPages.length,folder:folderName,drive_link:driveResult?driveResult.webViewLink:null,scanned_at:new Date().toISOString()}]);
+  } catch(e){ console.warn('scan history save failed',e); }
 
   const vl = (vendor||'').toLowerCase();
   const matched = BILLS.find(b => vl.includes(b.name.toLowerCase().split(' ')[0]) || b.name.toLowerCase().includes(vl.split(' ')[0]));
