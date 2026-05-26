@@ -2157,6 +2157,41 @@ function handleScanFile(input, isAddPage){
   reader.readAsDataURL(file);
 }
 
+function handleScanFileMulti(input, isAddPage){
+  const files = Array.from(input.files); if(!files.length) return;
+  let loaded = 0;
+  const newPages = [];
+  files.forEach(function(file, idx){
+    const reader = new FileReader();
+    reader.onload = function(e){
+      const dataUrl = e.target.result;
+      newPages[idx] = { base64: dataUrl.split(',')[1], mime: file.type || 'image/jpeg', dataUrl };
+      loaded++;
+      if(loaded === files.length){
+        // All files read — add to scanPages
+        if(isAddPage){
+          newPages.forEach(function(p){ scanPages.push(p); });
+        } else {
+          if(scanPages.length === 0){
+            newPages.forEach(function(p){ scanPages.push(p); });
+          } else {
+            // Replace active page with first, append rest
+            scanPages[scanActivePageIdx] = newPages[0];
+            for(let i=1;i<newPages.length;i++) scanPages.push(newPages[i]);
+          }
+        }
+        scanActivePageIdx = scanPages.length - 1;
+        input.value = '';
+        renderPageStrip(); updateDropZonePreview();
+        document.getElementById('scan-go-btn').style.display = 'block';
+        document.getElementById('scan-result-wrap').style.display = 'none';
+        document.getElementById('scan-status').style.display = 'none';
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 function setActivePage(idx){ scanActivePageIdx = idx; renderPageStrip(); updateDropZonePreview(); }
 
 function removePage(idx){
