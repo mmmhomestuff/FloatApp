@@ -2268,7 +2268,8 @@ async function runScan(){
     showScanResult(scanResult);
   } catch(err){
     console.error('Scan error:', err);
-    document.getElementById('scan-status').innerHTML = '&#10060; could not read - try a clearer photo';
+    const msg = err.message || 'unknown error';
+    document.getElementById('scan-status').innerHTML = '&#10060; scan failed: ' + msg;
     document.getElementById('scan-go-btn').style.display = 'block';
     document.getElementById('scan-go-btn').textContent = 'try again';
   }
