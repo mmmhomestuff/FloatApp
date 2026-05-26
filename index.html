@@ -784,8 +784,8 @@ html,body{height:100%;background:#FAF8F4;font-family:'Nunito',sans-serif;color:v
     <div class="scan-drop-sub" id="scan-drop-sub">camera opens automatically &middot; or choose from photos</div>
     <img id="scan-preview" class="scan-preview" alt="preview">
   </div>
-  <input type="file" id="scan-file-inp" accept="image/*" capture="environment" style="display:none;" onchange="handleScanFile(this,false)">
-  <input type="file" id="scan-file-inp-add" accept="image/*" capture="environment" style="display:none;" onchange="handleScanFile(this,true)">
+  <input type="file" id="scan-file-inp" accept="image/*" style="display:none;" onchange="handleScanFile(this,false)">
+  <input type="file" id="scan-file-inp-add" accept="image/*" style="display:none;" onchange="handleScanFile(this,true)">
   <button class="scan-btn primary" id="scan-go-btn" style="display:none;" onclick="runScan()">&#10024; read with claude</button>
   <div class="scan-status" id="scan-status" style="display:none;"></div>
   <div id="scan-result-wrap" style="display:none;">
@@ -2212,7 +2212,7 @@ async function runScan(){
   document.getElementById('scan-status').style.display = 'block';
   document.getElementById('scan-status').innerHTML = '<span class="spin">&#9203;</span> claude is reading ' + (scanPages.length > 1 ? scanPages.length + ' pages' : 'your bill') + '...';
 
-  const prompt = 'You are a bill/receipt scanner for a personal finance app. Analyze ALL images as one document. Extract:\n1. vendor name\n2. total amount due (number only)\n3. date (YYYY-MM-DD, today if unclear)\n4. category: bills|groceries|transport|health|eating out|household|personal|mortgage|insurance|utility|tax|medical|other\n5. docType: utility|insurance|tax|medical|mortgage|bills|grocery|other\n6. driveFolder: Bills & Subscriptions|Utilities|Insurance|Taxes|Medical|Mortgage & Property|Groceries & Receipts|Vehicles & Transport|Other\n7. one-sentence note\n8. type: exp or inc\nFor multi-page: synthesize all pages, use final total.\nRespond ONLY with valid JSON no markdown:\n{"vendor":"","amount":0,"date":"","category":"","docType":"","driveFolder":"","note":"","type":"exp"}';
+  const prompt = 'You are a bill/receipt scanner for a personal finance app. Analyze ALL images as one document. Extract:\n1. vendor name\n2. total amount due (number only)\n3. statement_date: the date printed on the bill/statement (YYYY-MM-DD)\n4. due_date: the payment due date (YYYY-MM-DD). This is the date the bill must be PAID by. If no due date is visible, use statement_date.\n5. date: always use due_date here — this is what gets logged as the expense date\n6. category: bills|groceries|transport|health|eating out|household|personal|mortgage|insurance|utility|tax|medical|other\n7. docType: utility|insurance|tax|medical|mortgage|bills|grocery|other\n8. driveFolder: Bills & Subscriptions|Utilities|Insurance|Taxes|Medical|Mortgage & Property|Groceries & Receipts|Vehicles & Transport|Other\n9. one-sentence note that mentions both dates if they differ\n10. type: exp or inc\nFor multi-page: synthesize all pages, use final total.\nRespond ONLY with valid JSON no markdown:\n{"vendor":"","amount":0,"statement_date":"","due_date":"","date":"","category":"","docType":"","driveFolder":"","note":"","type":"exp"}';
 
   const blocks = scanPages.map(function(p){ return {type:'image',source:{type:'base64',media_type:p.mime,data:p.base64}}; });
   blocks.push({type:'text',text:prompt});
@@ -2244,10 +2244,17 @@ function showScanResult(r){
   document.getElementById('scan-result-wrap').style.display = 'block';
   document.getElementById('sr-vendor').value = r.vendor || '';
   document.getElementById('sr-amount').value = r.amount || '';
-  document.getElementById('sr-date').value = r.date || new Date().toISOString().slice(0,10);
+  document.getElementById('sr-date').value = r.due_date || r.date || new Date().toISOString().slice(0,10);
   document.getElementById('sr-cat').value = r.category || 'other';
   document.getElementById('sr-type').value = r.type || 'exp';
-  document.getElementById('sr-note').textContent = r.note || '';
+  // Show both dates in note if they differ
+  let noteText = r.note || '';
+  if(r.statement_date && r.due_date && r.statement_date !== r.due_date){
+    noteText = 'Statement: ' + r.statement_date + ' · Due: ' + r.due_date + (noteText ? ' · ' + noteText : '');
+  } else if(r.statement_date) {
+    noteText = 'Statement date: ' + r.statement_date + (noteText ? ' · ' + noteText : '');
+  }
+  document.getElementById('sr-note').textContent = noteText;
   const rule = RETENTION_RULES[r.docType] || RETENTION_RULES.other;
   document.getElementById('sr-retention').textContent = 'keep ' + rule.keep + ' - ' + rule.shred;
   document.getElementById('sr-folder-text').textContent = r.driveFolder || 'Other';
