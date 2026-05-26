@@ -385,6 +385,12 @@ html,body{height:100%;background:#FAF8F4;font-family:'Nunito',sans-serif;color:v
 .chore-who-toggle{display:flex;gap:6px;margin-bottom:10px;}
 .chore-who-btn{flex:1;padding:8px;border-radius:var(--r-md);border:2px solid rgba(61,48,80,0.12);background:transparent;color:var(--ink-mid);font-size:12px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;transition:all 0.18s;}
 .chore-who-btn.active{background:var(--lav);border-color:var(--lav-d);color:var(--lav-d);}
+.chore-notion-tip{position:fixed;z-index:9999;background:var(--ink);color:#fff;border-radius:14px;padding:12px 14px;font-size:12px;font-weight:700;font-family:'Nunito',sans-serif;max-width:260px;box-shadow:0 8px 24px rgba(0,0,0,0.25);line-height:1.5;animation:tipIn 0.15s cubic-bezier(0.34,1.56,0.64,1);}
+.chore-notion-tip a{color:#AAC4BC;text-decoration:none;font-weight:900;}
+.chore-notion-tip .tip-label{color:rgba(255,255,255,0.5);font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:1px;}
+.chore-notion-tip .tip-row{margin-bottom:7px;}
+.chore-notion-tip .tip-row:last-child{margin-bottom:0;}
+@keyframes tipIn{0%{opacity:0;transform:scale(0.88);}100%{opacity:1;transform:scale(1);}}
 
 /* ASK CLAUDE */
 .ask-claude-card{background:linear-gradient(135deg,var(--lav-d) 0%,#2a5a54 100%);border-radius:var(--r-xl);padding:18px 20px;margin-bottom:10px;position:relative;overflow:hidden;}
@@ -1855,8 +1861,64 @@ function renderChores(){
     const row = document.createElement('div');
     row.className = 'chore-row';
     row.innerHTML = '<div class="chore-blob">'+icon+'</div><div class="chore-info"><div class="chore-name">'+(c.chore||'chore')+'</div><div class="chore-meta">'+dateStr+' &middot; '+timeStr+'</div></div><span class="chore-who'+(isGarrett?' garrett':'')+'">'+( c.who||'Mary')+'</span>';
+
+    // Long press → Notion tooltip
+    let pressTimer = null;
+    const showTip = function(e){
+      const touch = e.touches ? e.touches[0] : e;
+      showChoreNotionTip(c, touch.clientX, touch.clientY);
+    };
+    row.addEventListener('touchstart', function(e){
+      pressTimer = setTimeout(function(){ showTip(e); }, 600);
+    }, {passive:true});
+    row.addEventListener('touchend', function(){ clearTimeout(pressTimer); }, {passive:true});
+    row.addEventListener('touchmove', function(){ clearTimeout(pressTimer); }, {passive:true});
+    row.addEventListener('mousedown', function(e){ pressTimer = setTimeout(function(){ showTip(e); }, 600); });
+    row.addEventListener('mouseup', function(){ clearTimeout(pressTimer); });
+    row.addEventListener('mouseleave', function(){ clearTimeout(pressTimer); });
     el.appendChild(row);
   });
+}
+
+const NOTION_DB_URL = 'https://www.notion.so/6b3843b6a1f24f62b1d4e5003c0d01b8';
+
+function showChoreNotionTip(chore, x, y){
+  hideChoreNotionTip();
+  const choreName = chore.chore || 'unknown';
+  const who = chore.who || 'unknown';
+  const loggedAt = new Date(chore.logged_at);
+  const timeStr = loggedAt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+  const dateStr = loggedAt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+
+  const tip = document.createElement('div');
+  tip.className = 'chore-notion-tip';
+  tip.id = 'chore-notion-tip';
+  tip.innerHTML =
+    '<div class="tip-row"><span class="tip-label">chore</span>'+choreName+'</div>'+
+    '<div class="tip-row"><span class="tip-label">logged</span>'+dateStr+' at '+timeStr+' by '+who+'</div>'+
+    '<div class="tip-row"><span class="tip-label">supabase</span>row id: '+(chore.id||'—')+'</div>'+
+    '<div class="tip-row"><span class="tip-label">notion</span><a href="'+NOTION_DB_URL+'" target="_blank">open chore database ↗</a></div>'+
+    '<div style="margin-top:8px;font-size:10px;color:rgba(255,255,255,0.35);font-weight:700;">tap anywhere to dismiss</div>';
+
+  // Position near touch/click but keep on screen
+  const tipW = 260, tipH = 160;
+  let left = Math.min(x + 12, window.innerWidth - tipW - 12);
+  let top = Math.min(y + 12, window.innerHeight - tipH - 12);
+  if(top < 60) top = y + 12;
+  tip.style.left = left + 'px';
+  tip.style.top = top + 'px';
+  document.body.appendChild(tip);
+
+  // Dismiss on tap anywhere
+  setTimeout(function(){
+    document.addEventListener('touchstart', hideChoreNotionTip, {once:true, passive:true});
+    document.addEventListener('mousedown', hideChoreNotionTip, {once:true});
+  }, 100);
+}
+
+function hideChoreNotionTip(){
+  const tip = document.getElementById('chore-notion-tip');
+  if(tip) tip.remove();
 }
 
 function manualLogChore(){
@@ -1868,29 +1930,6 @@ function manualLogChore(){
     .catch(function(e){ console.error(e); showToast('could not save'); });
 }
 
-
-function getChoreStatus(chore){
-  if(!chore.last_done) return 'unknown';
-  const freqDays = FREQUENCY_DAYS[chore.frequency] || FREQUENCY_DAYS[chore.frequency?.toLowerCase()];
-  if(!freqDays) return 'done'; // as-needed, just show last done
-  const lastDone = new Date(chore.last_done);
-  const now = new Date();
-  const daysSince = Math.floor((now - lastDone) / (1000*60*60*24));
-  if(daysSince < freqDays * 0.8) return 'done';
-  if(daysSince <= freqDays) return 'due';
-  return 'overdue';
-}
-
-function getChoreMeta(chore){
-  if(!chore.last_done) return 'never done';
-  const lastDone = new Date(chore.last_done);
-  const now = new Date();
-  const daysSince = Math.floor((now - lastDone) / (1000*60*60*24));
-  const byStr = chore.last_done_by ? ' by ' + chore.last_done_by : '';
-  if(daysSince === 0) return 'done today' + byStr;
-  if(daysSince === 1) return 'done yesterday' + byStr;
-  return daysSince + ' days ago' + byStr;
-}
 
 function setChoreWho(who, btn){
   choreFilterWho = who;
@@ -1906,72 +1945,7 @@ function filterChores(status, btn){
   renderChores();
 }
 
-function renderChores(){
-  const el = document.getElementById('chores-list');
-  if(!el) return;
-  if(!chores.length){ el.innerHTML = '<div class="empty-state">no chores yet - tap + add chore</div>'; return; }
 
-  let filtered = chores.filter(function(c){
-    if(choreFilterWho !== 'all' && c.assigned_to && c.assigned_to !== choreFilterWho && c.assigned_to !== 'Both') return false;
-    if(choreFilterStatus !== 'all' && getChoreStatus(c) !== choreFilterStatus) return false;
-    return true;
-  });
-
-  if(!filtered.length){ el.innerHTML = '<div class="empty-state">nothing here!</div>'; return; }
-
-  // Group by category/area
-  const groups = {};
-  filtered.forEach(function(c){
-    const area = c.category || 'Other';
-    if(!groups[area]) groups[area] = [];
-    groups[area].push(c);
-  });
-
-  // Sort areas — overdue ones float to top
-  const areaOrder = Object.keys(groups).sort(function(a, b){
-    const aHasOverdue = groups[a].some(c => getChoreStatus(c) === 'overdue');
-    const bHasOverdue = groups[b].some(c => getChoreStatus(c) === 'overdue');
-    if(aHasOverdue && !bHasOverdue) return -1;
-    if(!aHasOverdue && bHasOverdue) return 1;
-    return a.localeCompare(b);
-  });
-
-  el.innerHTML = '';
-  areaOrder.forEach(function(area){
-    const areaHead = document.createElement('div');
-    areaHead.className = 'chore-area-head';
-    areaHead.textContent = area;
-    el.appendChild(areaHead);
-
-    groups[area].forEach(function(chore){
-      const status = getChoreStatus(chore);
-      const meta = getChoreMeta(chore);
-      const row = document.createElement('div');
-      row.className = 'chore-item';
-
-      const dot = document.createElement('div');
-      dot.className = 'chore-status-dot ' + status;
-
-      const info = document.createElement('div');
-      info.className = 'chore-info';
-      const assignedBadge = chore.assigned_to ? '<span class="chore-assigned">' + chore.assigned_to + '</span>' : '';
-      info.innerHTML = '<div class="chore-name">' + chore.name + '</div>' +
-        '<div class="chore-meta' + (status === 'overdue' ? ' overdue' : status === 'due' ? ' due' : '') + '">' + meta + (chore.frequency ? ' &middot; ' + chore.frequency : '') + '</div>' +
-        assignedBadge;
-
-      const doneBtn = document.createElement('button');
-      doneBtn.className = 'chore-done-btn';
-      doneBtn.textContent = status === 'done' ? 'done' : 'mark done';
-      if(status === 'done') doneBtn.style.opacity = '0.5';
-      doneBtn.onclick = function(){ markChoreDone(chore, doneBtn); };
-
-      row.appendChild(dot);
-      row.appendChild(info);
-      row.appendChild(doneBtn);
-      el.appendChild(row);
-    });
-  });
-}
 
 async function markChoreDone(chore, btn){
   btn.textContent = 'saving...';
