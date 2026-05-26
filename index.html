@@ -338,21 +338,6 @@ html,body{height:100%;background:#FAF8F4;font-family:'Nunito',sans-serif;color:v
 .scan-history-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1.5px dashed rgba(61,48,80,0.07);}
 .scan-history-item:last-child{border-bottom:none;}
 .scan-history-thumb{width:42px;height:42px;border-radius:10px;background:var(--lav-l);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px;}
-.offer-card{background:var(--pink-l);border:1.5px solid var(--pink);border-radius:var(--r-lg);padding:14px 15px;margin-bottom:8px;}
-.offer-eyebrow{font-size:10px;font-weight:900;color:var(--pink-d);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
-.offer-vendor{font-size:19px;font-weight:900;color:var(--ink);margin-bottom:6px;}
-.offer-summary{font-size:13px;font-weight:600;color:var(--ink-mid);line-height:1.55;margin-bottom:10px;}
-.offer-verdict{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.7);border-radius:var(--r-md);padding:9px 12px;margin-bottom:10px;}
-.offer-verdict-icon{font-size:18px;flex-shrink:0;}
-.offer-verdict-text{font-size:12px;font-weight:700;color:var(--ink);line-height:1.4;}
-.offer-meta{display:flex;gap:8px;flex-wrap:wrap;}
-.offer-badge{font-size:10px;font-weight:800;padding:3px 9px;border-radius:var(--r-full);background:var(--pink);color:var(--pink-d);}
-.offer-badge.exp{background:var(--mint);color:var(--mint-d);}
-.scan-history-item.offer-item .scan-history-thumb{background:var(--pink-l);color:var(--pink-d);}
-.scan-tab-toggle{display:flex;gap:6px;margin-bottom:10px;}
-.scan-tab-toggle button{flex:1;padding:7px 10px;border-radius:var(--r-full);font-size:11px;font-weight:800;border:2px solid transparent;cursor:pointer;font-family:'Nunito',sans-serif;background:var(--surface);color:var(--ink-light);transition:all 0.2s;}
-.scan-tab-toggle button.active{background:var(--axolotl);color:#fff;}
-.bill-pending-badge{display:inline-block;font-size:10px;font-weight:900;background:var(--mint);color:var(--mint-d);padding:2px 8px;border-radius:var(--r-full);margin-left:6px;vertical-align:middle;}
 .scan-oauth-setup{background:var(--lav-l);border:2px solid var(--lav);border-radius:var(--r-lg);padding:16px;margin-bottom:10px;}
 .scan-oauth-title{font-size:13px;font-weight:900;color:var(--lav-d);margin-bottom:4px;}
 .scan-oauth-sub{font-size:11px;color:var(--ink-mid);font-weight:600;line-height:1.5;margin-bottom:12px;}
@@ -799,46 +784,29 @@ html,body{height:100%;background:#FAF8F4;font-family:'Nunito',sans-serif;color:v
     <div class="scan-drop-sub" id="scan-drop-sub">camera opens automatically &middot; or choose from photos</div>
     <img id="scan-preview" class="scan-preview" alt="preview">
   </div>
-  <input type="file" id="scan-file-inp" accept="image/*" multiple style="display:none;" onchange="handleScanFileMulti(this,false)">
-  <input type="file" id="scan-file-inp-add" accept="image/*" multiple style="display:none;" onchange="handleScanFileMulti(this,true)">
+  <input type="file" id="scan-file-inp" accept="image/*" style="display:none;" onchange="handleScanFile(this,false)">
+  <input type="file" id="scan-file-inp-add" accept="image/*" multiple style="display:none;" onchange="handleScanFile(this,true)">
   <button class="scan-btn primary" id="scan-go-btn" style="display:none;" onclick="runScan()">&#10024; read with claude</button>
   <div class="scan-status" id="scan-status" style="display:none;"></div>
   <div id="scan-result-wrap" style="display:none;">
     <div class="section-head">claude read this as: <span class="scan-page-count-badge" id="sr-page-count" style="display:none;"></span></div>
-    <!-- OFFER CARD (shown only when docType=offer) -->
-    <div id="sr-offer-card" class="offer-card" style="display:none;">
-      <div class="offer-eyebrow">&#127881; offer / promotion</div>
-      <div class="offer-vendor" id="sr-offer-vendor"></div>
-      <div class="offer-summary" id="sr-offer-summary"></div>
-      <div class="offer-verdict"><span class="offer-verdict-icon" id="sr-offer-verdict-icon">🤔</span><div class="offer-verdict-text" id="sr-offer-verdict-text"></div></div>
-      <div class="offer-meta"><span class="offer-badge" id="sr-offer-expires"></span><span class="offer-badge exp" id="sr-offer-category"></span><span class="offer-badge" id="sr-offer-item-count" style="display:none;background:var(--lav);color:var(--lav-d);"></span></div>
-    </div>
-    <!-- BILL PENDING NOTICE (shown when docType is a bill type) -->
-    <div id="sr-bill-pending-notice" style="display:none;background:var(--mint-l);border:1.5px solid var(--mint);border-radius:var(--r-md);padding:10px 13px;margin-bottom:8px;">
-      <div style="font-size:12px;font-weight:900;color:var(--mint-d);">&#128467; this is a bill, not a receipt</div>
-      <div style="font-size:11px;font-weight:600;color:var(--ink-mid);margin-top:2px;">it won't hit your expenses until you mark it paid in the Bills tab.</div>
-    </div>
-    <!-- STANDARD BILL/RECEIPT FIELDS (hidden for offers) -->
-    <div class="scan-result-card" id="sr-fields-wrap">
+    <div class="scan-result-card">
       <div class="scan-result-row"><span class="scan-result-label">vendor</span><input class="scan-result-val editable" id="sr-vendor" type="text" placeholder="vendor name"></div>
       <div class="scan-result-row"><span class="scan-result-label">amount</span><div style="display:flex;align-items:center;gap:4px;"><span style="font-size:13px;color:var(--ink-light);font-weight:700;">$</span><input class="scan-result-val editable" id="sr-amount" type="number" step="0.01" placeholder="0.00"></div></div>
       <div class="scan-result-row"><span class="scan-result-label">date</span><input class="scan-result-val editable" id="sr-date" type="date"></div>
       <div class="scan-result-row"><span class="scan-result-label">category</span><select class="scan-result-val editable" id="sr-cat" style="border:none;border-bottom:1.5px dashed var(--lav-d);background:transparent;font-family:'Nunito',sans-serif;outline:none;"><option>bills</option><option>groceries</option><option>transport</option><option>health</option><option>eating out</option><option>household</option><option>personal</option><option>other</option></select></div>
-      <div class="scan-result-row"><span class="scan-result-label">type</span><select class="scan-result-val editable" id="sr-type" style="border:none;border-bottom:1.5px dashed var(--lav-d);background:transparent;font-family:'Nunito',sans-serif;outline:none;"><option value="exp">expense (paid now)</option><option value="bill">bill (not paid yet)</option><option value="inc">income</option></select></div>
+      <div class="scan-result-row"><span class="scan-result-label">type</span><select class="scan-result-val editable" id="sr-type" style="border:none;border-bottom:1.5px dashed var(--lav-d);background:transparent;font-family:'Nunito',sans-serif;outline:none;"><option value="exp">expense</option><option value="inc">income</option></select></div>
       <div class="scan-result-row" style="flex-direction:column;align-items:flex-start;gap:4px;"><span class="scan-result-label">note from claude</span><div id="sr-note" style="font-size:12px;color:var(--ink-mid);font-weight:600;line-height:1.5;"></div></div>
       <div id="sr-retention-wrap" style="padding-top:8px;"><span class="retention-badge" id="sr-retention"></span> <span class="drive-folder-badge"><span>&#128193;</span><span id="sr-folder-text"></span></span></div>
     </div>
     <div id="sr-bill-match" style="display:none;background:var(--mint-l);border:1.5px solid var(--mint);border-radius:var(--r-md);padding:11px 13px;margin-bottom:8px;">
       <div style="display:flex;align-items:flex-start;gap:9px;"><span style="font-size:15px;">&#128279;</span><div><div style="font-size:12px;font-weight:900;color:var(--ink);" id="sr-bill-match-title"></div><div style="font-size:11px;color:var(--ink-mid);font-weight:600;" id="sr-bill-match-sub"></div></div></div>
     </div>
-    <button class="scan-btn success" id="sr-confirm-btn" onclick="confirmScan()">&#10003; log it + file to drive</button>
+    <button class="scan-btn success" onclick="confirmScan()">&#10003; log it + file to drive</button>
     <button class="scan-btn secondary" onclick="resetScan()">&#8617; scan another</button>
   </div>
   <div id="scan-history-wrap" style="margin-top:4px;">
-    <div class="scan-tab-toggle">
-      <button id="sh-toggle-scans" class="active" onclick="switchScanHistoryTab('scans')">&#128196; recent scans</button>
-      <button id="sh-toggle-offers" onclick="switchScanHistoryTab('offers')">&#127881; offers inbox</button>
-    </div>
+    <div class="section-head">recent scans</div>
     <div class="card" id="scan-history-list"><div class="empty-state">no scans yet</div></div>
   </div>
 </div>
@@ -1012,7 +980,9 @@ async function loadEntries(){
   const { data, error } = await db
     .from('entries')
     .select('*')
-    .order('created_at', { ascending: false });
+    .gte('created_at', new Date(Date.now() - 90*24*60*60*1000).toISOString())
+    .order('created_at', { ascending: false })
+    .limit(500);
   if (error) throw error;
   if (data && data.length) {
     entries = data.map(e => ({
@@ -1172,7 +1142,7 @@ async function logShopAsExpense(){
 // PAID BILLS — replaces localStorage 'float-paid-bills'
 // ============================================================
 async function loadPaidBills(){
-  const { data, error } = await db.from('paid_bills').select('*');
+  const { data, error } = await db.from('paid_bills').select('*').gte('month_key', new Date().getFullYear() + '-01');
   if (error) throw error;
   paidBills = {};
   (data || []).forEach(row => {
@@ -1203,7 +1173,7 @@ async function savePaidBill(monthKey, billName, paidDate, amt, acct){
 // BILL DEPOSITS — replaces localStorage 'float-deposits'
 // ============================================================
 async function loadBillDeposits(){
-  const { data, error } = await db.from('bill_deposits').select('*');
+  const { data, error } = await db.from('bill_deposits').select('*').gte('month_key', new Date().getFullYear() + '-01');
   if (error) throw error;
   depositedItems = {};
   (data || []).forEach(row => {
@@ -2102,7 +2072,7 @@ async function askClaude(prefill) {
     input.value = '';
   } catch(err) {
     console.error('Ask Claude error:', err);
-    answerText.textContent = 'Could not connect — make sure the claude-chat Edge Function is deployed in Supabase. Error: ' + (err.message || 'unknown');
+    answerText.textContent = 'Could not connect right now — check your internet and try again.';
   }
 }
 
@@ -2130,9 +2100,9 @@ let scanResult = null;
 
 function initScanTab(){
   if(!localStorage.getItem(GDRIVE_CLIENT_ID_STORAGE)) localStorage.setItem(GDRIVE_CLIENT_ID_STORAGE, GDRIVE_CLIENT_ID_DEFAULT);
-  const hasId = !!localStorage.getItem(GDRIVE_CLIENT_ID_STORAGE);
-  document.getElementById('scan-oauth-setup').style.display = hasId ? 'none' : 'block';
-  document.getElementById('scan-drive-connected').style.display = hasId ? 'block' : 'none';
+  const hasToken = !!localStorage.getItem(GDRIVE_TOKEN_STORAGE);
+  document.getElementById('scan-oauth-setup').style.display = hasToken ? 'none' : 'block';
+  document.getElementById('scan-drive-connected').style.display = hasToken ? 'block' : 'none';
   renderScanHistory();
 }
 
@@ -2244,7 +2214,7 @@ async function runScan(){
   document.getElementById('scan-status').style.display = 'block';
   document.getElementById('scan-status').innerHTML = '<span class="spin">&#9203;</span> claude is reading ' + (scanPages.length > 1 ? scanPages.length + ' pages' : 'your bill') + '...';
 
-  const prompt = 'You are a document scanner for a personal finance app. Analyze ALL images as one document.\n\nFIRST determine the document type:\n- If it is junk mail, a promotional mailer, a coupon, a sale flyer, or any marketing offer: set docType to "offer"\n- If it is a paid receipt (grocery, gas, restaurant, retail purchase already completed): set docType to "receipt"\n- If it is an upcoming bill/statement not yet paid: set docType to the appropriate type below\n\nFor ALL documents extract:\n1. vendor: business name\n2. amount: dollar amount (0 if offer/unclear)\n3. date: YYYY-MM-DD (today if unclear)\n4. category: bills|groceries|transport|health|eating out|household|personal|mortgage|insurance|utility|tax|medical|other\n5. docType: offer|receipt|utility|insurance|tax|medical|mortgage|bills|grocery|other\n6. driveFolder: Bills & Subscriptions|Utilities|Insurance|Taxes|Medical|Mortgage & Property|Groceries & Receipts|Vehicles & Transport|Offers & Promotions|Other\n7. note: one-sentence description\n8. type: "exp" if receipt (paid now), "bill" if upcoming unpaid bill, "offer" if promotional\n\nFor OFFER documents also extract:\n9. offerSummary: 1-2 sentence plain-English summary of what the deal is\n10. offerVerdict: one sentence — is this a genuinely good deal worth saving? Be honest and direct.\n11. offerVerdictGood: true if worth saving, false if not\n12. expiresDate: YYYY-MM-DD expiration if visible, null if not\n13. offerItems: array of EVERY individual deal/product on the mailer. Extract as many as you can see. Each item:\n    { "item_name": "chicken thighs", "description": "family pack, frozen", "sale_price": 1.99, "unit": "lb", "regular_price": null, "savings_amount": null, "category": "meat" }\n    category options: meat|produce|dairy|frozen|pantry|bakery|household|personal care|clothing|electronics|other\n    unit options: lb|oz|each|pk|box|bag|gal|fl oz|ct|null\n    Use null for regular_price and savings_amount if not shown. Extract sale_price as a number, null if not a price deal.\n\nFor multi-page: synthesize all pages, extract items from every page.\nRespond ONLY with valid JSON no markdown:\n{"vendor":"","amount":0,"date":"","category":"","docType":"","driveFolder":"","note":"","type":"exp","offerSummary":"","offerVerdict":"","offerVerdictGood":false,"expiresDate":null,"offerItems":[]}';
+  const prompt = 'You are a bill/receipt scanner for a personal finance app. Analyze ALL images as one document. Extract:\n1. vendor name\n2. total amount due (number only)\n3. date (YYYY-MM-DD, today if unclear)\n4. category: bills|groceries|transport|health|eating out|household|personal|mortgage|insurance|utility|tax|medical|other\n5. docType: utility|insurance|tax|medical|mortgage|bills|grocery|other\n6. driveFolder: Bills & Subscriptions|Utilities|Insurance|Taxes|Medical|Mortgage & Property|Groceries & Receipts|Vehicles & Transport|Other\n7. one-sentence note\n8. type: exp or inc\nFor multi-page: synthesize all pages, use final total.\nRespond ONLY with valid JSON no markdown:\n{"vendor":"","amount":0,"date":"","category":"","docType":"","driveFolder":"","note":"","type":"exp"}';
 
   const blocks = scanPages.map(function(p){ return {type:'image',source:{type:'base64',media_type:p.mime,data:p.base64}}; });
   blocks.push({type:'text',text:prompt});
@@ -2261,7 +2231,13 @@ async function runScan(){
     });
     const data = await response.json();
     if(data.error) throw new Error(data.error);
-    scanResult = data;
+    // Edge function may return { result: "..." } string or already-parsed object
+    let parsed = data;
+    if(typeof data.result === 'string'){
+      try{ parsed = JSON.parse(data.result.replace(/^```json|```$/g,'').trim()); }
+      catch(e){ throw new Error('Claude returned unparseable JSON: '+data.result.slice(0,80)); }
+    }
+    scanResult = parsed;
     showScanResult(scanResult);
   } catch(err){
     console.error('Scan error:', err);
@@ -2271,47 +2247,14 @@ async function runScan(){
   }
 }
 
-// docTypes that are upcoming bills (not yet paid — don't log as expense)
-const BILL_DOC_TYPES = ['utility','insurance','tax','medical','mortgage','bills'];
-
 function showScanResult(r){
   document.getElementById('scan-status').style.display = 'none';
   document.getElementById('scan-result-wrap').style.display = 'block';
-  const isOffer = r.docType === 'offer' || r.type === 'offer';
-  const isBill = BILL_DOC_TYPES.includes(r.docType);
-
-  // Show/hide offer card vs standard fields
-  document.getElementById('sr-offer-card').style.display = isOffer ? 'block' : 'none';
-  document.getElementById('sr-fields-wrap').style.display = isOffer ? 'none' : 'block';
-  document.getElementById('sr-bill-pending-notice').style.display = (!isOffer && isBill) ? 'block' : 'none';
-  document.getElementById('sr-retention-wrap').style.display = isOffer ? 'none' : 'block';
-
-  if(isOffer){
-    document.getElementById('sr-offer-vendor').textContent = r.vendor || 'Unknown';
-    document.getElementById('sr-offer-summary').textContent = r.offerSummary || r.note || '';
-    document.getElementById('sr-offer-verdict-icon').textContent = r.offerVerdictGood ? '✅' : '🤔';
-    document.getElementById('sr-offer-verdict-text').textContent = r.offerVerdict || '';
-    const expEl = document.getElementById('sr-offer-expires');
-    expEl.textContent = r.expiresDate ? 'expires ' + r.expiresDate : 'no expiry listed';
-    document.getElementById('sr-offer-category').textContent = r.category || 'offer';
-    document.getElementById('sr-folder-text').textContent = 'Offers & Promotions';
-    document.getElementById('sr-confirm-btn').textContent = '✉️ save to offers inbox';
-    document.getElementById('sr-bill-match').style.display = 'none';
-    const itemCount = (r.offerItems && r.offerItems.length) || 0;
-    const icEl = document.getElementById('sr-offer-item-count');
-    if(itemCount > 0){ icEl.textContent = itemCount + ' deals found'; icEl.style.display = 'inline-block'; }
-    else { icEl.style.display = 'none'; }
-    return;
-  }
-
-  // Standard bill/receipt path
   document.getElementById('sr-vendor').value = r.vendor || '';
   document.getElementById('sr-amount').value = r.amount || '';
   document.getElementById('sr-date').value = r.date || new Date().toISOString().slice(0,10);
   document.getElementById('sr-cat').value = r.category || 'other';
-  // Auto-set type: bill types = "bill" (pending), receipt/grocery = "exp"
-  const autoType = isBill ? 'bill' : (r.type === 'inc' ? 'inc' : 'exp');
-  document.getElementById('sr-type').value = autoType;
+  document.getElementById('sr-type').value = r.type || 'exp';
   document.getElementById('sr-note').textContent = r.note || '';
   const rule = RETENTION_RULES[r.docType] || RETENTION_RULES.other;
   document.getElementById('sr-retention').textContent = 'keep ' + rule.keep + ' - ' + rule.shred;
@@ -2324,7 +2267,6 @@ function showScanResult(r){
   const matchEl = document.getElementById('sr-bill-match');
   if(matched){ matchEl.style.display='block'; document.getElementById('sr-bill-match-title').textContent='matches: '+matched.name; document.getElementById('sr-bill-match-sub').textContent='expected $'+matched.amt.toFixed(2)+' due day '+matched.day+' - '+matched.acct; }
   else { matchEl.style.display='none'; }
-  document.getElementById('sr-confirm-btn').textContent = isBill ? '📅 save bill (not an expense yet)' : '✓ log expense + file to drive';
 }
 
 async function uploadToDrive(base64Data, mimeType, filename, folderName){
@@ -2349,89 +2291,19 @@ async function uploadToDrive(base64Data, mimeType, filename, folderName){
 }
 
 async function confirmScan(){
-  const btn = document.getElementById('sr-confirm-btn');
-  btn.textContent = 'saving...'; btn.disabled = true;
-  const folderName = document.getElementById('sr-folder-text').textContent || 'Other';
-  const isOffer = scanResult && (scanResult.docType === 'offer' || scanResult.type === 'offer');
-
-  // ── OFFER PATH ──────────────────────────────────────────────
-  if(isOffer){
-    const vendor = scanResult.vendor || 'Unknown';
-    const token = localStorage.getItem(GDRIVE_TOKEN_STORAGE);
-    let driveResult = null;
-    if(token && scanPages.length > 0){
-      const base = (scanResult.date||new Date().toISOString().slice(0,10)) + '_offer_' + vendor.replace(/[^a-zA-Z0-9]/g,'-');
-      for(let i=0;i<scanPages.length;i++){
-        const suffix = scanPages.length>1 ? '_p'+(i+1) : '';
-        const r = await uploadToDrive(scanPages[i].base64, scanPages[i].mime||'image/jpeg', base+suffix+'.jpg', 'Offers & Promotions');
-        if(i===0) driveResult = r;
-      }
-    }
-    try {
-      // Insert parent offer row and get back its id
-      const { data: offerRow, error: offerErr } = await db.from('scan_offers').insert([{
-        vendor, category: scanResult.category||'other',
-        offer_summary: scanResult.offerSummary||scanResult.note||'',
-        offer_verdict: scanResult.offerVerdict||'',
-        verdict_good: scanResult.offerVerdictGood||false,
-        expires_date: scanResult.expiresDate||null,
-        drive_link: driveResult?driveResult.webViewLink:null,
-        pages: scanPages.length,
-        saved_at: new Date().toISOString()
-      }]).select();
-      if(offerErr) throw offerErr;
-
-      // Insert line items if Claude extracted any
-      const items = scanResult.offerItems;
-      if(items && items.length && offerRow && offerRow[0]){
-        const offerId = offerRow[0].id;
-        const rows = items.map(function(it){
-          return {
-            offer_id: offerId,
-            vendor: vendor,
-            item_name: it.item_name || '',
-            description: it.description || null,
-            sale_price: (it.sale_price != null && !isNaN(it.sale_price)) ? parseFloat(it.sale_price) : null,
-            unit: it.unit || null,
-            regular_price: (it.regular_price != null && !isNaN(it.regular_price)) ? parseFloat(it.regular_price) : null,
-            savings_amount: (it.savings_amount != null && !isNaN(it.savings_amount)) ? parseFloat(it.savings_amount) : null,
-            category: it.category || 'other',
-            expires_date: scanResult.expiresDate || null,
-            added_to_list: false
-          };
-        });
-        const { error: itemErr } = await db.from('offer_items').insert(rows);
-        if(itemErr) console.warn('offer_items insert failed', itemErr);
-      }
-    } catch(e){ console.warn('offer save failed',e); }
-    const itemCount = (scanResult.offerItems && scanResult.offerItems.length) || 0;
-    const itemLabel = itemCount > 0 ? ' · ' + itemCount + ' deals saved' : '';
-    showToast('offer saved' + itemLabel);
-    document.getElementById('s-icon').textContent = '🎉';
-    document.getElementById('s-title').textContent = 'offer saved!';
-    document.getElementById('s-sub').textContent = vendor + itemLabel + (driveResult?' - filed to Drive':'');
-    nav('success',null); resetScan();
-    return;
-  }
-
-  // ── BILL / RECEIPT PATH ──────────────────────────────────────
   const vendor = document.getElementById('sr-vendor').value;
   const amount = parseFloat(document.getElementById('sr-amount').value);
   const date = document.getElementById('sr-date').value;
   const cat = document.getElementById('sr-cat').value;
-  const type = document.getElementById('sr-type').value; // "exp", "bill", or "inc"
-  if(!amount || amount <= 0){ showToast('check the amount'); btn.textContent = 'save'; btn.disabled = false; return; }
+  const type = document.getElementById('sr-type').value;
+  const folderName = document.getElementById('sr-folder-text').textContent || 'Other';
+  if(!amount || amount <= 0){ showToast('check the amount'); return; }
+  const btn = document.querySelector('#scan-result-wrap .scan-btn.success');
+  btn.textContent = 'saving...'; btn.disabled = true;
 
-  const isBillType = type === 'bill';
+  const entry = {id:'tmp-'+Date.now(),type,amount,who:'Mary',cat,note:vendor,necessity:cat==='bills'||cat==='utility'||cat==='insurance'?100:70,date:new Date(date+'T12:00:00').toISOString()};
+  entries.unshift(entry); renderHome(); await saveEntry(entry);
 
-  // Only log to entries if it's a receipt (expense paid now) or income
-  if(!isBillType){
-    const entryType = type === 'inc' ? 'inc' : 'exp';
-    const entry = {id:'tmp-'+Date.now(),type:entryType,amount,who:'Mary',cat,note:vendor,necessity:cat==='bills'||cat==='utility'||cat==='insurance'?100:70,date:new Date(date+'T12:00:00').toISOString()};
-    entries.unshift(entry); renderHome(); await saveEntry(entry);
-  }
-
-  // Upload to Drive
   let driveResult = null;
   const token = localStorage.getItem(GDRIVE_TOKEN_STORAGE);
   if(token && scanPages.length > 0){
@@ -2443,15 +2315,13 @@ async function confirmScan(){
     }
   }
 
-  // Save to scan_history
   try {
     await db.from('scan_history').insert([{vendor,amount,date,cat,type,pages:scanPages.length,folder:folderName,drive_link:driveResult?driveResult.webViewLink:null,scanned_at:new Date().toISOString()}]);
   } catch(e){ console.warn('scan history save failed',e); }
 
-  // If it matches a known bill AND it's an expense (paid now), mark it paid
   const vl = (vendor||'').toLowerCase();
   const matched = BILLS.find(b => vl.includes(b.name.toLowerCase().split(' ')[0]) || b.name.toLowerCase().includes(vl.split(' ')[0]));
-  if(matched && !isBillType){
+  if(matched && type==='exp'){
     const mk = currentMonthKey();
     if(!paidBills[mk]) paidBills[mk]={};
     paidBills[mk][matched.name]={date,amt:amount,acct:matched.defAcct};
@@ -2460,11 +2330,10 @@ async function confirmScan(){
 
   const pl = scanPages.length>1?' ('+scanPages.length+' pages)':'';
   const dm = driveResult?' + filed to Drive':(token?' (Drive upload failed)':'');
-  const resultLabel = isBillType ? 'bill saved' : 'expense logged';
-  showToast(resultLabel+pl+dm);
-  document.getElementById('s-icon').textContent = isBillType ? '📅' : 'doc';
-  document.getElementById('s-title').textContent = isBillType ? 'bill captured!' : 'receipt logged!';
-  document.getElementById('s-sub').textContent = vendor+' - $'+amount.toFixed(2)+pl+(driveResult?' - filed to Drive':'')+(isBillType?' - mark paid in Bills tab when it clears':'');
+  showToast('logged'+pl+dm);
+  document.getElementById('s-icon').textContent = 'doc';
+  document.getElementById('s-title').textContent = 'bill scanned!';
+  document.getElementById('s-sub').textContent = vendor+' - $'+amount.toFixed(2)+pl+(driveResult?' - filed to Drive':'');
   nav('success',null); resetScan();
 }
 
@@ -2485,53 +2354,22 @@ function resetScan(){
   renderScanHistory();
 }
 
-let scanHistoryTab = 'scans';
-
-function switchScanHistoryTab(tab){
-  scanHistoryTab = tab;
-  document.getElementById('sh-toggle-scans').classList.toggle('active', tab==='scans');
-  document.getElementById('sh-toggle-offers').classList.toggle('active', tab==='offers');
-  renderScanHistory();
-}
-
 async function renderScanHistory(){
   const el = document.getElementById('scan-history-list'); if(!el) return;
   try {
-    if(scanHistoryTab === 'offers'){
-      // Join with offer_items count
-      const {data} = await db.from('scan_offers').select('*, offer_items(count)').order('saved_at',{ascending:false}).limit(20);
-      if(!data||!data.length){ el.innerHTML='<div class="empty-state">no offers saved yet — scan a mailer or promo!</div>'; return; }
-      el.innerHTML='';
-      data.forEach(function(h){
-        const row=document.createElement('div'); row.className='scan-history-item offer-item';
-        const thumb=document.createElement('div'); thumb.className='scan-history-thumb'; thumb.textContent= h.verdict_good ? '✅' : '🎁';
-        const info=document.createElement('div'); info.style.flex='1';
-        const exp = h.expires_date ? ' · expires '+h.expires_date : '';
-        const itemCount = h.offer_items ? (Array.isArray(h.offer_items) ? h.offer_items.length : (h.offer_items[0] && h.offer_items[0].count ? h.offer_items[0].count : 0)) : 0;
-        const itemBadge = itemCount > 0 ? ' <span style="background:var(--lav);color:var(--lav-d);font-size:9px;font-weight:800;padding:2px 6px;border-radius:99px;">'+itemCount+' deals</span>' : '';
-        info.innerHTML='<div style="font-size:13px;font-weight:800;color:var(--ink);">'+(h.vendor||'unknown')+itemBadge+'</div>'+
-          '<div style="font-size:11px;color:var(--ink-light);font-weight:600;">'+(h.saved_at||'').slice(0,10)+exp+'</div>'+
-          '<div style="font-size:11px;color:var(--ink-mid);font-weight:600;margin-top:2px;line-height:1.4;">'+(h.offer_summary||'')+'</div>'+
-          '<div style="font-size:11px;color:'+(h.verdict_good?'var(--lav-d)':'var(--ink-light)')+';font-weight:700;margin-top:2px;">'+(h.offer_verdict||'')+'</div>'+
-          (h.drive_link?'<a href="'+h.drive_link+'" target="_blank" style="font-size:10px;color:var(--lav-d);font-weight:800;">view original</a>':'');
-        row.appendChild(thumb); row.appendChild(info); el.appendChild(row);
-      });
-    } else {
-      const {data} = await db.from('scan_history').select('*').order('scanned_at',{ascending:false}).limit(10);
-      if(!data||!data.length){ el.innerHTML='<div class="empty-state">no scans yet</div>'; return; }
-      el.innerHTML='';
-      data.forEach(function(h){
-        const row=document.createElement('div'); row.className='scan-history-item';
-        const thumb=document.createElement('div'); thumb.className='scan-history-thumb'; thumb.textContent= h.type==='bill'?'📅':'🧾';
-        const info=document.createElement('div'); info.style.flex='1';
-        const typeLabel = h.type==='bill'?'<span class="bill-pending-badge">bill</span>':h.type==='inc'?'<span class="bill-pending-badge" style="background:var(--butter);color:var(--butter-d);">income</span>':'';
-        info.innerHTML='<div style="font-size:13px;font-weight:800;color:var(--ink);">'+(h.vendor||'unknown')+typeLabel+'</div>'+
-          '<div style="font-size:11px;color:var(--ink-light);font-weight:600;">'+(h.date||'')+' · $'+parseFloat(h.amount||0).toFixed(2)+' · '+(h.folder||'')+(h.pages>1?' · '+h.pages+' pages':'')+'</div>'+
-          (h.drive_link?'<a href="'+h.drive_link+'" target="_blank" style="font-size:10px;color:var(--lav-d);font-weight:800;">view in drive</a>':'<span style="font-size:10px;color:var(--ink-light);">not filed to drive</span>');
-        row.appendChild(thumb); row.appendChild(info); el.appendChild(row);
-      });
-    }
-  } catch(e){ el.innerHTML='<div class="empty-state">could not load history</div>'; }
+    const {data} = await db.from('scan_history').select('*').order('scanned_at',{ascending:false}).limit(10);
+    if(!data||!data.length){ el.innerHTML='<div class="empty-state">no scans yet</div>'; return; }
+    el.innerHTML='';
+    data.forEach(function(h){
+      const row=document.createElement('div'); row.className='scan-history-item';
+      const thumb=document.createElement('div'); thumb.className='scan-history-thumb'; thumb.textContent='doc';
+      const info=document.createElement('div'); info.style.flex='1';
+      info.innerHTML='<div style="font-size:13px;font-weight:800;color:var(--ink);">'+(h.vendor||'unknown')+'</div>'+
+        '<div style="font-size:11px;color:var(--ink-light);font-weight:600;">'+(h.date||'')+' - $'+parseFloat(h.amount||0).toFixed(2)+' - '+(h.folder||'')+(h.pages>1?' - '+h.pages+' pages':'')+'</div>'+
+        (h.drive_link?'<a href="'+h.drive_link+'" target="_blank" style="font-size:10px;color:var(--lav-d);font-weight:800;">view in drive</a>':'<span style="font-size:10px;color:var(--ink-light);">not filed to drive</span>');
+      row.appendChild(thumb); row.appendChild(info); el.appendChild(row);
+    });
+  } catch(e){ el.innerHTML='<div class="empty-state">no scans yet</div>'; }
 }
 
 // ============================================================
