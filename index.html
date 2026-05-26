@@ -2303,16 +2303,16 @@ async function confirmScan(){
   const folderName = document.getElementById('sr-folder-text').textContent || 'Other';
   if(!amount || amount <= 0){ showToast('check the amount'); return; }
   const btn = document.querySelector('#scan-result-wrap .scan-btn.success');
-  btn.textContent = 'saving...'; btn.disabled = true;
+  btn.textContent = 'filing...'; btn.disabled = true;
 
-  const entry = {id:'tmp-'+Date.now(),type,amount,who:'Mary',cat,note:vendor,necessity:cat==='bills'||cat==='utility'||cat==='insurance'?100:70,date:new Date(date+'T12:00:00').toISOString()};
-  entries.unshift(entry); renderHome(); await saveEntry(entry);
+  // SCAN ONLY: capture the document and file to Drive.
+  // Do NOT log as an expense or mark as paid — that happens in the Bills tab
+  // when the payment actually hits the account.
 
   let driveResult = null;
   const token = localStorage.getItem(GDRIVE_TOKEN_STORAGE);
   if(token && scanPages.length > 0){
     const base = (date||new Date().toISOString().slice(0,10)) + '_' + (vendor||'bill').replace(/[^a-zA-Z0-9]/g,'-') + '_$' + amount.toFixed(0);
-    // Always create a named subfolder per scan so files are never loose in the category folder
     const subFolder = base;
     for(let i=0;i<scanPages.length;i++){
       const filename = scanPages.length > 1 ? 'p'+(i+1)+'.jpg' : base+'.jpg';
@@ -2325,21 +2325,12 @@ async function confirmScan(){
     await db.from('scan_history').insert([{vendor,amount,date,cat,type,pages:scanPages.length,folder:folderName,drive_link:driveResult?driveResult.webViewLink:null,scanned_at:new Date().toISOString()}]);
   } catch(e){ console.warn('scan history save failed',e); }
 
-  const vl = (vendor||'').toLowerCase();
-  const matched = BILLS.find(b => vl.includes(b.name.toLowerCase().split(' ')[0]) || b.name.toLowerCase().includes(vl.split(' ')[0]));
-  if(matched && type==='exp'){
-    const mk = currentMonthKey();
-    if(!paidBills[mk]) paidBills[mk]={};
-    paidBills[mk][matched.name]={date,amt:amount,acct:matched.defAcct};
-    try{ await db.from('paid_bills').upsert([{month_key:mk,bill_name:matched.name,paid_date:date,amount,account:matched.defAcct}]); }catch(e){}
-  }
-
   const pl = scanPages.length>1?' ('+scanPages.length+' pages)':'';
-  const dm = driveResult?' + filed to Drive':(token?' (Drive upload failed)':'');
-  showToast('logged'+pl+dm);
-  document.getElementById('s-icon').textContent = 'doc';
-  document.getElementById('s-title').textContent = 'bill scanned!';
-  document.getElementById('s-sub').textContent = vendor+' - $'+amount.toFixed(2)+pl+(driveResult?' - filed to Drive':'');
+  const dm = driveResult?' — filed to Drive':(token?' (Drive upload failed)':'');
+  showToast('captured'+pl+dm);
+  document.getElementById('s-icon').textContent = '📁';
+  document.getElementById('s-title').textContent = 'bill captured!';
+  document.getElementById('s-sub').textContent = vendor+' · $'+amount.toFixed(2)+pl+(driveResult?' · filed to Drive':' · log payment in Bills when it hits');
   nav('success',null); resetScan();
 }
 
