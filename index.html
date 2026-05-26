@@ -2261,21 +2261,33 @@ function showScanResult(r){
   else { matchEl.style.display='none'; }
 }
 
-async function uploadToDrive(base64Data, mimeType, filename, folderName){
+async function getDriveFolderId(token, folderName, parentId){
+  // Find or create a folder, optionally nested inside parentId
+  const parentClause = parentId ? " and '"+parentId+"' in parents" : '';
+  const q = encodeURIComponent("name='"+folderName+"' and mimeType='application/vnd.google-apps.folder' and trashed=false"+parentClause);
+  const searchRes = await fetch('https://www.googleapis.com/drive/v3/files?q='+q+'&fields=files(id,name)',{headers:{'Authorization':'Bearer '+token}});
+  const searchData = await searchRes.json();
+  if(searchData.files && searchData.files.length > 0) return searchData.files[0].id;
+  const body = {name:folderName, mimeType:'application/vnd.google-apps.folder'};
+  if(parentId) body.parents = [parentId];
+  const cr = await fetch('https://www.googleapis.com/drive/v3/files',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  return (await cr.json()).id;
+}
+
+async function uploadToDrive(base64Data, mimeType, filename, categoryFolder, subFolder){
   const token = localStorage.getItem(GDRIVE_TOKEN_STORAGE); if(!token) return null;
   try {
-    let folderId = null;
-    const searchRes = await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent("name='"+folderName+"' and mimeType='application/vnd.google-apps.folder' and trashed=false")+'&fields=files(id,name)',{headers:{'Authorization':'Bearer '+token}});
-    const searchData = await searchRes.json();
-    if(searchData.files && searchData.files.length > 0){ folderId = searchData.files[0].id; }
-    else {
-      const cr = await fetch('https://www.googleapis.com/drive/v3/files',{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({name:folderName,mimeType:'application/vnd.google-apps.folder'})});
-      folderId = (await cr.json()).id;
-    }
+    // Build full path: Jones Household → Finances → [category] → [scan subfolder]
+    const rootId = await getDriveFolderId(token, 'Jones Household', null);
+    const financesId = await getDriveFolderId(token, 'Finances', rootId);
+    const catFolderId = await getDriveFolderId(token, categoryFolder, financesId);
+    // Get or create subfolder for this specific scan (e.g. "2025-12-31_ORNL_$916")
+    const targetFolderId = subFolder ? await getDriveFolderId(token, subFolder, catFolderId) : catFolderId;
+
     const bytes = atob(base64Data); const arr = new Uint8Array(bytes.length);
     for(let i=0;i<bytes.length;i++) arr[i]=bytes.charCodeAt(i);
     const fd = new FormData();
-    fd.append('metadata', new Blob([JSON.stringify({name:filename,parents:folderId?[folderId]:[]})],{type:'application/json'}));
+    fd.append('metadata', new Blob([JSON.stringify({name:filename,parents:[targetFolderId]})],{type:'application/json'}));
     fd.append('file', new Blob([arr],{type:mimeType}));
     const upRes = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink',{method:'POST',headers:{'Authorization':'Bearer '+token},body:fd});
     return await upRes.json();
@@ -2300,9 +2312,11 @@ async function confirmScan(){
   const token = localStorage.getItem(GDRIVE_TOKEN_STORAGE);
   if(token && scanPages.length > 0){
     const base = (date||new Date().toISOString().slice(0,10)) + '_' + (vendor||'bill').replace(/[^a-zA-Z0-9]/g,'-') + '_$' + amount.toFixed(0);
+    // Always create a named subfolder per scan so files are never loose in the category folder
+    const subFolder = base;
     for(let i=0;i<scanPages.length;i++){
-      const suffix = scanPages.length>1 ? '_p'+(i+1) : '';
-      const r = await uploadToDrive(scanPages[i].base64, scanPages[i].mime||'image/jpeg', base+suffix+'.jpg', folderName);
+      const filename = scanPages.length > 1 ? 'p'+(i+1)+'.jpg' : base+'.jpg';
+      const r = await uploadToDrive(scanPages[i].base64, scanPages[i].mime||'image/jpeg', filename, folderName, subFolder);
       if(i===0) driveResult = r;
     }
   }
