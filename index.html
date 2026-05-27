@@ -2133,9 +2133,9 @@ let scanResult = null;
 
 function initScanTab(){
   if(!localStorage.getItem(GDRIVE_CLIENT_ID_STORAGE)) localStorage.setItem(GDRIVE_CLIENT_ID_STORAGE, GDRIVE_CLIENT_ID_DEFAULT);
-  const hasToken = !!localStorage.getItem(GDRIVE_TOKEN_STORAGE);
-  document.getElementById('scan-oauth-setup').style.display = hasToken ? 'none' : 'block';
-  document.getElementById('scan-drive-connected').style.display = hasToken ? 'block' : 'none';
+  const valid = isDriveTokenValid();
+  document.getElementById('scan-oauth-setup').style.display = valid ? 'none' : 'block';
+  document.getElementById('scan-drive-connected').style.display = valid ? 'block' : 'none';
   renderScanHistory();
 }
 
@@ -2149,27 +2149,62 @@ function saveOAuthClientId(){
 function disconnectDrive(){
   localStorage.removeItem(GDRIVE_CLIENT_ID_STORAGE);
   localStorage.removeItem(GDRIVE_TOKEN_STORAGE);
+  localStorage.removeItem('float-gdrive-token-expiry');
+  localStorage.removeItem('float-gdrive-who');
   initScanTab(); showToast('drive disconnected');
 }
 
 function triggerGoogleAuth(){
-  const clientId = localStorage.getItem(GDRIVE_CLIENT_ID_STORAGE); if(!clientId) return;
-  const url = 'https://accounts.google.com/o/oauth2/v2/auth' +
-    '?client_id=' + encodeURIComponent(clientId) +
-    '&redirect_uri=' + encodeURIComponent('https://mmmhomestuff.github.io/FloatApp') +
-    '&response_type=token' +
-    '&scope=' + encodeURIComponent('https://www.googleapis.com/auth/drive.file');
-  window.open(url, '_blank');
-  showToast('sign in to Google in the new tab, then come back');
+  // Use the Edge Function login — handles refresh tokens so Drive stays connected permanently
+  window.location.href = 'https://mpwnbsztpulwwmtuabtd.supabase.co/functions/v1/google-auth?action=login&who=Mary';
 }
 
 function checkOAuthCallback(){
+  // Edge Function redirects back with ?drive_connected=Mary after successful auth
+  const params = new URLSearchParams(window.location.search);
+  const who = params.get('drive_connected');
+  if(who){
+    localStorage.setItem('float-gdrive-who', who);
+    localStorage.setItem(GDRIVE_TOKEN_STORAGE, 'server'); // sentinel — real token fetched server-side
+    localStorage.removeItem('float-gdrive-token-expiry'); // not needed anymore, server handles it
+    // Clean up URL
+    const clean = window.location.pathname;
+    window.history.replaceState({}, '', clean);
+    showToast('Google Drive connected! ✓');
+    initScanTab();
+  }
+  // Legacy implicit flow fallback (old tokens)
   const hash = window.location.hash;
   if(hash && hash.includes('access_token')){
-    const params = new URLSearchParams(hash.substring(1));
-    const token = params.get('access_token');
-    if(token){ localStorage.setItem(GDRIVE_TOKEN_STORAGE, token); window.location.hash = ''; showToast('Google Drive connected!'); initScanTab(); }
+    const hp = new URLSearchParams(hash.substring(1));
+    const token = hp.get('access_token');
+    const expiresIn = parseInt(hp.get('expires_in') || '3600');
+    if(token){
+      localStorage.setItem(GDRIVE_TOKEN_STORAGE, token);
+      localStorage.setItem('float-gdrive-token-expiry', Date.now() + (expiresIn * 1000));
+      window.location.hash = '';
+      showToast('Google Drive connected!');
+      initScanTab();
+    }
   }
+}
+
+function isDriveTokenValid(){
+  const token = localStorage.getItem(GDRIVE_TOKEN_STORAGE);
+  if(!token) return false;
+  if(token === 'server') return true; // server-side flow — Edge Function handles expiry
+  const expiry = localStorage.getItem('float-gdrive-token-expiry');
+  if(!expiry) return true;
+  return Date.now() < (parseInt(expiry) - 120000);
+}
+
+function promptDriveReconnect(){
+  localStorage.removeItem(GDRIVE_TOKEN_STORAGE);
+  localStorage.removeItem('float-gdrive-token-expiry');
+  localStorage.removeItem('float-gdrive-who');
+  initScanTab();
+  showToast('Drive session expired — reconnecting...');
+  setTimeout(triggerGoogleAuth, 800);
 }
 
 function triggerScanInput(){ document.getElementById('scan-file-inp').click(); }
@@ -2334,8 +2369,31 @@ function showScanResult(r){
   else { matchEl.style.display='none'; }
 }
 
+async function getValidDriveToken(){
+  const stored = localStorage.getItem(GDRIVE_TOKEN_STORAGE);
+  if(!stored) return null;
+  if(stored !== 'server'){
+    // Legacy implicit flow token
+    if(!isDriveTokenValid()){ promptDriveReconnect(); return null; }
+    return stored;
+  }
+  // Server flow — ask Edge Function for a fresh token
+  const who = localStorage.getItem('float-gdrive-who') || 'Mary';
+  try {
+    const res = await fetch('https://mpwnbsztpulwwmtuabtd.supabase.co/functions/v1/google-auth?action=token&who=' + encodeURIComponent(who), {
+      headers: { 'Authorization': 'Bearer sb_publishable_wKtxou7d4xd9eVomBOBC1A_KjTpmtVa' }
+    });
+    const data = await res.json();
+    if(data.error === 'not_connected' || data.error === 'refresh_failed'){
+      promptDriveReconnect(); return null;
+    }
+    return data.access_token || null;
+  } catch(e){ console.error('token fetch failed', e); return null; }
+}
+
 async function uploadToDrive(base64Data, mimeType, filename, folderName){
-  const token = localStorage.getItem(GDRIVE_TOKEN_STORAGE); if(!token) return null;
+  if(!isDriveTokenValid()){ promptDriveReconnect(); return null; }
+  const token = await getValidDriveToken(); if(!token) return null;
   try {
     let folderId = null;
     const searchRes = await fetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent("name='"+folderName+"' and mimeType='application/vnd.google-apps.folder' and trashed=false")+'&fields=files(id,name)',{headers:{'Authorization':'Bearer '+token}});
