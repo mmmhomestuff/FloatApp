@@ -2188,25 +2188,154 @@ function renderChores(){
     row.className = 'chore-row';
     row.innerHTML = '<div class="chore-blob">'+icon+'</div><div class="chore-info"><div class="chore-name">'+(c.chore||'chore')+'</div><div class="chore-meta">'+dateStr+' &middot; '+timeStr+'</div></div><span class="chore-who'+(isGarrett?' garrett':'')+'">'+( c.who||'Mary')+'</span>';
 
-    // Long press → Notion tooltip
+    // Long press → delete / edit actions
     let pressTimer = null;
-    const showTip = function(e){
-      const touch = e.touches ? e.touches[0] : e;
-      showChoreNotionTip(c, touch.clientX, touch.clientY);
+    const startPress = function(e){
+      pressTimer = setTimeout(function(){ showChoreActions(c, row); }, 500);
     };
-    row.addEventListener('touchstart', function(e){
-      pressTimer = setTimeout(function(){ showTip(e); }, 600);
-    }, {passive:true});
-    row.addEventListener('touchend', function(){ clearTimeout(pressTimer); }, {passive:true});
-    row.addEventListener('touchmove', function(){ clearTimeout(pressTimer); }, {passive:true});
-    row.addEventListener('mousedown', function(e){ pressTimer = setTimeout(function(){ showTip(e); }, 600); });
-    row.addEventListener('mouseup', function(){ clearTimeout(pressTimer); });
-    row.addEventListener('mouseleave', function(){ clearTimeout(pressTimer); });
+    const cancelPress = function(){ clearTimeout(pressTimer); };
+    row.addEventListener('touchstart', startPress, {passive:true});
+    row.addEventListener('touchend', cancelPress, {passive:true});
+    row.addEventListener('touchmove', cancelPress, {passive:true});
+    row.addEventListener('mousedown', startPress);
+    row.addEventListener('mouseup', cancelPress);
+    row.addEventListener('mouseleave', cancelPress);
     el.appendChild(row);
   });
 }
 
 const NOTION_DB_URL = 'https://www.notion.so/6b3843b6a1f24f62b1d4e5003c0d01b8';
+
+// ── ADD CHORE MODAL ──────────────────────────────────────────────────────────
+function showAddChore(){
+  const existing = document.getElementById('add-chore-modal');
+  if(existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.id = 'add-chore-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(74,63,47,0.45);z-index:9999;display:flex;align-items:flex-end;justify-content:center;';
+  modal.innerHTML = `
+    <div style="background:#FFFBF7;border-radius:28px 28px 0 0;border:2.5px solid #D4A57D;border-bottom:none;padding:24px 20px 40px;width:100%;max-width:430px;box-shadow:0 -8px 32px rgba(212,165,125,0.2);">
+      <div style="width:40px;height:4px;background:#D4A57D;border-radius:99px;margin:0 auto 20px;opacity:0.5;"></div>
+      <div style="font-size:16px;font-weight:900;color:#4A3F2F;margin-bottom:4px;">Add Chore</div>
+      <div style="font-size:11px;color:#7A6A4A;font-weight:700;margin-bottom:18px;text-transform:uppercase;letter-spacing:0.07em;">Define a chore · assign an NFC tag</div>
+
+      <div style="margin-bottom:12px;">
+        <div style="font-size:10px;font-weight:900;color:#6A7A5A;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Chore name</div>
+        <input id="add-chore-name" type="text" placeholder="e.g. cat box, dog food, dishes..." style="width:100%;background:#FFF9F1;border:2px solid #D4A57D;border-radius:16px;padding:11px 14px;font-size:14px;font-weight:700;color:#4A3F2F;font-family:Nunito,sans-serif;outline:none;">
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <div style="font-size:10px;font-weight:900;color:#6A7A5A;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Assigned to</div>
+        <div style="display:flex;gap:8px;">
+          <button id="chore-assign-mary" onclick="choreAssign('Mary')" style="flex:1;padding:10px;border-radius:14px;border:2px solid #D4A57D;background:#FFF5E8;color:#6A7A5A;font-size:13px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;transition:all 0.18s;">Mary</button>
+          <button id="chore-assign-garrett" onclick="choreAssign('Garrett')" style="flex:1;padding:10px;border-radius:14px;border:2px solid #BED2BA;background:#F5FBF1;color:#6A7A5A;font-size:13px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;transition:all 0.18s;">Garrett</button>
+          <button id="chore-assign-both" onclick="choreAssign('Both')" style="flex:1;padding:10px;border-radius:14px;border:2px solid #AAC4BC;background:#EDF4F2;color:#6A7A5A;font-size:13px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;transition:all 0.18s;">Both</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <div style="font-size:10px;font-weight:900;color:#6A7A5A;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Frequency</div>
+        <select id="add-chore-freq" style="width:100%;background:#FFF9F1;border:2px solid #D4A57D;border-radius:16px;padding:11px 14px;font-size:13px;font-weight:700;color:#4A3F2F;font-family:Nunito,sans-serif;outline:none;appearance:none;-webkit-appearance:none;">
+          <option value="daily">Daily</option>
+          <option value="every_2_days">Every 2 days</option>
+          <option value="weekly">Weekly</option>
+          <option value="as_needed">As needed</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:20px;">
+        <div style="font-size:10px;font-weight:900;color:#6A7A5A;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">NFC Tag ID <span style="font-weight:600;color:#A89884;text-transform:none;letter-spacing:0;">(scan tag or enter manually)</span></div>
+        <div style="display:flex;gap:8px;">
+          <input id="add-chore-nfc" type="text" placeholder="e.g. cat-box-laundry-room" style="flex:1;background:#FFF9F1;border:2px solid #D4A57D;border-radius:16px;padding:11px 14px;font-size:13px;font-weight:700;color:#4A3F2F;font-family:Nunito,sans-serif;outline:none;">
+        </div>
+        <div style="font-size:10px;color:#A89884;font-weight:600;margin-top:6px;">This is the <code>?chore=</code> value in your NFC tag URL — e.g. <code>mmmhomestuff.github.io/FloatApp?chore=cat+box</code></div>
+      </div>
+
+      <div style="display:flex;gap:10px;">
+        <button onclick="saveNewChore()" style="flex:1;padding:14px;border-radius:var(--r-full);background:linear-gradient(135deg,#8DAF9B 0%,#6A9E82 100%);border:none;color:#fff;font-size:14px;font-weight:900;cursor:pointer;font-family:Nunito,sans-serif;box-shadow:0 4px 12px rgba(106,158,130,0.2);">Save Chore</button>
+        <button onclick="document.getElementById('add-chore-modal').remove()" style="padding:14px 20px;border-radius:var(--r-full);border:2px solid #D4A57D;background:transparent;color:#6A7A5A;font-size:14px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;">Cancel</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', function(e){ if(e.target === modal) modal.remove(); });
+  setTimeout(function(){ document.getElementById('add-chore-name').focus(); }, 100);
+}
+
+let _choreAssignedTo = 'Mary';
+function choreAssign(who){
+  _choreAssignedTo = who;
+  ['Mary','Garrett','Both'].forEach(function(w){
+    const btn = document.getElementById('chore-assign-'+w.toLowerCase());
+    if(!btn) return;
+    btn.style.background = w === who ? '#8DAF9B' : (w === 'Garrett' ? '#F5FBF1' : w === 'Both' ? '#EDF4F2' : '#FFF5E8');
+    btn.style.color = w === who ? '#fff' : '#6A7A5A';
+  });
+}
+
+async function saveNewChore(){
+  const name = (document.getElementById('add-chore-name').value || '').trim();
+  if(!name){ showToast('please enter a chore name'); return; }
+  const freq = document.getElementById('add-chore-freq').value;
+  const nfcTag = (document.getElementById('add-chore-nfc').value || '').trim();
+  try{
+    await db.from('chores').insert([{
+      chore: name,
+      who: _choreAssignedTo,
+      frequency: freq,
+      nfc_tag: nfcTag || null,
+      logged_at: new Date().toISOString()
+    }]);
+    document.getElementById('add-chore-modal').remove();
+    showToast('chore added! place NFC tag → point to ?chore='+encodeURIComponent(name));
+    loadChores();
+  } catch(e){
+    showToast('error saving chore: ' + (e.message || 'unknown error'));
+  }
+}
+
+// ── CHORE LONG-PRESS → DELETE / EDIT ────────────────────────────────────────
+function showChoreActions(chore, row){
+  hideChoreActions();
+  const overlay = document.createElement('div');
+  overlay.id = 'chore-action-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(74,63,47,0.25);z-index:9998;';
+  overlay.onclick = hideChoreActions;
+  document.body.appendChild(overlay);
+
+  const menu = document.createElement('div');
+  menu.id = 'chore-action-menu';
+  const rect = row.getBoundingClientRect();
+  menu.style.cssText = 'position:fixed;left:'+Math.min(rect.left, window.innerWidth - 200)+'px;top:'+(rect.top - 10)+'px;background:#FFFBF7;border:2.5px solid #D4A57D;border-radius:18px;padding:8px;display:flex;gap:6px;z-index:9999;box-shadow:0 8px 24px rgba(212,165,125,0.25);transform:translateY(-100%);';
+  menu.innerHTML = `
+    <button onclick="editChore('${chore.id}','${(chore.chore||'').replace(/'/g,'\\\'')}')" style="display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:12px;border:2px solid #AAC4BC;background:#EDF4F2;color:#3D7268;font-size:12px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;">✏️ Edit</button>
+    <button onclick="deleteChore('${chore.id}')" style="display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:12px;border:2px solid #E0A5A5;background:#FDF0F3;color:#C47080;font-size:12px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;">✕ Delete</button>`;
+  document.body.appendChild(menu);
+  if(navigator.vibrate) navigator.vibrate(30);
+}
+
+function hideChoreActions(){
+  const o = document.getElementById('chore-action-overlay'); if(o) o.remove();
+  const m = document.getElementById('chore-action-menu'); if(m) m.remove();
+}
+
+async function deleteChore(id){
+  hideChoreActions();
+  if(!id){ showToast('cannot delete — no id'); return; }
+  try{
+    await db.from('chores').delete().eq('id', id);
+    showToast('chore deleted');
+    loadChores();
+  } catch(e){ showToast('error deleting chore'); }
+}
+
+function editChore(id, currentName){
+  hideChoreActions();
+  const newName = prompt('Edit chore name:', currentName);
+  if(!newName || !newName.trim()) return;
+  db.from('chores').update({ chore: newName.trim() }).eq('id', id)
+    .then(function(){ showToast('chore updated!'); loadChores(); })
+    .catch(function(){ showToast('error updating chore'); });
+}
 
 function showChoreNotionTip(chore, x, y){
   hideChoreNotionTip();
@@ -2424,9 +2553,9 @@ let scanResult = null;
 
 function initScanTab(){
   if(!localStorage.getItem(GDRIVE_CLIENT_ID_STORAGE)) localStorage.setItem(GDRIVE_CLIENT_ID_STORAGE, GDRIVE_CLIENT_ID_DEFAULT);
-  const hasId = !!localStorage.getItem(GDRIVE_CLIENT_ID_STORAGE);
-  document.getElementById('scan-oauth-setup').style.display = hasId ? 'none' : 'block';
-  document.getElementById('scan-drive-connected').style.display = hasId ? 'block' : 'none';
+  const hasToken = !!localStorage.getItem(GDRIVE_TOKEN_STORAGE);
+  document.getElementById('scan-oauth-setup').style.display = hasToken ? 'none' : 'block';
+  document.getElementById('scan-drive-connected').style.display = hasToken ? 'block' : 'none';
   renderScanHistory();
 }
 
@@ -2465,6 +2594,8 @@ function checkOAuthCallback(){
 
 function triggerScanInput(){ document.getElementById('scan-file-inp').click(); }
 function triggerAddPage(){ document.getElementById('scan-file-inp-add').click(); }
+
+function handleScanFileMulti(input, isAddPage){ return handleScanFile(input, isAddPage); }
 
 function handleScanFile(input, isAddPage){
   const file = input.files[0]; if(!file) return;
