@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Float">
+<title>Float — Chore Log</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;background:linear-gradient(135deg,#FBF5ED 0%,#FDF8F2 100%);font-family:'Nunito',sans-serif;display:flex;align-items:center;justify-content:center;}
+.card{background:#FFFBF7;border-radius:32px;border:2.5px solid #D4A57D;padding:40px 28px 36px;width:90%;max-width:360px;text-align:center;box-shadow:0 12px 40px rgba(212,165,125,0.2);}
+.chore-icon{font-size:64px;margin-bottom:16px;animation:pop 0.4s cubic-bezier(0.34,1.56,0.64,1);}
+@keyframes pop{from{transform:scale(0);}to{transform:scale(1);}}
+.chore-name{font-size:22px;font-weight:900;color:#4A3F2F;margin-bottom:6px;line-height:1.2;}
+.chore-label{font-size:12px;font-weight:700;color:#A89884;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:32px;}
+.q{font-size:14px;font-weight:800;color:#6A7A5A;margin-bottom:16px;text-transform:uppercase;letter-spacing:0.06em;}
+.btns{display:flex;gap:12px;}
+.btn{flex:1;padding:18px 12px;border-radius:20px;border:2.5px solid;font-size:16px;font-weight:900;cursor:pointer;font-family:'Nunito',sans-serif;transition:all 0.2s cubic-bezier(0.34,1.56,0.64,1);display:flex;flex-direction:column;align-items:center;gap:6px;}
+.btn:active{transform:scale(0.93);}
+.btn-mary{background:linear-gradient(135deg,#FFF5E8,#FFF0DC);border-color:#D4A57D;color:#6A7A5A;}
+.btn-garrett{background:linear-gradient(135deg,#F5FBF1,#F0F7E8);border-color:#BED2BA;color:#4A6B46;}
+.btn-emoji{font-size:28px;}
+
+/* Success state */
+.success{display:none;flex-direction:column;align-items:center;padding:40px 28px 36px;}
+.success-icon{font-size:80px;animation:pop 0.5s cubic-bezier(0.34,1.56,0.64,1);}
+.success-title{font-size:24px;font-weight:900;color:#4A3F2F;margin:16px 0 6px;}
+.success-sub{font-size:13px;font-weight:700;color:#A89884;margin-bottom:24px;}
+.success-open{padding:14px 28px;border-radius:999px;background:linear-gradient(135deg,#8DAF9B,#6A9E82);border:none;color:#fff;font-size:14px;font-weight:900;cursor:pointer;font-family:'Nunito',sans-serif;box-shadow:0 4px 16px rgba(106,158,130,0.25);}
+
+/* Loading state */
+.loading{font-size:13px;font-weight:700;color:#A89884;margin-top:16px;display:none;}
+.spin{display:inline-block;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* Error state */
+.error-msg{font-size:12px;color:#C47080;font-weight:700;margin-top:12px;display:none;}
+</style>
+</head>
+<body>
+<div class="card" id="main-card">
+  <div class="chore-icon" id="chore-icon">🧹</div>
+  <div class="chore-name" id="chore-name">—</div>
+  <div class="chore-label">tap to log</div>
+  <div class="q">who did this?</div>
+  <div class="btns">
+    <button class="btn btn-mary" onclick="log('Mary')">
+      <span class="btn-emoji">🌸</span>
+      Mary
+    </button>
+    <button class="btn btn-garrett" onclick="log('Garrett')">
+      <span class="btn-emoji">🌿</span>
+      Garrett
+    </button>
+  </div>
+  <div class="loading" id="loading"><span class="spin">⏳</span> saving...</div>
+  <div class="error-msg" id="error-msg">couldn't save — try again</div>
+</div>
+
+<div class="card success" id="success-card">
+  <span class="success-icon" id="success-icon">✅</span>
+  <div class="success-title" id="success-title">done!</div>
+  <div class="success-sub" id="success-sub"></div>
+  <button class="success-open" onclick="window.location.href='./index.html'">open float →</button>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://mpwnbsztpulwwmtuabtd.supabase.co';
+const ANON_KEY = 'sb_publishable_wKtxou7d4xd9eVomBOBC1A_KjTpmtVa';
+const EDGE_URL = SUPABASE_URL + '/functions/v1/chore-reminder?action=log';
+
+// Icon map — expand as you add chores
+const ICONS = {
+  'cat box':'🐱','litter box':'🐱',
+  'dozer - dog food':'🐕','dozer dog food':'🐕','dozer':'🐕',
+  'bo - cat food':'🐈','bo cat food':'🐈','bo':'🐈',
+  'toast - cat food':'🐈','toast cat food':'🐈','toast':'🐈',
+  'start laundry':'👕','laundry':'👕',
+  'start dishwasher':'🍽️','dishes':'🍽️',
+  'trash':'🗑️','vacuum':'🧹','sweep':'🧹','mop':'🫧'
+};
+
+// Read chore name from URL
+const params = new URLSearchParams(window.location.search);
+const choreName = decodeURIComponent(params.get('chore') || '').replace(/\+/g,' ').trim();
+
+if(!choreName){
+  document.getElementById('chore-name').textContent = 'no chore specified';
+} else {
+  document.getElementById('chore-name').textContent = choreName;
+  const key = choreName.toLowerCase();
+  const icon = Object.entries(ICONS).find(([k]) => key.includes(k))?.[1] || '🧹';
+  document.getElementById('chore-icon').textContent = icon;
+}
+
+// Haptic feedback
+function haptic(){ if(navigator.vibrate) navigator.vibrate([10,50,20]); }
+
+async function log(who){
+  if(!choreName) return;
+  haptic();
+
+  // Disable buttons
+  document.querySelectorAll('.btn').forEach(b => b.disabled = true);
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('error-msg').style.display = 'none';
+
+  try {
+    const res = await fetch(EDGE_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + ANON_KEY
+      },
+      body: JSON.stringify({
+        chore: choreName,
+        who,
+        logged_at: new Date().toISOString()
+      })
+    });
+
+    if(!res.ok) throw new Error('edge function error ' + res.status);
+
+    // Show success
+    const key = choreName.toLowerCase();
+    const icon = Object.entries(ICONS).find(([k]) => key.includes(k))?.[1] || '✅';
+    document.getElementById('success-icon').textContent = icon;
+    document.getElementById('success-title').textContent = choreName + ' done!';
+    document.getElementById('success-sub').textContent = who + ' · ' + new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+    document.getElementById('main-card').style.display = 'none';
+    document.getElementById('success-card').style.display = 'flex';
+    if(navigator.vibrate) navigator.vibrate([10,50,20]);
+
+    // Auto-close back to Float after 3 seconds if opened from NFC
+    setTimeout(function(){
+      window.location.href = './index.html';
+    }, 3000);
+
+  } catch(e) {
+    console.error('log error:', e);
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('error-msg').style.display = 'block';
+    document.querySelectorAll('.btn').forEach(b => b.disabled = false);
+  }
+}
+</script>
+</body>
+</html>

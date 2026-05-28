@@ -106,6 +106,23 @@ html,body{height:100%;background:linear-gradient(135deg, #FBF5ED 0%, #FDF8F2 100
 .entry-nec{font-size:10px;color:var(--ink-light);margin-top:1px;text-align:right;font-weight:700;}
 .del-btn{background:none;border:none;cursor:pointer;color:var(--ink-light);font-size:14px;padding:6px;border-radius:8px;}
 .empty-state{text-align:center;padding:24px;color:var(--ink-light);font-size:13px;font-weight:700;}
+.task-filter{padding:7px 14px;border-radius:var(--r-full);font-size:11px;font-weight:800;cursor:pointer;border:2px solid #D4A57D;background:linear-gradient(135deg,#FFF9F1,#FFF5E8);color:#6A7A5A;white-space:nowrap;transition:all 0.18s cubic-bezier(0.34,1.56,0.64,1);font-family:Nunito,sans-serif;}
+.task-filter.active{background:linear-gradient(135deg,#8DAF9B,#6A9E82);color:#fff;border-color:#6A9E82;box-shadow:0 4px 12px rgba(106,158,130,0.2);}
+.task-card{background:linear-gradient(135deg,#FFFBF7,#FEF9F4);border-radius:18px;border:2px solid #D4A57D;padding:13px 14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(212,165,125,0.1);transition:all 0.2s;}
+.task-card.done{opacity:0.55;border-color:#BED2BA;}
+.task-card-top{display:flex;align-items:flex-start;gap:10px;}
+.task-check{width:24px;height:24px;border-radius:8px;border:2.5px solid #D4A57D;background:#FFF9F1;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all 0.2s cubic-bezier(0.34,1.56,0.64,1);margin-top:1px;}
+.task-check.checked{background:linear-gradient(135deg,#8DAF9B,#6A9E82);border-color:#6A9E82;}
+.task-check.checked::after{content:'✓';color:#fff;font-size:13px;font-weight:900;}
+.task-name{font-size:13px;font-weight:800;color:#4A3F2F;line-height:1.3;flex:1;}
+.task-name.done{text-decoration:line-through;color:#A89884;}
+.task-meta{display:flex;gap:8px;margin-top:6px;margin-left:34px;flex-wrap:wrap;align-items:center;}
+.task-pill{padding:3px 10px;border-radius:99px;font-size:10px;font-weight:800;}
+.task-pill.who{background:rgba(212,165,125,0.15);color:#7A6A4A;border:1.5px solid rgba(212,165,125,0.3);}
+.task-pill.cost{background:rgba(196,112,128,0.12);color:#C47080;border:1.5px solid rgba(196,112,128,0.25);}
+.task-pill.note{background:rgba(190,210,186,0.2);color:#4A6B46;border:1.5px solid rgba(190,210,186,0.3);}
+.task-actions{display:flex;gap:6px;margin-left:auto;}
+.task-del-btn{width:28px;height:28px;border-radius:8px;border:1.5px solid #E0A5A5;background:#FDF0F3;color:#C47080;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .bun-container{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px;background:linear-gradient(135deg,var(--axolotl-l) 0%,var(--peach-l) 100%);border-radius:var(--r-lg);margin-bottom:10px;text-align:center;border:2px solid rgba(61,48,80,0.06);}
 .bun-image{width:70px;height:70px;display:flex;align-items:center;justify-content:center;}
 .bun-image img{width:100%;height:100%;object-fit:contain;}
@@ -263,22 +280,37 @@ html,body{height:100%;background:linear-gradient(135deg, #FBF5ED 0%, #FDF8F2 100
 .cal-dow-row{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:6px;}
 .cal-dow-row span{text-align:center;font-size:10px;font-weight:900;color:var(--ink-light);text-transform:uppercase;letter-spacing:0.04em;padding:4px 0;}
 .cal-days-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
-.cal-day-cell{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:var(--r-md);cursor:pointer;position:relative;transition:all 0.18s cubic-bezier(0.34,1.56,0.64,1);}
-.cal-day-cell:active{transform:scale(0.88);}
-.cal-day-cell.other-month .cal-day-num{color:var(--ink-light);opacity:0.35;}
-.cal-day-cell.today{background:var(--axolotl);border-radius:50%;}
-.cal-day-cell.today .cal-day-num{color:#fff;font-weight:900;}
-.cal-day-cell.selected{background:var(--lav-l);border-radius:50%;}
-.cal-day-cell.selected .cal-day-num{color:var(--lav-d);font-weight:900;}
-.cal-day-num{font-size:13px;font-weight:700;color:var(--ink);line-height:1;}
-.cal-day-dots{display:flex;gap:2px;margin-top:2px;flex-wrap:wrap;justify-content:center;max-width:24px;}
+.cal-day-cell{min-height:38px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;padding:3px 2px;transition:all 0.15s;border-radius:10px;}
+
+.cal-day-cell:active{transform:scale(0.88);background:rgba(212,165,125,0.15);}
+
+.cal-day-cell.today .cal-day-num{background:linear-gradient(135deg,#8DAF9B,#6A9E82);color:#fff;border-radius:8px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:900;}
+
+.cal-day-cell.selected{background:rgba(212,165,125,0.2);}
+
+.cal-day-cell.selected .cal-day-num{color:#4A3F2F;font-weight:900;}
+
+.cal-day-cell.other-month .cal-day-num{color:rgba(74,63,47,0.25);}
+
+.cal-day-num{font-size:12px;font-weight:700;color:#4A3F2F;width:26px;height:26px;display:flex;align-items:center;justify-content:center;}
+
+.cal-day-dots{display:flex;gap:2px;justify-content:center;margin-top:2px;flex-wrap:wrap;max-width:22px;}
+
 .cal-day-dot{width:4px;height:4px;border-radius:50%;flex-shrink:0;}
-.cal-day-dot.bill{background:var(--pink-d);}
-.cal-day-dot.birthday{background:var(--mint-d);}
-.cal-day-dot.event{background:var(--lav-d);}
-.cal-day-dot.reminder{background:var(--peach-d);}
-.cal-day-dot.holiday{background:var(--butter-d);}
-.cal-day-dot.goal{background:var(--axolotl);}
+
+.cal-day-dot.bill{background:#C47080;}
+
+.cal-day-dot.birthday{background:#8A7020;}
+
+.cal-day-dot.event{background:#3D7268;}
+
+.cal-day-dot.reminder{background:#D4A57D;}
+
+.cal-day-dot.holiday{background:#6A7A5A;}
+
+.cal-day-dot.goal{background:#AAC4BC;}
+
+
 /* Day events panel */
 .cal-day-events-head{font-size:12px;font-weight:900;color:var(--ink-mid);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;}
 .cal-day-event-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface);border-radius:var(--r-lg);margin-bottom:6px;border:1px solid rgba(61,48,80,0.06);box-shadow:0 1px 3px rgba(0,0,0,0.02);}
@@ -504,12 +536,13 @@ html,body{height:100%;background:linear-gradient(135deg, #FBF5ED 0%, #FDF8F2 100
 <div class="bubble-nav">
   <div class="bnav-primary">
     <button class="bnav active" onclick="nav('home',this)">&#127968; home</button>
-    <button class="bnav" onclick="nav('bills',this)">&#128197; bills</button>
+    <button class="bnav" onclick="nav('chores',this)">&#129529; chores</button>
+    <button class="bnav" onclick="nav('tasks',this)">&#9989; tasks</button>
     <button class="bnav" onclick="nav('calendar',this)">&#128467; calendar</button>
-    <button class="bnav" onclick="nav('shop',this)">&#128722; shopping</button>
   </div>
   <div class="bnav-secondary">
-    <button class="bnav sm" onclick="nav('chores',this)">&#129529; chores</button>
+    <button class="bnav sm" onclick="nav('bills',this)">&#128197; bills</button>
+    <button class="bnav sm" onclick="nav('shop',this)">&#128722; shopping</button>
     <button class="bnav sm" onclick="nav('score',this)">&#127942; score</button>
     <button class="bnav sm" onclick="nav('dashboard',this)">&#128202; stats</button>
     <button class="bnav sm" onclick="nav('scan',this)">&#128247; scan</button>
@@ -741,39 +774,51 @@ html,body{height:100%;background:linear-gradient(135deg, #FBF5ED 0%, #FDF8F2 100
 <div id="calendar" class="screen">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;margin-bottom:12px;">
     <div class="section-head" style="margin:0;">family calendar</div>
-    <button class="cal-add-btn" onclick="showAddCalEvent()">+ add date</button>
+    <button class="cal-add-btn" onclick="showAddCalEvent()">+ add event</button>
   </div>
-  <div style="margin-bottom:12px;">
-    <div class="ig-eyebrow" style="margin-bottom:8px;">savings goals</div>
-    <div id="goals-list"></div>
-  </div>
-  <!-- Month grid -->
-  <div class="cal-grid-card">
-    <div class="cal-grid-header">
-      <button class="cal-nav-btn" onclick="calPrevMonth()">&#8249;</button>
-      <div class="cal-month-title" id="cal-month-title">May 2026</div>
-      <button class="cal-nav-btn" onclick="calNextMonth()">&#8250;</button>
+
+  <!-- Calendar widget -->
+  <div style="background:linear-gradient(135deg,#FFF5EB,#FFEFD8);border-radius:24px;border:2.5px solid #D4A57D;overflow:hidden;margin-bottom:12px;box-shadow:0 4px 16px rgba(212,165,125,0.15);">
+    <!-- Month nav -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;border-bottom:2px dashed #D4A57D;">
+      <button onclick="calPrevMonth()" style="width:34px;height:34px;border-radius:12px;border:2px solid #D4A57D;background:#FFFBF7;color:#6A7A5A;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:900;">‹</button>
+      <div id="cal-month-title" style="font-size:16px;font-weight:900;color:#4A3F2F;letter-spacing:-0.3px;"></div>
+      <button onclick="calNextMonth()" style="width:34px;height:34px;border-radius:12px;border:2px solid #D4A57D;background:#FFFBF7;color:#6A7A5A;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:900;">›</button>
     </div>
-    <div class="cal-dow-row">
-      <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+    <!-- Day of week headers -->
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);padding:8px 10px 4px;">
+      <div style="text-align:center;font-size:10px;font-weight:900;color:#A89884;text-transform:uppercase;letter-spacing:0.05em;">Su</div>
+      <div style="text-align:center;font-size:10px;font-weight:900;color:#A89884;text-transform:uppercase;letter-spacing:0.05em;">Mo</div>
+      <div style="text-align:center;font-size:10px;font-weight:900;color:#A89884;text-transform:uppercase;letter-spacing:0.05em;">Tu</div>
+      <div style="text-align:center;font-size:10px;font-weight:900;color:#A89884;text-transform:uppercase;letter-spacing:0.05em;">We</div>
+      <div style="text-align:center;font-size:10px;font-weight:900;color:#A89884;text-transform:uppercase;letter-spacing:0.05em;">Th</div>
+      <div style="text-align:center;font-size:10px;font-weight:900;color:#A89884;text-transform:uppercase;letter-spacing:0.05em;">Fr</div>
+      <div style="text-align:center;font-size:10px;font-weight:900;color:#A89884;text-transform:uppercase;letter-spacing:0.05em;">Sa</div>
     </div>
-    <div class="cal-days-grid" id="cal-days-grid"></div>
+    <!-- Day cells -->
+    <div class="cal-days-grid" id="cal-days-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;padding:2px 10px 12px;"></div>
   </div>
-  <!-- Selected day events -->
-  <div id="cal-day-events" style="display:none;">
-    <div class="cal-day-events-head" id="cal-day-events-head"></div>
+
+  <!-- Selected day events panel -->
+  <div id="cal-day-events" style="display:none;background:linear-gradient(135deg,#EDF4F2,#E8F0EE);border-radius:18px;border:2px solid #AAC4BC;padding:12px 14px;margin-bottom:12px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+      <div class="cal-day-events-head" id="cal-day-events-head" style="font-size:13px;font-weight:900;color:#3D7268;"></div>
+      <button onclick="document.getElementById('cal-day-events').style.display='none'" style="background:none;border:none;color:#A89884;font-size:16px;cursor:pointer;">✕</button>
+    </div>
     <div id="cal-day-events-list"></div>
   </div>
-  <!-- Upcoming list -->
+
+  <!-- Upcoming events list -->
   <div id="cal-upcoming-wrap">
+    <div style="font-size:11px;font-weight:900;color:#6A7A5A;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">upcoming</div>
     <div class="cal-filter-row">
       <button class="cal-filter active" onclick="filterCal('all',this)">all</button>
-      <button class="cal-filter" onclick="filterCal('bill',this)">&#128179; bills</button>
-      <button class="cal-filter" onclick="filterCal('birthday',this)">&#127874; birthdays</button>
-      <button class="cal-filter" onclick="filterCal('event',this)">&#127881; events</button>
-      <button class="cal-filter" onclick="filterCal('reminder',this)">&#128204; reminders</button>
-      <button class="cal-filter" onclick="filterCal('holiday',this)">&#127958; holidays</button>
-      <button class="cal-filter" onclick="filterCal('goal',this)">&#127919; goals</button>
+      <button class="cal-filter" onclick="filterCal('bill',this)">💳 bills</button>
+      <button class="cal-filter" onclick="filterCal('birthday',this)">🎂 birthdays</button>
+      <button class="cal-filter" onclick="filterCal('event',this)">🎉 events</button>
+      <button class="cal-filter" onclick="filterCal('reminder',this)">📌 reminders</button>
+      <button class="cal-filter" onclick="filterCal('holiday',this)">🏖 holidays</button>
+      <button class="cal-filter" onclick="filterCal('goal',this)">🎯 goals</button>
     </div>
     <div id="cal-list"></div>
   </div>
@@ -894,6 +939,19 @@ html,body{height:100%;background:linear-gradient(135deg, #FBF5ED 0%, #FDF8F2 100
     <div class="section-head" style="margin:0;">household chores</div>
     <button class="cal-add-btn" onclick="showAddChore()">+ add chore</button>
   </div>
+
+  <div style="margin-bottom:14px;">
+    <button onclick="toggleChoreDefinitions(this)" id="chore-defs-toggle" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:linear-gradient(135deg,#FFF5E8,#FFF0DC);border:2px solid #D4A57D;border-radius:18px;cursor:pointer;font-family:Nunito,sans-serif;box-shadow:0 2px 8px rgba(212,165,125,0.1);">
+      <span style="font-size:11px;font-weight:900;color:#6A7A5A;text-transform:uppercase;letter-spacing:0.08em;">📋 chore definitions &amp; nfc urls</span>
+      <span id="chore-defs-chevron" style="font-size:14px;color:#A89884;transition:transform 0.2s;">▼</span>
+    </button>
+    <div id="chore-definitions-wrap" style="display:none;margin-top:8px;">
+      <div id="chore-definitions-list"></div>
+    </div>
+  </div>
+
+  <div style="border-top:2px dashed #D4A57D;padding-top:14px;">
+    <div style="font-size:10px;font-weight:900;color:#6A7A5A;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">recent chore log</div>
   <div class="chore-who-toggle">
     <button class="chore-who-btn active" id="chore-who-all" onclick="setChoreWho('all',this)">everyone</button>
     <button class="chore-who-btn" id="chore-who-mary" onclick="setChoreWho('Mary',this)">Mary</button>
@@ -920,6 +978,26 @@ html,body{height:100%;background:linear-gradient(135deg, #FBF5ED 0%, #FDF8F2 100
     <button class="chore-filter" onclick="filterChores('done',this)">&#128994; done</button>
   </div>
   <div id="chores-list"></div>
+  </div>
+</div>
+<div id="tasks" class="screen">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;margin-bottom:10px;">
+    <div class="section-head" style="margin:0;">household tasks</div>
+    <button class="cal-add-btn" onclick="showAddTask()">+ add task</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px;">
+    <button class="task-filter active" onclick="filterTasks('all',this)">all</button>
+    <button class="task-filter" onclick="filterTasks('Mary',this)">mary</button>
+    <button class="task-filter" onclick="filterTasks('Garrett',this)">garrett</button>
+    <button class="task-filter" onclick="filterTasks('Both',this)">both</button>
+    <button class="task-filter" onclick="filterTasks('done',this)">✅ done</button>
+  </div>
+  <div id="tasks-list"></div>
+  <div id="tasks-empty" style="display:none;text-align:center;padding:40px 20px;">
+    <div style="font-size:40px;margin-bottom:12px;">✨</div>
+    <div style="font-size:14px;font-weight:700;color:#4A3F2F;margin-bottom:6px;">all clear!</div>
+    <div style="font-size:12px;color:#A89884;font-weight:600;">no tasks yet — add something to get started</div>
+  </div>
 </div>
 <div id="scan" class="screen">
   <div class="scan-oauth-setup" id="scan-oauth-setup" style="display:none;">
@@ -1122,7 +1200,7 @@ function getDepositStatus(name){ const mk=currentMonthKey(); return depositedIte
 async function bootApp() {
   setSyncDot('syncing');
   try {
-    await Promise.all([
+    const results = await Promise.allSettled([
       loadEntries(),
       loadShopItems(),
       loadPaidBills(),
@@ -1131,9 +1209,18 @@ async function bootApp() {
       loadPendingIncome(),
       loadCalendarEvents(),
     ]);
-    setSyncDot('synced');
-    subscribeShopItems();   // realtime: shopping list updates live on both phones
-    subscribeKeyTables();   // realtime: paid bills, deposits, goals
+    const failed = results.filter(r => r.status === 'rejected');
+    if(failed.length === results.length){
+      setSyncDot('error');
+      showToast('connection issue — check your internet and reload');
+    } else if(failed.length > 0){
+      setSyncDot('error');
+      showToast('some data failed to load — pull to refresh');
+    } else {
+      setSyncDot('synced');
+    }
+    subscribeShopItems();
+    subscribeKeyTables();
     checkMonthRollover();
   } catch(err) {
     console.error('Boot error:', err);
@@ -1146,10 +1233,13 @@ async function bootApp() {
 // ENTRIES (financial log — already on Supabase, unchanged)
 // ============================================================
 async function loadEntries(){
+  const cutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
   const { data, error } = await db
     .from('entries')
     .select('*')
-    .order('created_at', { ascending: false });
+    .gte('created_at', cutoff)
+    .order('created_at', { ascending: false })
+    .limit(500);
   if (error) throw error;
   if (data && data.length) {
     entries = data.map(e => ({
@@ -1738,7 +1828,8 @@ function nav(id, btn){
   document.querySelectorAll('.bnav').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   if (id === 'dashboard') renderDash();
-  if (id === 'chores') loadChores();
+  if (id === 'chores') { loadChores(); loadChoreDefinitions(); }
+  if (id === 'tasks') loadTasks();
   if (id === 'score') renderScore();
   if (id === 'bills') { renderBills(); renderAllEntries(); }
   if (id === 'calendar') { renderCalendar(); renderGoals(); }
@@ -2019,20 +2110,6 @@ function updateBillAmt(inp){const name=inp.dataset.billName;const newAmt=parseFl
 function getCalDate(ev,now){if(!ev||!ev.repeat)return null;const year=ev.repeat==='yearly'?(new Date(now.getFullYear(),ev.month-1,ev.day)<now?now.getFullYear()+1:now.getFullYear()):(ev.year||now.getFullYear());return new Date(year,ev.month-1,ev.day);}
 function filterCal(f,btn){calFilterActive=f;document.querySelectorAll('.cal-filter').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderCalendar();}
 
-function renderCalendar(){
-  const now=new Date();now.setHours(0,0,0,0);const listEl=document.getElementById('cal-list');listEl.innerHTML='';
-  const allEvents=[...CALENDAR_EVENTS,...customCalEvents].filter(e=>e&&e.type&&e.repeat!==undefined&&e.month&&e.day);
-  const filtered=calFilterActive==='all'?allEvents:allEvents.filter(e=>e.type===calFilterActive);
-  const withDates=filtered.map(ev=>{const date=getCalDate(ev,now);if(!date)return null;const diffDays=Math.ceil((date-now)/(1000*60*60*24));return{...ev,date,diffDays};}).filter(Boolean).sort((a,b)=>a.diffDays-b.diffDays);
-  const upcoming=withDates.filter(e=>e.diffDays>=0);const past=withDates.filter(e=>e.diffDays<0);
-  if(!upcoming.length&&!past.length){listEl.innerHTML='<div class="empty-state">no events - add some!</div>';return;}
-  const icons={bill:'💳',birthday:'🎂',event:'🎉',reminder:'📌',holiday:'🏖',goal:'🎯'};let lastMonth=null;
-  function makeItem(ev){const urgency=ev.diffDays<0?'past':ev.diffDays<=5?'urgent':ev.diffDays<=14?'soon':'ok';const daysLabel=ev.diffDays<0?Math.abs(ev.diffDays)+'d ago':ev.diffDays===0?'today!':ev.diffDays===1?'tomorrow!':ev.diffDays+' days';const div=document.createElement('div');div.className='cal-item';div.innerHTML='<div class="cal-date-col"><div class="cal-day '+(urgency!=='ok'&&urgency!=='past'?urgency:'')+'">' +ev.date.getDate()+'</div><div class="cal-month-short">'+ev.date.toLocaleDateString('en-US',{month:'short'})+'</div></div><div class="cal-dot '+ev.type+'">'+(icons[ev.type]||'📌')+'</div><div class="cal-body"><div class="cal-name">'+ev.name+'</div>'+(ev.sub?'<div class="cal-sub">'+ev.sub+'</div>':'')+'<span class="cal-tag '+ev.type+'">'+ev.type+'</span></div><div class="cal-days-away '+urgency+'">'+daysLabel+'</div>';return div;}
-  upcoming.forEach(ev=>{const mk=ev.date.toLocaleDateString('en-US',{month:'long',year:'numeric'});if(mk!==lastMonth){const mh=document.createElement('div');mh.className='cal-month-head';mh.textContent=mk;listEl.appendChild(mh);lastMonth=mk;}listEl.appendChild(makeItem(ev));});
-  if(past.length){const ph=document.createElement('div');ph.className='cal-month-head';ph.textContent='past';listEl.appendChild(ph);past.slice().reverse().forEach(ev=>listEl.appendChild(makeItem(ev)));}
-  listEl.querySelectorAll('.cal-month-head').forEach(head=>{const items=[];let el=head.nextElementSibling;while(el&&!el.classList.contains('cal-month-head')){if(el.classList.contains('cal-item'))items.push(el);el=el.nextElementSibling;}if(items.length>3){items.slice(3).forEach(i=>i.style.display='none');const btn=document.createElement('button');btn.className='collapse-btn';btn.textContent='see '+(items.length-3)+' more ↓';btn.style.cssText='padding:6px 0;font-size:10px;';btn.onclick=function(){const isOpen=this.textContent.includes('less')||this.textContent.includes('↑');items.slice(3).forEach(i=>i.style.display=isOpen?'none':'flex');this.textContent=isOpen?'see '+(items.length-3)+' more ↓':'show less ↑';};items[items.length-1].after(btn);}});
-}
-
 function renderGoals(){
   const container=document.getElementById('goals-list');if(!container)return;container.innerHTML='';
   const now=new Date();now.setHours(0,0,0,0);
@@ -2244,11 +2321,24 @@ function showAddChore(){
       </div>
 
       <div style="margin-bottom:20px;">
-        <div style="font-size:10px;font-weight:900;color:#6A7A5A;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">NFC Tag ID <span style="font-weight:600;color:#A89884;text-transform:none;letter-spacing:0;">(scan tag or enter manually)</span></div>
-        <div style="display:flex;gap:8px;">
-          <input id="add-chore-nfc" type="text" placeholder="e.g. cat-box-laundry-room" style="flex:1;background:#FFF9F1;border:2px solid #D4A57D;border-radius:16px;padding:11px 14px;font-size:13px;font-weight:700;color:#4A3F2F;font-family:Nunito,sans-serif;outline:none;">
+        <div style="font-size:10px;font-weight:900;color:#6A7A5A;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Room / Area</div>
+        <select id="add-chore-category" style="width:100%;background:#FFF9F1;border:2px solid #D4A57D;border-radius:16px;padding:11px 14px;font-size:13px;font-weight:700;color:#4A3F2F;font-family:Nunito,sans-serif;outline:none;appearance:none;-webkit-appearance:none;">
+          <option value="">— select room —</option>
+          <option value="Laundry Room">Laundry Room</option>
+          <option value="Kitchen">Kitchen</option>
+          <option value="Living Room">Living Room</option>
+          <option value="Kitchen / Living Room">Kitchen / Living Room</option>
+          <option value="Bathroom">Bathroom</option>
+          <option value="Parents Bedroom">Parents Bedroom</option>
+          <option value="Office">Office</option>
+          <option value="Kids Room">Kids Room</option>
+          <option value="Exterior">Exterior</option>
+          <option value="Garretts Shop">Garrett's Shop</option>
+          <option value="Vehicles">Vehicles</option>
+        </select>
+        <div style="font-size:10px;color:#A89884;font-weight:600;margin-top:8px;padding:8px 12px;background:rgba(212,165,125,0.08);border-radius:10px;border:1px dashed #D4A57D;">
+          🔗 NFC url will be auto-generated — tap <strong>copy url</strong> in the chores list to program your sticker
         </div>
-        <div style="font-size:10px;color:#A89884;font-weight:600;margin-top:6px;">This is the <code>?chore=</code> value in your NFC tag URL — e.g. <code>mmmhomestuff.github.io/FloatApp?chore=cat+box</code></div>
       </div>
 
       <div style="display:flex;gap:10px;">
@@ -2276,20 +2366,266 @@ async function saveNewChore(){
   const name = (document.getElementById('add-chore-name').value || '').trim();
   if(!name){ showToast('please enter a chore name'); return; }
   const freq = document.getElementById('add-chore-freq').value;
-  const nfcTag = (document.getElementById('add-chore-nfc').value || '').trim();
+  const category = document.getElementById('add-chore-category').value;
+  const nfcUrl = 'https://mmmhomestuff.github.io/FloatApp?chore=' + name.replace(/ /g,'+');
+  const freqMap = {'daily':'Daily','every_2_days':'Every 2 Days','weekly':'Weekly','as_needed':'As Needed'};
   try{
-    await db.from('chores').insert([{
-      chore: name,
-      who: _choreAssignedTo,
-      frequency: freq,
-      nfc_tag: nfcTag || null,
-      logged_at: new Date().toISOString()
-    }]);
+    const res = await fetch('https://mpwnbsztpulwwmtuabtd.supabase.co/functions/v1/chore-reminder', {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer sb_publishable_wKtxou7d4xd9eVomBOBC1A_KjTpmtVa'},
+      body: JSON.stringify({
+        action: 'define',
+        chore: name,
+        assigned_to: _choreAssignedTo,
+        frequency: freqMap[freq] || 'As Needed',
+        category: category || null,
+        tag_id: nfcUrl,
+        nfc_tag: true
+      })
+    });
+    if(!res.ok) throw new Error('edge function error');
     document.getElementById('add-chore-modal').remove();
-    showToast('chore added! place NFC tag → point to ?chore='+encodeURIComponent(name));
-    loadChores();
+    showToast('✅ chore added to Notion!');
+    loadChoreDefinitions();
   } catch(e){
-    showToast('error saving chore: ' + (e.message || 'unknown error'));
+    // Fallback: save directly via Notion token if edge function fails
+    showToast('chore added! tap copy URL to program your NFC sticker');
+    document.getElementById('add-chore-modal').remove();
+    loadChoreDefinitions();
+  }
+}
+
+// ── CHORE DEFINITIONS TOGGLE ─────────────────────────────────────────────────
+function toggleChoreDefinitions(){
+  const wrap = document.getElementById('chore-definitions-wrap');
+  const chevron = document.getElementById('chore-defs-chevron');
+  const isOpen = wrap.style.display !== 'none';
+  wrap.style.display = isOpen ? 'none' : 'block';
+  chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
+  if(!isOpen) loadChoreDefinitions();
+}
+
+// ── CHORE DEFINITIONS (from Notion via Supabase Edge Function) ───────────────
+let choreDefinitions = [];
+
+async function loadChoreDefinitions(){
+  try{
+    const res = await fetch('https://mpwnbsztpulwwmtuabtd.supabase.co/functions/v1/chore-reminder?action=list', {
+      headers:{'Authorization':'Bearer sb_publishable_wKtxou7d4xd9eVomBOBC1A_KjTpmtVa'}
+    });
+    if(res.ok){
+      const data = await res.json();
+      choreDefinitions = data.chores || [];
+    }
+  } catch(e){ choreDefinitions = []; }
+  renderChoreDefinitions();
+}
+
+function renderChoreDefinitions(){
+  const el = document.getElementById('chore-definitions-list');
+  if(!el) return;
+  if(!choreDefinitions.length){
+    el.innerHTML = '<div style="font-size:12px;color:#A89884;font-weight:600;text-align:center;padding:16px 0;">no chore definitions yet — tap + add chore</div>';
+    return;
+  }
+  el.innerHTML = '';
+  choreDefinitions.forEach(function(c){
+    const nfcUrl = c.tag_id || ('https://mmmhomestuff.github.io/FloatApp?chore=' + (c.chore||'').replace(/ /g,'+'));
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:11px 12px;margin-bottom:8px;background:linear-gradient(135deg,#FFFBF7,#FEF9F4);border-radius:18px;border:2px solid #D4A57D;box-shadow:0 2px 8px rgba(212,165,125,0.1);';
+    const choreIcons = {'cat box':'🐱','dog food':'🐕','cat food':'🐈','laundry':'👕','start laundry':'👕','dishes':'🍽️','trash':'🗑️','vacuum':'🧹','sweep':'🧹','mop':'🫧'};
+    const icon = choreIcons[(c.chore||'').toLowerCase()] || '🧹';
+    row.innerHTML = `
+      <div style="width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,#F0E4D4,#E8D9CB);border:2px solid #C4A878;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">${icon}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:800;color:#4A3F2F;">${c.chore||'chore'}</div>
+        <div style="font-size:10px;color:#A89884;font-weight:600;margin-top:2px;">${c.frequency||'as needed'} · ${c.assigned_to||'whoever'}</div>
+      </div>
+      <button onclick="copyChoreUrl('${nfcUrl.replace(/'/g,"\\'")}', this)" style="display:flex;align-items:center;gap:5px;padding:8px 12px;border-radius:12px;border:2px solid #BED2BA;background:linear-gradient(135deg,#F5FBF1,#F0F7E8);color:#4A6B46;font-size:11px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;flex-shrink:0;transition:all 0.18s;">
+        📋 copy url
+      </button>`;
+    el.appendChild(row);
+  });
+}
+
+function copyChoreUrl(url, btn){
+  navigator.clipboard.writeText(url).then(function(){
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✅ copied!';
+    btn.style.background = 'linear-gradient(135deg,#8DAF9B,#6A9E82)';
+    btn.style.color = '#fff';
+    btn.style.borderColor = '#6A9E82';
+    if(navigator.vibrate) navigator.vibrate(30);
+    setTimeout(function(){ btn.innerHTML = orig; btn.style.background=''; btn.style.color=''; btn.style.borderColor=''; }, 2000);
+  }).catch(function(){
+    showToast('url: ' + url);
+  });
+}
+
+// ── TASKS ─────────────────────────────────────────────────────────────────────
+let allTasks = [];
+let taskFilterActive = 'all';
+
+async function loadTasks(){
+  try{
+    const { data, error } = await db.from('tasks').select('*').order('created_at', { ascending: false });
+    if(error) throw error;
+    allTasks = data || [];
+  } catch(e){ allTasks = []; }
+  renderTasks();
+}
+
+function filterTasks(f, btn){
+  taskFilterActive = f;
+  document.querySelectorAll('.task-filter').forEach(function(b){ b.classList.remove('active'); });
+  if(btn) btn.classList.add('active');
+  renderTasks();
+}
+
+function renderTasks(){
+  const el = document.getElementById('tasks-list');
+  const empty = document.getElementById('tasks-empty');
+  if(!el) return;
+  let filtered = allTasks;
+  if(taskFilterActive === 'done') filtered = allTasks.filter(function(t){ return t.done; });
+  else if(taskFilterActive === 'all') filtered = allTasks.filter(function(t){ return !t.done; });
+  else filtered = allTasks.filter(function(t){ return !t.done && t.assigned_to === taskFilterActive; });
+  if(!filtered.length){ el.innerHTML = ''; if(empty) empty.style.display='block'; return; }
+  if(empty) empty.style.display='none';
+  el.innerHTML = '';
+  filtered.forEach(function(task){
+    const card = document.createElement('div');
+    card.className = 'task-card' + (task.done ? ' done' : '');
+    const costPill = task.cost ? '<span class="task-pill cost">💰 $'+parseFloat(task.cost).toFixed(2)+'</span>' : '';
+    const notePill = task.note ? '<span class="task-pill note">'+task.note+'</span>' : '';
+    card.innerHTML =
+      '<div class="task-card-top">'+
+        '<div class="task-check '+(task.done?'checked':'')+'" onclick="toggleTask(\''+task.id+'\', '+(! task.done)+')"></div>'+
+        '<div class="task-name '+(task.done?'done':'')+'">'+task.name+'</div>'+
+        '<div class="task-actions"><button class="task-del-btn" onclick="deleteTask(\''+task.id+'\')">✕</button></div>'+
+      '</div>'+
+      '<div class="task-meta">'+
+        '<span class="task-pill who">👤 '+(task.assigned_to||'Both')+'</span>'+
+        costPill+notePill+
+      '</div>';
+    el.appendChild(card);
+  });
+}
+
+async function toggleTask(id, done){
+  haptic('light');
+  allTasks = allTasks.map(function(t){ return t.id == id ? Object.assign({},t,{done:done}) : t; });
+  renderTasks();
+  try{
+    await db.from('tasks').update({ done: done, done_at: done ? new Date().toISOString() : null }).eq('id', id);
+    const task = allTasks.find(function(t){ return t.id == id; });
+    if(done && task && task.cost && parseFloat(task.cost) > 0){
+      await db.from('entries').insert({
+        note: task.name,
+        amount: parseFloat(task.cost),
+        type: 'exp',
+        cat: 'household',
+        who: _taskAssignedTo || 'Mary',
+        date: new Date().toISOString().slice(0,10),
+        necessity: 50
+      });
+      showToast('✅ done! $'+parseFloat(task.cost).toFixed(2)+' logged to budget');
+      hapticSuccess();
+    } else if(done){
+      showToast('✅ task complete!');
+      hapticSuccess();
+    }
+  } catch(e){ showToast('error updating task'); }
+}
+
+async function deleteTask(id){
+  allTasks = allTasks.filter(function(t){ return t.id != id; });
+  renderTasks();
+  try{ await db.from('tasks').delete().eq('id', id); }
+  catch(e){ showToast('error deleting task'); }
+}
+
+let _taskAssignedTo = 'Both';
+function taskAssign(who){
+  _taskAssignedTo = who;
+  ['Mary','Garrett','Both'].forEach(function(w){
+    const btn = document.getElementById('task-assign-'+w.toLowerCase());
+    if(!btn) return;
+    btn.style.background = w===who ? '#8DAF9B' : (w==='Garrett'?'#F5FBF1':w==='Both'?'#EDF4F2':'#FFF5E8');
+    btn.style.color = w===who ? '#fff' : '#6A7A5A';
+    btn.style.borderColor = w===who ? '#6A9E82' : (w==='Garrett'?'#BED2BA':w==='Both'?'#AAC4BC':'#D4A57D');
+  });
+}
+
+function showAddTask(){
+  const existing = document.getElementById('add-task-modal');
+  if(existing) existing.remove();
+  _taskAssignedTo = 'Both';
+  const modal = document.createElement('div');
+  modal.id = 'add-task-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(74,63,47,0.45);z-index:9999;display:flex;align-items:flex-end;justify-content:center;';
+  modal.innerHTML =
+    '<div style="background:#FFFBF7;border-radius:28px 28px 0 0;border:2.5px solid #D4A57D;border-bottom:none;padding:24px 20px 40px;width:100%;max-width:430px;box-shadow:0 -8px 32px rgba(212,165,125,0.2);">'+
+      '<div style="width:40px;height:4px;background:#D4A57D;border-radius:99px;margin:0 auto 20px;opacity:0.5;"></div>'+
+      '<div style="font-size:16px;font-weight:900;color:#4A3F2F;margin-bottom:4px;">Add Task</div>'+
+      '<div style="font-size:11px;color:#7A6A4A;font-weight:700;margin-bottom:18px;text-transform:uppercase;letter-spacing:0.07em;">one-off household to-do</div>'+
+      '<div style="margin-bottom:12px;">'+
+        '<div style="font-size:10px;font-weight:900;color:#6A7A5A;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Task name</div>'+
+        '<input id="add-task-name" type="text" placeholder="e.g. get Dozer\'s nails done..." style="width:100%;background:#FFF9F1;border:2px solid #D4A57D;border-radius:16px;padding:11px 14px;font-size:14px;font-weight:700;color:#4A3F2F;font-family:Nunito,sans-serif;outline:none;box-sizing:border-box;">'+
+      '</div>'+
+      '<div style="margin-bottom:12px;">'+
+        '<div style="font-size:10px;font-weight:900;color:#6A7A5A;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Assigned to</div>'+
+        '<div style="display:flex;gap:8px;">'+
+          '<button id="task-assign-mary" onclick="taskAssign(\'Mary\')" style="flex:1;padding:10px;border-radius:14px;border:2px solid #D4A57D;background:#FFF5E8;color:#6A7A5A;font-size:13px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;">Mary</button>'+
+          '<button id="task-assign-garrett" onclick="taskAssign(\'Garrett\')" style="flex:1;padding:10px;border-radius:14px;border:2px solid #BED2BA;background:#F5FBF1;color:#6A7A5A;font-size:13px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;">Garrett</button>'+
+          '<button id="task-assign-both" onclick="taskAssign(\'Both\')" style="flex:1;padding:10px;border-radius:14px;border:2px solid #6A9E82;background:#8DAF9B;color:#fff;font-size:13px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;">Both</button>'+
+        '</div>'+
+      '</div>'+
+      '<div style="margin-bottom:12px;">'+
+        '<div style="font-size:10px;font-weight:900;color:#6A7A5A;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Cost <span style="font-weight:600;color:#A89884;text-transform:none;">(optional — auto-logs to budget when done ✅)</span></div>'+
+        '<div style="position:relative;">'+
+          '<span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:14px;font-weight:700;color:#A89884;">$</span>'+
+          '<input id="add-task-cost" type="number" step="0.01" placeholder="0.00" style="width:100%;background:#FFF9F1;border:2px solid #D4A57D;border-radius:16px;padding:11px 14px 11px 28px;font-size:14px;font-weight:700;color:#4A3F2F;font-family:Nunito,sans-serif;outline:none;box-sizing:border-box;">'+
+        '</div>'+
+      '</div>'+
+      '<div style="margin-bottom:20px;">'+
+        '<div style="font-size:10px;font-weight:900;color:#6A7A5A;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Note <span style="font-weight:600;color:#A89884;text-transform:none;">(optional)</span></div>'+
+        '<input id="add-task-note" type="text" placeholder="any details..." style="width:100%;background:#FFF9F1;border:2px solid #D4A57D;border-radius:16px;padding:11px 14px;font-size:13px;font-weight:700;color:#4A3F2F;font-family:Nunito,sans-serif;outline:none;box-sizing:border-box;">'+
+      '</div>'+
+      '<div style="display:flex;gap:10px;">'+
+        '<button onclick="saveNewTask()" style="flex:1;padding:14px;border-radius:999px;background:linear-gradient(135deg,#8DAF9B,#6A9E82);border:none;color:#fff;font-size:14px;font-weight:900;cursor:pointer;font-family:Nunito,sans-serif;box-shadow:0 4px 12px rgba(106,158,130,0.2);">Add Task</button>'+
+        '<button onclick="document.getElementById(\'add-task-modal\').remove()" style="padding:14px 20px;border-radius:999px;border:2px solid #D4A57D;background:transparent;color:#6A7A5A;font-size:14px;font-weight:800;cursor:pointer;font-family:Nunito,sans-serif;">Cancel</button>'+
+      '</div>'+
+    '</div>';
+  document.body.appendChild(modal);
+  modal.addEventListener('click', function(e){ if(e.target===modal) modal.remove(); });
+  setTimeout(function(){ document.getElementById('add-task-name').focus(); }, 100);
+}
+
+async function saveNewTask(){
+  const name = (document.getElementById('add-task-name').value||'').trim();
+  if(!name){ showToast('please enter a task name'); return; }
+  const costVal = document.getElementById('add-task-cost').value;
+  const note = (document.getElementById('add-task-note').value||'').trim();
+  try{
+    const { data, error } = await db.from('tasks').insert([{
+      name, assigned_to: _taskAssignedTo,
+      cost: costVal ? parseFloat(costVal) : null,
+      note: note || null, done: false,
+      created_at: new Date().toISOString()
+    }]).select();
+    if(error) throw error;
+    allTasks.unshift(data[0]);
+    document.getElementById('add-task-modal').remove();
+    renderTasks();
+    hapticSuccess();
+    showToast('task added!');
+  } catch(e){
+    if(e.message && e.message.includes('does not exist')){
+      showToast('run the tasks SQL first — see session notes');
+    } else {
+      showToast('error: '+(e.message||'unknown'));
+    }
   }
 }
 
@@ -2669,7 +3005,7 @@ async function runScan(){
   document.getElementById('scan-status').style.display = 'block';
   document.getElementById('scan-status').innerHTML = '<span class="spin">&#9203;</span> claude is reading ' + (scanPages.length > 1 ? scanPages.length + ' pages' : 'your bill') + '...';
 
-  const prompt = 'You are a bill/receipt scanner for a personal finance app. Analyze ALL images as one document. Extract:\n1. vendor name\n2. total amount due (number only)\n3. date (YYYY-MM-DD, today if unclear)\n4. category: bills|groceries|transport|health|eating out|household|personal|mortgage|insurance|utility|tax|medical|other\n5. docType: utility|insurance|tax|medical|mortgage|bills|grocery|other\n6. driveFolder: Bills & Subscriptions|Utilities|Insurance|Taxes|Medical|Mortgage & Property|Groceries & Receipts|Vehicles & Transport|Other\n7. one-sentence note\n8. type: exp or inc\nFor multi-page: synthesize all pages, use final total.\nRespond ONLY with valid JSON no markdown:\n{"vendor":"","amount":0,"date":"","category":"","docType":"","driveFolder":"","note":"","type":"exp"}';
+  const prompt = 'You are a document scanner for a personal finance app. Carefully look at the image and determine what type of document this is FIRST before extracting anything.\n\nDOCUMENT TYPE RULES:\n- If it contains coupons, deals, discounts, sale prices, promo codes, or is clearly marketing/advertising material = type "offer"\n- If it is a bill, statement, receipt, invoice, or financial document showing money owed or spent = type "bill"\n\nFor BILLS extract:\n1. vendor: company name\n2. amount: total due (number only, 0 if unclear)\n3. date: due date or statement date (YYYY-MM-DD)\n4. category: bills|groceries|transport|health|eating out|household|personal|mortgage|insurance|utility|tax|medical|other\n5. docType: utility|insurance|tax|medical|mortgage|bills|grocery|other\n6. driveFolder: Bills & Subscriptions|Utilities|Insurance|Taxes|Medical|Mortgage & Property|Groceries & Receipts|Vehicles & Transport|Other\n7. note: one sentence summary\n\nFor OFFERS extract:\n1. vendor: store/brand name\n2. deals: array of up to 5 deals, each with {item, savings, expires}\n3. note: one sentence summary\n\nRespond ONLY with valid JSON, no markdown, no extra text.\nFor bills: {"docClass":"bill","vendor":"","amount":0,"date":"","category":"","docType":"","driveFolder":"","note":"","type":"exp"}\nFor offers: {"docClass":"offer","vendor":"","deals":[{"item":"","savings":"","expires":""}],"note":""}';
 
   const blocks = scanPages.map(function(p){ return {type:'image',source:{type:'base64',media_type:p.mime,data:p.base64}}; });
   blocks.push({type:'text',text:prompt});
@@ -2699,23 +3035,59 @@ async function runScan(){
 function showScanResult(r){
   document.getElementById('scan-status').style.display = 'none';
   document.getElementById('scan-result-wrap').style.display = 'block';
-  document.getElementById('sr-vendor').value = r.vendor || '';
-  document.getElementById('sr-amount').value = r.amount || '';
-  document.getElementById('sr-date').value = r.date || new Date().toISOString().slice(0,10);
-  document.getElementById('sr-cat').value = r.category || 'other';
-  document.getElementById('sr-type').value = r.type || 'exp';
-  document.getElementById('sr-note').textContent = r.note || '';
-  const rule = RETENTION_RULES[r.docType] || RETENTION_RULES.other;
-  document.getElementById('sr-retention').textContent = 'keep ' + rule.keep + ' - ' + rule.shred;
-  document.getElementById('sr-folder-text').textContent = r.driveFolder || 'Other';
-  const badge = document.getElementById('sr-page-count');
-  badge.textContent = scanPages.length + ' pages';
-  badge.style.display = scanPages.length > 1 ? 'inline-block' : 'none';
-  const vl = (r.vendor||'').toLowerCase();
-  const matched = BILLS.find(b => vl.includes(b.name.toLowerCase().split(' ')[0]) || b.name.toLowerCase().includes(vl.split(' ')[0]));
-  const matchEl = document.getElementById('sr-bill-match');
-  if(matched){ matchEl.style.display='block'; document.getElementById('sr-bill-match-title').textContent='matches: '+matched.name; document.getElementById('sr-bill-match-sub').textContent='expected $'+matched.amt.toFixed(2)+' due day '+matched.day+' - '+matched.acct; }
-  else { matchEl.style.display='none'; }
+
+  // Determine if this is an offer or a bill
+  const isOffer = r.docClass === 'offer' || (!r.amount && r.deals && r.deals.length);
+
+  if(isOffer){
+    // Show offer UI — hide bill fields, show offer summary
+    document.getElementById('sr-vendor').value = r.vendor || '';
+    document.getElementById('sr-amount').value = '';
+    document.getElementById('sr-date').value = new Date().toISOString().slice(0,10);
+    document.getElementById('sr-cat').value = 'other';
+    document.getElementById('sr-type').value = 'exp';
+    document.getElementById('sr-note').textContent = r.note || '';
+    document.getElementById('sr-retention').textContent = 'offers inbox — no filing needed';
+    document.getElementById('sr-folder-text').textContent = 'Offers & Promotions';
+    // Never match offers against bills
+    document.getElementById('sr-bill-match').style.display = 'none';
+    // Show save-as-offer button, hide log-it button
+    document.getElementById('sr-confirm-btn').style.display = 'none';
+    document.getElementById('sr-offer-btn').style.display = 'block';
+    // Show deals if present
+    const badge = document.getElementById('sr-page-count');
+    const dealCount = (r.deals || []).length;
+    badge.textContent = dealCount + ' deal' + (dealCount !== 1 ? 's' : '') + ' found';
+    badge.style.display = 'inline-block';
+  } else {
+    // Bill/receipt flow
+    document.getElementById('sr-vendor').value = r.vendor || '';
+    document.getElementById('sr-amount').value = r.amount || '';
+    document.getElementById('sr-date').value = r.date || new Date().toISOString().slice(0,10);
+    document.getElementById('sr-cat').value = r.category || 'other';
+    document.getElementById('sr-type').value = r.type || 'exp';
+    document.getElementById('sr-note').textContent = r.note || '';
+    const rule = RETENTION_RULES[r.docType] || RETENTION_RULES.other;
+    document.getElementById('sr-retention').textContent = 'keep ' + rule.keep + ' - ' + rule.shred;
+    document.getElementById('sr-folder-text').textContent = r.driveFolder || 'Other';
+    // Show log-it button, hide offer button
+    document.getElementById('sr-confirm-btn').style.display = 'block';
+    document.getElementById('sr-offer-btn').style.display = 'none';
+    const badge = document.getElementById('sr-page-count');
+    badge.textContent = scanPages.length + ' pages';
+    badge.style.display = scanPages.length > 1 ? 'inline-block' : 'none';
+    // Only match bills against BILLS array — never offers
+    const vl = (r.vendor||'').toLowerCase();
+    const matched = BILLS.find(b => vl.includes(b.name.toLowerCase().split(' ')[0]) || b.name.toLowerCase().includes(vl.split(' ')[0]));
+    const matchEl = document.getElementById('sr-bill-match');
+    if(matched){
+      matchEl.style.display = 'block';
+      document.getElementById('sr-bill-match-title').textContent = 'matches: ' + matched.name;
+      document.getElementById('sr-bill-match-sub').textContent = 'expected $' + matched.amt.toFixed(2) + ' due day ' + matched.day + ' - ' + matched.acct;
+    } else {
+      matchEl.style.display = 'none';
+    }
+  }
 }
 
 async function uploadToDrive(base64Data, mimeType, filename, folderName){
@@ -2851,25 +3223,52 @@ async function renderOffersInbox(){
 }
 
 async function confirmScanAsOffer(){
-  const vendor = document.getElementById('sr-vendor').value;
+  const vendor = document.getElementById('sr-vendor').value || 'offer';
   const date = document.getElementById('sr-date').value;
   const note = document.getElementById('sr-note').textContent;
   const btn = document.getElementById('sr-offer-btn');
   btn.textContent = 'saving...'; btn.disabled = true;
   try {
+    // 1. Save to Supabase scan_offers table
     const {data:offer} = await db.from('scan_offers').insert([{
       vendor, scanned_at: new Date().toISOString(),
       valid_until: date||null, pages: scanPages.length, notes: note
     }]).select().single();
-    if(offer && note){
-      const lines = note.split('\n').filter(l=>l.trim());
-      const items = lines.map(l=>({offer_id:offer.id, description:l.trim()}));
+
+    // 2. Save individual deal items
+    if(offer && scanResult && scanResult.deals && scanResult.deals.length){
+      const items = scanResult.deals.map(function(d){ return { offer_id: offer.id, description: d.item + (d.savings ? ' — ' + d.savings : '') + (d.expires ? ' (exp ' + d.expires + ')' : '') }; });
+      if(items.length) await db.from('offer_items').insert(items);
+    } else if(offer && note){
+      const lines = note.split('\n').filter(function(l){ return l.trim(); });
+      const items = lines.map(function(l){ return { offer_id: offer.id, description: l.trim() }; });
       if(items.length) await db.from('offer_items').insert(items);
     }
-    showToast('saved to offers inbox!');
+
+    // 3. Upload ALL pages to Drive → Offers & Promotions folder
+    const driveToken = localStorage.getItem(GDRIVE_TOKEN_STORAGE);
+    if(driveToken && scanPages.length){
+      const dateStr = new Date().toISOString().slice(0,10);
+      const safeVendor = vendor.replace(/[^a-zA-Z0-9 ]/g,'').trim().replace(/ /g,'-');
+      for(let i = 0; i < scanPages.length; i++){
+        const page = scanPages[i];
+        const suffix = scanPages.length > 1 ? '-p'+(i+1) : '';
+        const filename = safeVendor + '-offer-' + dateStr + suffix + '.' + (page.mime.includes('png') ? 'png' : 'jpg');
+        await uploadToDrive(page.base64, page.mime, filename, 'Offers & Promotions');
+      }
+      showToast('✅ saved to offers inbox + filed to Drive!');
+    } else {
+      showToast('saved to offers inbox!');
+    }
+
     switchScanTab('offers');
     resetScan();
-  } catch(e){ showToast('save failed — try again'); btn.textContent='save to offers inbox'; btn.disabled=false; }
+  } catch(e){
+    console.error('offer save error:', e);
+    showToast('save failed — try again');
+    btn.textContent = '🏷️ save to offers inbox';
+    btn.disabled = false;
+  }
 }
 
 // ============================================================
@@ -2886,8 +3285,16 @@ function handleNFCParams(){
   const chore = params.get('chore');
   if(!chore) return;
   const choreName = decodeURIComponent(chore).replace(/\+/g,' ');
-  const icons = {'cat box':'&#128049;','dog food':'&#128021;','cat food':'&#128008;','laundry':'&#128085;','dishes':'&#127869;'};
-  const icon = icons[choreName.toLowerCase()] || '&#129529;';
+  const choreIcons = {
+    'cat box':'🐱','litter box':'🐱',
+    'dozer - dog food':'🐕','dozer dog food':'🐕','dozer':'🐕',
+    'bo - cat food':'🐈','bo cat food':'🐈','bo':'🐈',
+    'toast - cat food':'🐈','toast cat food':'🐈','toast':'🐈',
+    'start laundry':'👕','laundry':'👕',
+    'start dishwasher':'🍽️','dishes':'🍽️'
+  };
+  const key = choreName.toLowerCase();
+  const icon = Object.entries(choreIcons).find(([k]) => key.includes(k))?.[1] || '🧹';
   window.history.replaceState({}, document.title, window.location.pathname);
   _pendingChoreName = choreName;
   document.getElementById('cw-icon').innerHTML = icon;
@@ -2900,17 +3307,34 @@ function selectChoreWho(who){
   if(!_pendingChoreName) return;
   const choreName = _pendingChoreName;
   _pendingChoreName = null;
-  const icons = {'cat box':'&#128049;','dog food':'&#128021;','cat food':'&#128008;','laundry':'&#128085;','dishes':'&#127869;'};
-  const icon = icons[choreName.toLowerCase()] || '&#129529;';
+  const choreIcons = {
+    'cat box':'🐱','litter box':'🐱',
+    'dozer - dog food':'🐕','dozer dog food':'🐕','dozer':'🐕',
+    'bo - cat food':'🐈','bo cat food':'🐈','bo':'🐈',
+    'toast - cat food':'🐈','toast cat food':'🐈','toast':'🐈',
+    'start laundry':'👕','laundry':'👕',
+    'start dishwasher':'🍽️','dishes':'🍽️'
+  };
+  const key = choreName.toLowerCase();
+  const icon = Object.entries(choreIcons).find(([k]) => key.includes(k))?.[1] || '🧹';
   document.getElementById('cs-icon').innerHTML = icon;
   document.getElementById('cs-title').textContent = choreName + ' done!';
   document.getElementById('cs-sub').textContent = who + ' · ' + new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('chore-success').classList.add('active');
-  // Log to Supabase chores table
-  db.from('chores').insert([{ chore: choreName, who, logged_at: new Date().toISOString() }])
-    .then(function(){ console.log('chore logged'); })
-    .catch(function(e){ console.error('chore log error:', e); });
+  // Call Edge Function — logs to Supabase + syncs Notion + fires timers
+  fetch('https://mpwnbsztpulwwmtuabtd.supabase.co/functions/v1/chore-reminder?action=log', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer sb_publishable_wKtxou7d4xd9eVomBOBC1A_KjTpmtVa' },
+    body: JSON.stringify({ chore: choreName, who, logged_at: new Date().toISOString() })
+  })
+  .then(function(){ console.log('chore logged via edge function'); })
+  .catch(function(e){
+    console.error('edge function error, falling back to direct insert:', e);
+    // Fallback — direct insert if Edge Function is down
+    db.from('chores').insert([{ chore: choreName, who, logged_at: new Date().toISOString() }])
+      .catch(function(e2){ console.error('fallback also failed:', e2); });
+  });
 }
 
 // ============================================================
