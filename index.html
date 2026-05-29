@@ -2498,13 +2498,35 @@ let choreDefinitions = [];
 async function loadChoreDefinitions(){
   try{
     const res = await fetch('https://mpwnbsztpulwwmtuabtd.supabase.co/functions/v1/chore-reminder?action=list', {
-      headers:{'Authorization':'Bearer sb_publishable_wKtxou7d4xd9eVomBOBC1A_KjTpmtVa'}
+      method: 'GET',
+      headers:{
+        'Authorization':'Bearer sb_publishable_wKtxou7d4xd9eVomBOBC1A_KjTpmtVa',
+        'Content-Type':'application/json'
+      }
     });
     if(res.ok){
       const data = await res.json();
-      choreDefinitions = data.chores || [];
+      if(data.chores && data.chores.length){
+        choreDefinitions = data.chores;
+        renderChoreDefinitions();
+        return;
+      }
+    } else {
+      console.warn('chore-reminder list failed:', res.status, await res.text());
     }
-  } catch(e){ choreDefinitions = []; }
+  } catch(e){
+    console.warn('loadChoreDefinitions error:', e);
+  }
+  // Fallback: hardcoded definitions
+  choreDefinitions = [
+    { chore:'cat box',          assigned_to:'Both', frequency:'Daily',     category:'Laundry Room', tag_id:'https://mmmhomestuff.github.io/FloatApp/nfc.html?chore=cat+box' },
+    { chore:'Dozer - dog food', assigned_to:'Both', frequency:'Daily',     category:'Laundry Room', tag_id:'https://mmmhomestuff.github.io/FloatApp/nfc.html?chore=Dozer+dog+food' },
+    { chore:'Bo - cat food',    assigned_to:'Both', frequency:'Daily',     category:'Laundry Room', tag_id:'https://mmmhomestuff.github.io/FloatApp/nfc.html?chore=Bo+cat+food' },
+    { chore:'Toast - cat food', assigned_to:'Both', frequency:'Daily',     category:'Laundry Room', tag_id:'https://mmmhomestuff.github.io/FloatApp/nfc.html?chore=Toast+cat+food' },
+    { chore:'start laundry',    assigned_to:'Both', frequency:'As Needed', category:'Laundry Room', tag_id:'https://mmmhomestuff.github.io/FloatApp/nfc.html?chore=start+laundry' },
+    { chore:'start dishwasher', assigned_to:'Both', frequency:'As Needed', category:'Kitchen',      tag_id:'https://mmmhomestuff.github.io/FloatApp/nfc.html?chore=start+dishwasher' },
+    { chore:'take out trash',   assigned_to:'Both', frequency:'Weekly',    category:'Exterior',     tag_id:'https://mmmhomestuff.github.io/FloatApp/nfc.html?chore=take+out+trash' },
+  ];
   renderChoreDefinitions();
 }
 
