@@ -513,7 +513,8 @@ html,body{height:100%;background:linear-gradient(135deg, #FBF5ED 0%, #FDF8F2 100
 .ask-claude-card .bd{opacity:0.12;overflow:hidden;border-radius:var(--r-xl);}
 .ask-eyebrow{font-size:9px;font-weight:900;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.7);margin-bottom:6px;}
 .ask-title{font-size:16px;font-weight:900;color:#fff;margin-bottom:12px;}
-.ask-prompts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.ask-prompts{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;padding-bottom:4px;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;}
+.ask-prompts::-webkit-scrollbar{display:none;}
 .ask-prompt{padding:7px 12px;border-radius:var(--r-full);background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.25);color:#fff;font-size:11px;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;transition:all 0.18s cubic-bezier(0.34,1.56,0.64,1);}
 .ask-prompt:active{transform:scale(0.93);background:rgba(255,255,255,0.25);}
 .ask-input-row{display:flex;gap:8px;}
@@ -564,12 +565,16 @@ html,body{height:100%;background:linear-gradient(135deg, #FBF5ED 0%, #FDF8F2 100
       <div class="bal-chip"><div class="bcl">logged</div><div class="bcv" id="h-cnt">0</div></div>
     </div>
   </div>
-  <div class="bun-container bun-state-happy" id="bun-container">
-    <div class="bun-image">
-      <img src="./assets/bun-default.svg" alt="Bun" onerror="this.style.display='none'">
+  <!-- Dynamic alert bar — Claude updates this on boot -->
+  <div id="home-alert-bar" style="display:none;background:linear-gradient(135deg,#F5D6D4,#EFD0CE);border-radius:18px;border:2px solid #E0A5A5;padding:12px 14px;margin-bottom:10px;box-shadow:0 2px 8px rgba(196,112,128,0.12);">
+    <div style="display:flex;align-items:flex-start;gap:10px;">
+      <span style="font-size:20px;flex-shrink:0;" id="home-alert-icon">⚠️</span>
+      <div style="flex:1;">
+        <div style="font-size:11px;font-weight:900;color:#C47080;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:3px;" id="home-alert-title">heads up</div>
+        <div style="font-size:12px;font-weight:700;color:#4A3F2F;line-height:1.4;" id="home-alert-msg"></div>
+      </div>
+      <button onclick="document.getElementById('home-alert-bar').style.display='none'" style="background:none;border:none;color:#C47080;font-size:16px;cursor:pointer;flex-shrink:0;padding:0;">✕</button>
     </div>
-    <div class="bun-message" id="bun-message">you're doing great — keep logging! 🌟</div>
-    <div class="bun-accessories" id="bun-accessories"></div>
   </div>
   <div class="ask-claude-card" id="ask-claude-card">
     <div class="bd a"></div><div class="bd b"></div>
@@ -1146,31 +1151,84 @@ const BILLS = [
   { name:'Box.com (annual)', icon:'📦', amt:131.10, day:8, acct:'Joint *9570', defAcct:'Joint *9570', gcal:'Box+Annual+Renewal', gcalDetail:'$131.10+annual+Box+Personal+Pro' },
 ];
 
+// Auto-generate bill calendar events from BILLS array for current + next 2 months
+// This replaces hardcoded month entries — updates automatically every month
+function generateBillCalendarEvents(){
+  const now = new Date();
+  const events = [];
+  // Generate for current month + next 2 months
+  for(let mo = 0; mo <= 2; mo++){
+    const targetDate = new Date(now.getFullYear(), now.getMonth() + mo, 1);
+    const month = targetDate.getMonth() + 1;
+    const year = targetDate.getFullYear();
+    BILLS.forEach(function(bill){
+      // Skip yearly bills (handled separately in CALENDAR_EVENTS)
+      if(bill.repeat === 'yearly') return;
+      // Skip odd months for Urbanex (even months only)
+      if(bill.name === 'Urbanex Pest Control' && month % 2 !== 0) return;
+      events.push({
+        name: bill.icon + ' ' + bill.name,
+        month, day: bill.day, year,
+        type: bill.type === 'income' ? 'bill' : 'bill',
+        repeat: 'once',
+        sub: (bill.type === 'income' ? '💰 ' : '💸 ') + '$' + bill.amt.toFixed(2) + ' · ' + bill.acct
+      });
+    });
+  }
+  return events;
+}
+
 const CALENDAR_EVENTS = [
+  // ── Birthdays ──────────────────────────────────────────────
   { name:"Annabelle Birthday", month:8, day:21, type:'birthday', repeat:'yearly', sub:"Happy birthday Annabelle!" },
-  { name:"Garrett's Birthday", month:6, day:4, type:'birthday', repeat:'yearly', sub:"Happy birthday Garrett!" },
-  { name:"Mary's Birthday", month:2, day:22, type:'birthday', repeat:'yearly', sub:"Happy birthday Mary!" },
+  { name:"Garrett's Birthday", month:6, day:4, type:'birthday', repeat:'yearly', sub:"Happy birthday Garrett! 🎂" },
+  { name:"Mary's Birthday", month:2, day:22, type:'birthday', repeat:'yearly', sub:"Happy birthday Mary! 🎂" },
   { name:"JJ Birthday", month:12, day:26, type:'birthday', repeat:'yearly', sub:"Happy birthday JJ!" },
-  { name:'Wedding Anniversary', month:10, day:5, type:'event', repeat:'yearly', sub:'Mary and Garrett' },
+
+  // ── Events ─────────────────────────────────────────────────
+  { name:'Wedding Anniversary', month:10, day:5, type:'event', repeat:'yearly', sub:'Mary and Garrett 💍' },
   { name:'DragonCon', month:9, day:3, type:'event', repeat:'yearly', sub:'Through September 7 - Atlanta' },
   { name:'DragonCon ends', month:9, day:7, type:'event', repeat:'yearly', sub:'Head home' },
   { name:'Rehearsal Dinner', month:5, day:22, type:'event', repeat:'once', year:2026, sub:'Walt and Jaylie wedding eve' },
   { name:'Walt and Jaylie Wedding', month:5, day:23, type:'event', repeat:'once', year:2026, sub:'Congratulations!' },
+
+  // ── June 2026 Bills ────────────────────────────────────────
+  { name:'Bronco Loan (ORNL)', month:6, day:3, type:'bill', repeat:'once', year:2026, sub:'🚙 $915.59 · Bills *0304 — call to cancel duplicate!' },
+  { name:'Garrett CFA Paycheck', month:6, day:7, type:'bill', repeat:'once', year:2026, sub:'💰 Est. $1,100–1,150 → Bills *0304' },
+  { name:'Best Buy AutoPay', month:6, day:8, type:'bill', repeat:'once', year:2026, sub:'💳 $68 auto · Joint *9570 — need $420/mo to clear Oct 23!' },
+  { name:'Verizon', month:6, day:15, type:'bill', repeat:'once', year:2026, sub:'📱 ~$213 · Bills *0304' },
+  { name:'Student Loans x2', month:6, day:15, type:'bill', repeat:'once', year:2026, sub:'🎓 $340.11 · Bills *0304' },
+  { name:'Mortgage (2 lots)', month:6, day:15, type:'bill', repeat:'once', year:2026, sub:'🏠 $1,228.79 · Joint *9570' },
+  { name:'Urbanex Pest Control', month:6, day:15, type:'bill', repeat:'once', year:2026, sub:'🐛 $130 · Joint *9570 (even month)' },
+  { name:'Water (WBUD)', month:6, day:20, type:'bill', repeat:'once', year:2026, sub:'💧 ~$84 · Joint *9570' },
+  { name:'Electric (VEC)', month:6, day:20, type:'bill', repeat:'once', year:2026, sub:'⚡ ~$108 · Joint *9570' },
+  { name:'State Farm', month:6, day:20, type:'bill', repeat:'once', year:2026, sub:'🚗 $225.97 · Joint *9570' },
+  { name:'Google One + Ring + Spotify + Amazon', month:6, day:20, type:'bill', repeat:'once', year:2026, sub:'☁️ $55.79 combined · Joint *9570' },
+  { name:'Adobe Creative Cloud', month:6, day:20, type:'bill', repeat:'once', year:2026, sub:'🎨 $38.29 · Joint *9570' },
+  { name:'Spectrum Internet', month:6, day:25, type:'bill', repeat:'once', year:2026, sub:'📡 $124.99 · Bills *0304' },
+  { name:'Framer (portfolio)', month:6, day:26, type:'bill', repeat:'once', year:2026, sub:'🖥️ $50 · MMJ Freelance *4146' },
+  { name:'Blue Cross Blue Shield', month:6, day:29, type:'bill', repeat:'once', year:2026, sub:'🏥 $1,393.42 · Bills *0304 — transfer funds first!' },
+
+  // ── Reminders ──────────────────────────────────────────────
   { name:'Cancel Banfield - Bohannon', month:6, day:20, type:'reminder', repeat:'once', year:2026, sub:'Renews July - saves $51/mo' },
   { name:'Cancel Banfield - Toast', month:11, day:1, type:'reminder', repeat:'once', year:2026, sub:'Renews Nov 9 - saves $67/mo' },
-  { name:'Best Buy Payoff Deadline', month:10, day:23, type:'reminder', repeat:'once', year:2026, sub:'$2,306 must be paid off before deferred interest hits' },
+  { name:'Best Buy Payoff Deadline', month:10, day:23, type:'reminder', repeat:'once', year:2026, sub:'⚠️ $2,306 must be paid off — deferred interest hits today!' },
+  { name:'mmjones.studio domain renewal', month:12, day:23, type:'reminder', repeat:'once', year:2026, sub:'$40 annual - auto-renews Dec 23' },
+  { name:'Box.com annual renewal', month:4, day:8, type:'reminder', repeat:'yearly', sub:'$131.10/year - migrate to Drive + cancel!' },
+  { name:'Urbanex Termite Recheck', month:5, day:15, type:'reminder', repeat:'yearly', sub:'~$275 instead of $130 this month' },
+
+  // ── Holidays ───────────────────────────────────────────────
   { name:'Memorial Day', month:5, day:26, type:'holiday', repeat:'once', year:2026, sub:'Federal holiday' },
-  { name:'Independence Day', month:7, day:4, type:'holiday', repeat:'yearly', sub:'Federal holiday' },
+  { name:'Independence Day', month:7, day:4, type:'holiday', repeat:'yearly', sub:'Federal holiday 🎆' },
   { name:'Labor Day', month:9, day:1, type:'holiday', repeat:'once', year:2026, sub:'Federal holiday' },
-  { name:'Thanksgiving', month:11, day:26, type:'holiday', repeat:'once', year:2026, sub:'Federal holiday' },
-  { name:'Christmas', month:12, day:25, type:'holiday', repeat:'yearly', sub:'Federal holiday' },
-  { name:"New Years Eve", month:12, day:31, type:'holiday', repeat:'yearly', sub:'Ring it in!' },
+  { name:'Thanksgiving', month:11, day:26, type:'holiday', repeat:'once', year:2026, sub:'Federal holiday 🦃' },
+  { name:'Christmas', month:12, day:25, type:'holiday', repeat:'yearly', sub:'Federal holiday 🎄' },
+  { name:"New Years Eve", month:12, day:31, type:'holiday', repeat:'yearly', sub:'Ring it in! 🎉' },
+
+  // ── Goals ──────────────────────────────────────────────────
   { name:'Christmas Fund deadline', month:12, day:10, type:'goal', repeat:'once', year:2026, sub:'Need $1,000 ready - Dec 25 is 2 weeks away' },
   { name:'Annabelle Birthday fund deadline', month:8, day:7, type:'goal', repeat:'once', year:2026, sub:'Need $300 ready - Aug 21 is 2 weeks away' },
   { name:'JJ Birthday fund deadline', month:12, day:27, type:'goal', repeat:'once', year:2026, sub:'Need $300 ready - Jan 10 is 2 weeks away' },
-  { name:'mmjones.studio domain renewal', month:12, day:23, type:'reminder', repeat:'once', year:2026, sub:'$40 annual - auto-renews Dec 23' },
-  { name:'Box.com annual renewal', month:4, day:8, type:'reminder', repeat:'yearly', sub:'$131.10/year - Personal Pro - 100GB backup storage' },
-  { name:'Urbanex Termite Recheck (replaces regular visit)', month:5, day:15, type:'reminder', repeat:'yearly', sub:'~$275 instead of $130 this month - edit bill amount in May' },
 ];
 
 const GOALS = [
@@ -1672,14 +1730,16 @@ function renderCalendar(){
     todayBtn = document.createElement('button');
     todayBtn.id = 'cal-today-btn';
     todayBtn.style.cssText = 'padding:5px 12px;border-radius:99px;border:2px solid #6A9E82;background:linear-gradient(135deg,#8DAF9B,#6A9E82);color:#fff;font-size:10px;font-weight:900;cursor:pointer;font-family:Nunito,sans-serif;margin-left:8px;vertical-align:middle;';
-    todayBtn.textContent = '← today';
     todayBtn.onclick = function(){ calViewMonth=new Date().getMonth(); calViewYear=new Date().getFullYear(); renderCalendar(); };
     titleEl.parentNode.insertBefore(todayBtn, titleEl.nextSibling);
   }
+  const viewDate = new Date(calViewYear, calViewMonth, 1);
+  const todayFirst = new Date(now.getFullYear(), now.getMonth(), 1);
+  todayBtn.textContent = viewDate < todayFirst ? 'today →' : '← today';
   todayBtn.style.display = isCurrentMonth ? 'none' : 'inline-block';
 
   // Build all events with resolved dates
-  const allEvents = [...CALENDAR_EVENTS, ...customCalEvents].filter(e => e && e.type && e.month && e.day);
+  const allEvents = [...CALENDAR_EVENTS, ...generateBillCalendarEvents(), ...customCalEvents].filter(e => e && e.type && e.month && e.day);
   const icons = {bill:'💳', birthday:'🎂', event:'🎉', reminder:'📌', holiday:'🏖', goal:'🎯'};
   const bgColors = {bill:'var(--pink-l)', birthday:'var(--mint-l)', event:'var(--lav-l)', reminder:'var(--peach-l)', holiday:'var(--butter-l)', goal:'var(--lav-l)'};
 
@@ -2495,7 +2555,7 @@ let taskFilterActive = 'all';
 
 async function loadTasks(){
   try{
-    const { data, error } = await db.from('tasks').select('*').order('created_at', { ascending: false });
+    const { data, error } = await db.from('tasks').select('*').order('priority', { ascending: false }).order('created_at', { ascending: false });
     if(error) throw error;
     allTasks = data || [];
   } catch(e){ allTasks = []; }
@@ -2520,23 +2580,49 @@ function renderTasks(){
   if(!filtered.length){ el.innerHTML = ''; if(empty) empty.style.display='block'; return; }
   if(empty) empty.style.display='none';
   el.innerHTML = '';
-  filtered.forEach(function(task){
-    const card = document.createElement('div');
-    card.className = 'task-card' + (task.done ? ' done' : '');
-    const costPill = task.cost ? '<span class="task-pill cost">💰 $'+parseFloat(task.cost).toFixed(2)+'</span>' : '';
-    const notePill = task.note ? '<span class="task-pill note">'+task.note+'</span>' : '';
-    card.innerHTML =
-      '<div class="task-card-top">'+
-        '<div class="task-check '+(task.done?'checked':'')+'" onclick="toggleTask(\''+task.id+'\', '+(! task.done)+')"></div>'+
+
+  // Priority tasks first
+  const priority = filtered.filter(function(t){ return t.priority; });
+  const regular = filtered.filter(function(t){ return !t.priority; });
+
+  if(priority.length && taskFilterActive !== 'done'){
+    const head = document.createElement('div');
+    head.style.cssText = 'font-size:10px;font-weight:900;color:#C47080;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;display:flex;align-items:center;gap:6px;';
+    head.innerHTML = '🔴 priority';
+    el.appendChild(head);
+    priority.forEach(function(task){ el.appendChild(makeTaskCard(task, true)); });
+    if(regular.length){
+      const divider = document.createElement('div');
+      divider.style.cssText = 'font-size:10px;font-weight:900;color:#6A7A5A;text-transform:uppercase;letter-spacing:0.08em;margin:12px 0 8px;';
+      divider.textContent = 'other tasks';
+      el.appendChild(divider);
+    }
+  }
+  regular.forEach(function(task){ el.appendChild(makeTaskCard(task, false)); });
+}
+
+function makeTaskCard(task, isPriority){
+  const card = document.createElement('div');
+  card.className = 'task-card' + (task.done ? ' done' : '');
+  if(isPriority && !task.done) card.style.cssText = 'background:linear-gradient(135deg,#FDF0F3,#FDE8EC);border-color:#E0A5A5;';
+  const costPill = task.cost ? '<span class="task-pill cost">💰 $'+parseFloat(task.cost).toFixed(2)+'</span>' : '';
+  const notePill = task.note ? '<span class="task-pill note">'+task.note+'</span>' : '';
+  const priorityBadge = isPriority && !task.done ? '<span style="font-size:9px;font-weight:900;color:#C47080;text-transform:uppercase;letter-spacing:0.06em;background:rgba(196,112,128,0.12);padding:2px 7px;border-radius:99px;border:1px solid rgba(196,112,128,0.2);">priority</span>' : '';
+  card.innerHTML =
+    '<div class="task-card-top">'+
+      '<div class="task-check '+(task.done?'checked':'')+'" onclick="toggleTask(\''+task.id+'\', '+(! task.done)+')"></div>'+
+      '<div style="flex:1;min-width:0;">'+
         '<div class="task-name '+(task.done?'done':'')+'">'+task.name+'</div>'+
-        '<div class="task-actions"><button class="task-del-btn" onclick="deleteTask(\''+task.id+'\')">✕</button></div>'+
+        (priorityBadge ? '<div style="margin-top:4px;">'+priorityBadge+'</div>' : '')+
       '</div>'+
-      '<div class="task-meta">'+
-        '<span class="task-pill who">👤 '+(task.assigned_to||'Both')+'</span>'+
-        costPill+notePill+
-      '</div>';
-    el.appendChild(card);
-  });
+      '<div class="task-actions"><button class="task-del-btn" onclick="deleteTask(\''+task.id+'\')">✕</button></div>'+
+    '</div>'+
+    '<div class="task-meta">'+
+      '<span class="task-pill who">👤 '+(task.assigned_to||'Both')+'</span>'+
+      costPill+
+    '</div>'+
+    (task.note ? '<div style="font-size:11px;color:#7A6A4A;font-weight:600;margin-top:6px;margin-left:34px;line-height:1.4;">'+task.note+'</div>' : '');
+  return card;
 }
 
 async function toggleTask(id, done){
