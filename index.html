@@ -280,9 +280,13 @@ html,body{height:100%;background:linear-gradient(135deg, #FBF5ED 0%, #FDF8F2 100
 .cal-dow-row{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:6px;}
 .cal-dow-row span{text-align:center;font-size:10px;font-weight:900;color:var(--ink-light);text-transform:uppercase;letter-spacing:0.04em;padding:4px 0;}
 .cal-days-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+
 .cal-day-cell{min-height:38px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;padding:3px 2px;transition:all 0.15s;border-radius:10px;}
 
-.cal-day-cell:active{transform:scale(0.88);background:rgba(212,165,125,0.15);}
+.cal-day-cell.weekend{background:rgba(212,165,125,0.08);border-radius:10px;}
+
+.cal-day-cell.today{background:linear-gradient(135deg,rgba(141,175,155,0.25),rgba(106,158,130,0.2));border-radius:10px;}
+.cal-day-cell.today .cal-day-num{background:linear-gradient(135deg,#8DAF9B,#6A9E82);color:#fff;border-radius:8px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:900;box-shadow:0 2px 8px rgba(106,158,130,0.3);}
 
 .cal-day-cell.today .cal-day-num{background:linear-gradient(135deg,#8DAF9B,#6A9E82);color:#fff;border-radius:8px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:900;}
 
@@ -505,8 +509,8 @@ html,body{height:100%;background:linear-gradient(135deg, #FBF5ED 0%, #FDF8F2 100
 @keyframes tipIn{0%{opacity:0;transform:scale(0.88);}100%{opacity:1;transform:scale(1);}}
 
 /* ASK CLAUDE */
-.ask-claude-card{background:linear-gradient(135deg, #AAC4BC 0%, #8FB5A8 100%);border-radius:var(--r-xl);border:2px solid #6A9E82;padding:18px 20px;margin-bottom:10px;position:relative;overflow:hidden;box-shadow:0 8px 24px rgba(106, 158, 130, 0.2);}
-.ask-claude-card .bd{opacity:0.12;}
+.ask-claude-card{background:linear-gradient(135deg, #AAC4BC 0%, #8FB5A8 100%);border-radius:var(--r-xl);border:2px solid #6A9E82;padding:18px 20px;margin-bottom:10px;position:relative;overflow:visible;box-shadow:0 8px 24px rgba(106, 158, 130, 0.2);}
+.ask-claude-card .bd{opacity:0.12;overflow:hidden;border-radius:var(--r-xl);}
 .ask-eyebrow{font-size:9px;font-weight:900;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.7);margin-bottom:6px;}
 .ask-title{font-size:16px;font-weight:900;color:#fff;margin-bottom:12px;}
 .ask-prompts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
@@ -559,6 +563,13 @@ html,body{height:100%;background:linear-gradient(135deg, #FBF5ED 0%, #FDF8F2 100
       <div class="bal-chip"><div class="bcl">out</div><div class="bcv exp" id="h-out">$0</div></div>
       <div class="bal-chip"><div class="bcl">logged</div><div class="bcv" id="h-cnt">0</div></div>
     </div>
+  </div>
+  <div class="bun-container bun-state-happy" id="bun-container">
+    <div class="bun-image">
+      <img src="./assets/bun-default.svg" alt="Bun" onerror="this.style.display='none'">
+    </div>
+    <div class="bun-message" id="bun-message">you're doing great — keep logging! 🌟</div>
+    <div class="bun-accessories" id="bun-accessories"></div>
   </div>
   <div class="ask-claude-card" id="ask-claude-card">
     <div class="bd a"></div><div class="bd b"></div>
@@ -1652,9 +1663,20 @@ function renderCalendar(){
   const titleEl = document.getElementById('cal-month-title');
   if(!listEl || !gridEl) return;
 
-  // Update month title
+  // Update month title + add/update "today" button
   const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   titleEl.textContent = monthNames[calViewMonth] + ' ' + calViewYear;
+  const isCurrentMonth = calViewMonth === now.getMonth() && calViewYear === now.getFullYear();
+  let todayBtn = document.getElementById('cal-today-btn');
+  if(!todayBtn){
+    todayBtn = document.createElement('button');
+    todayBtn.id = 'cal-today-btn';
+    todayBtn.style.cssText = 'padding:5px 12px;border-radius:99px;border:2px solid #6A9E82;background:linear-gradient(135deg,#8DAF9B,#6A9E82);color:#fff;font-size:10px;font-weight:900;cursor:pointer;font-family:Nunito,sans-serif;margin-left:8px;vertical-align:middle;';
+    todayBtn.textContent = '← today';
+    todayBtn.onclick = function(){ calViewMonth=new Date().getMonth(); calViewYear=new Date().getFullYear(); renderCalendar(); };
+    titleEl.parentNode.insertBefore(todayBtn, titleEl.nextSibling);
+  }
+  todayBtn.style.display = isCurrentMonth ? 'none' : 'inline-block';
 
   // Build all events with resolved dates
   const allEvents = [...CALENDAR_EVENTS, ...customCalEvents].filter(e => e && e.type && e.month && e.day);
@@ -1664,7 +1686,6 @@ function renderCalendar(){
   // Map events to this month's days
   const eventsByDay = {};
   allEvents.forEach(ev => {
-    // Check if event falls in view month/year
     const matchesMonth = ev.month === calViewMonth + 1;
     const matchesYear = !ev.year || ev.year === calViewYear;
     if(matchesMonth && matchesYear){
@@ -1683,7 +1704,9 @@ function renderCalendar(){
   // Prev month padding
   for(let i = firstDay - 1; i >= 0; i--){
     const cell = document.createElement('div');
-    cell.className = 'cal-day-cell other-month';
+    const dayOfWeek = (firstDay - 1 - i); // 0=Sun
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+    cell.className = 'cal-day-cell other-month' + (isWeekend ? ' weekend' : '');
     cell.innerHTML = '<div class="cal-day-num">'+(daysInPrev - i)+'</div>';
     gridEl.appendChild(cell);
   }
@@ -1693,7 +1716,9 @@ function renderCalendar(){
     const cell = document.createElement('div');
     const isToday = d === now.getDate() && calViewMonth === now.getMonth() && calViewYear === now.getFullYear();
     const isSelected = calSelectedDay && calSelectedDay.d === d && calSelectedDay.m === calViewMonth && calSelectedDay.y === calViewYear;
-    cell.className = 'cal-day-cell' + (isToday ? ' today' : '') + (isSelected ? ' selected' : '');
+    const dayOfWeek = new Date(calViewYear, calViewMonth, d).getDay();
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+    cell.className = 'cal-day-cell' + (isToday ? ' today' : '') + (isSelected ? ' selected' : '') + (isWeekend ? ' weekend' : '');
     const dayEvs = eventsByDay[d] || [];
     const dotsHtml = dayEvs.length ? '<div class="cal-day-dots">' + dayEvs.slice(0,3).map(ev => '<div class="cal-day-dot '+ev.type+'"></div>').join('') + '</div>' : '';
     cell.innerHTML = '<div class="cal-day-num">'+d+'</div>' + dotsHtml;
@@ -1706,7 +1731,9 @@ function renderCalendar(){
   const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
   for(let i = 1; i <= remaining; i++){
     const cell = document.createElement('div');
-    cell.className = 'cal-day-cell other-month';
+    const dayOfWeek = (totalCells + i - 1) % 7;
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+    cell.className = 'cal-day-cell other-month' + (isWeekend ? ' weekend' : '');
     cell.innerHTML = '<div class="cal-day-num">'+i+'</div>';
     gridEl.appendChild(cell);
   }
