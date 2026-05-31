@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <meta name="apple-mobile-web-app-title" content="Float · Day"/>
+  <title>Float · Schedule</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+    :root {
+      --cream:#f5f0e8;--sage:#7a9e87;--sage-light:#a8c4b0;--sage-dark:#5c8069;
+      --rose:#c17c74;--rose-light:#e8b4af;--gold:#d4a847;--gold-light:#f0d48a;
+      --sand:#e8dcc8;--sand-dark:#d4c4a8;--text-dark:#3d3530;--text-mid:#7a6e65;
+      --text-light:#a89e95;--card-bg:#faf6ee;--wind:#9b8bb0;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+    body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--text-dark);min-height:100vh;padding-bottom:80px;display:flex;flex-direction:column;align-items:center;}
+    .header,.content{width:100%;max-width:480px;}
+    .header{display:flex;justify-content:space-between;align-items:center;padding:18px 20px 10px;border-bottom:2px dashed var(--sand-dark);}
+    .logo{font-size:22px;font-weight:900;letter-spacing:-.5px;}
+    .logo span{color:var(--rose);}
+    .header-right{display:flex;align-items:center;gap:10px;}
+    .date-badge{font-size:13px;font-weight:700;color:var(--text-mid);}
+    .dot{width:8px;height:8px;background:#5cb85c;border-radius:50%;display:inline-block;}
+    .avatar{width:36px;height:36px;border-radius:50%;background:var(--sage);color:white;font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center;}
+    .content{padding:16px 16px 0;}
+
+    /* SYNC */
+    .sync-badge{display:inline-flex;align-items:center;gap:5px;background:var(--sand);border-radius:10px;padding:4px 10px;font-size:11px;font-weight:700;color:var(--text-light);margin-bottom:12px;}
+    .sync-dot{width:6px;height:6px;border-radius:50%;background:var(--text-light);}
+    .sync-dot.synced{background:#5cb85c;}
+    .sync-dot.syncing{background:var(--gold);animation:pulseAnim 1s infinite;}
+
+    /* CLOCK */
+    .live-clock-card{background:var(--text-dark);border-radius:18px;padding:16px 20px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+    .live-clock{font-size:38px;font-weight:900;color:white;letter-spacing:-1px;font-variant-numeric:tabular-nums;}
+    .clock-right{text-align:right;}
+    .clock-block-label{font-size:10px;font-weight:800;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;}
+    .clock-block-name{font-size:15px;font-weight:900;color:white;}
+    .clock-time-left{font-size:12px;font-weight:700;color:rgba(255,255,255,.55);margin-top:2px;}
+
+    /* XP BAR */
+    .xp-card{background:var(--card-bg);border:2px solid var(--sand-dark);border-radius:18px;padding:14px 16px;margin-bottom:14px;cursor:pointer;}
+    .xp-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+    .xp-level{display:flex;align-items:center;gap:8px;}
+    .xp-level-badge{background:var(--gold);color:white;font-size:11px;font-weight:900;padding:4px 10px;border-radius:20px;letter-spacing:.5px;}
+    .xp-level-name{font-size:14px;font-weight:900;color:var(--text-dark);}
+    .xp-nums{font-size:12px;font-weight:700;color:var(--text-light);}
+    .xp-bar-wrap{background:var(--sand);border-radius:8px;height:10px;overflow:hidden;margin-bottom:6px;}
+    .xp-bar-fill{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--gold),var(--gold-light));transition:width .8s ease;}
+    .xp-streak-row{display:flex;gap:8px;}
+    .xp-streak{flex:1;background:var(--sand);border-radius:10px;padding:8px 10px;text-align:center;}
+    .xp-streak-num{font-size:18px;font-weight:900;color:var(--text-dark);}
+    .xp-streak-label{font-size:10px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.6px;}
+
+    /* BOUNTY */
+    .bounty-card{background:linear-gradient(135deg,#2d4a3e,#1a3028);border-radius:18px;padding:14px 16px;margin-bottom:14px;}
+    .bounty-label{font-size:10px;font-weight:800;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+    .bounty-list{display:flex;flex-direction:column;gap:6px;}
+    .bounty-item{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.1);border-radius:12px;padding:10px 12px;cursor:pointer;}
+    .bounty-item.done{opacity:.5;}
+    .bounty-icon{font-size:18px;flex-shrink:0;}
+    .bounty-text{flex:1;}
+    .bounty-title{font-size:13px;font-weight:800;color:white;}
+    .bounty-sub{font-size:11px;color:rgba(255,255,255,.55);font-weight:600;}
+    .bounty-xp{font-size:12px;font-weight:900;color:var(--gold-light);white-space:nowrap;}
+    .bounty-check{width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .bounty-item.done .bounty-check{background:var(--sage);border-color:var(--sage);}
+
+    /* DAY CARD */
+    .day-card{background:var(--card-bg);border:2px solid var(--sand-dark);border-radius:20px;padding:18px;margin-bottom:14px;}
+    .day-card-label{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-light);margin-bottom:4px;}
+    .day-title{font-size:24px;font-weight:900;margin-bottom:2px;line-height:1.1;}
+    .day-subtitle{font-size:13px;color:var(--text-mid);font-weight:600;margin-bottom:14px;}
+    .progress-row{display:flex;gap:8px;margin-bottom:10px;}
+    .progress-pill{flex:1;background:var(--sand);border-radius:12px;padding:10px 12px;text-align:center;}
+    .p-num{font-size:20px;font-weight:900;}
+    .p-label{font-size:10px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.8px;}
+    .progress-bar-wrap{background:var(--sand);border-radius:8px;height:8px;overflow:hidden;}
+    .progress-bar-fill{height:100%;background:var(--sage);border-radius:8px;transition:width .6s ease;}
+
+    /* MEDS */
+    .meds-card{background:#f0f5f1;border:2px solid var(--sage-light);border-radius:16px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;}
+    .meds-icon{font-size:24px;}
+    .meds-text{flex:1;}
+    .meds-text strong{font-size:14px;font-weight:800;color:var(--sage-dark);display:block;}
+    .meds-text span{font-size:12px;color:var(--text-mid);font-weight:600;}
+    .meds-btn{background:var(--sage);color:white;border:none;border-radius:20px;padding:8px 14px;font-size:12px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;white-space:nowrap;}
+    .meds-btn.taken{background:var(--sand-dark);color:var(--text-mid);}
+
+    /* SECTION LABEL */
+    .section-label{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--text-light);margin:16px 0 8px 4px;}
+
+    /* BLOCKS */
+    .block{background:var(--card-bg);border:2px solid var(--sand-dark);border-radius:18px;padding:14px 16px;margin-bottom:10px;position:relative;overflow:hidden;transition:opacity .3s,border-color .3s,box-shadow .3s;}
+    .block::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;border-radius:18px 0 0 18px;}
+    .block.morning::before,.block.free::before{background:var(--rose);}
+    .block.kids::before{background:var(--gold);}
+    .block.peak::before,.block.afternoon::before{background:var(--sage);}
+    .block.wind::before{background:var(--wind);}
+    .block.current{border-color:var(--text-dark);box-shadow:0 6px 24px rgba(61,53,48,.18);}
+    .block.past{opacity:.38;}
+    .anchor.past{opacity:.38;}
+    .you-are-here{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+    .yah-dot{width:8px;height:8px;border-radius:50%;background:var(--rose);animation:pulseAnim 1.5s infinite;flex-shrink:0;}
+    .yah-label{font-size:11px;font-weight:900;color:var(--rose);text-transform:uppercase;letter-spacing:.8px;}
+    @keyframes pulseAnim{0%,100%{box-shadow:0 0 0 0 rgba(193,124,116,.5);}50%{box-shadow:0 0 0 5px rgba(193,124,116,0);}}
+    .block-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;}
+    .block-time{font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--text-light);}
+    .block-badge{font-size:10px;font-weight:800;padding:3px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.6px;}
+    .badge-free,.badge-morning{background:#f5dbd9;color:var(--rose);}
+    .badge-kids{background:#faecc8;color:#9a7520;}
+    .badge-peak,.badge-afternoon{background:#d4ede0;color:var(--sage-dark);}
+    .badge-wind{background:#e8e0f0;color:#6b5a8a;}
+    .block-title{font-size:17px;font-weight:900;margin-bottom:4px;}
+    .block-desc{font-size:13px;color:var(--text-mid);font-weight:600;line-height:1.4;}
+
+    /* TASKS */
+    .task-list{margin-top:10px;display:flex;flex-direction:column;gap:6px;}
+    .task-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--sand);border-radius:10px;}
+    .task-item.done{opacity:.5;}
+    .task-check{width:20px;height:20px;border-radius:50%;border:2px solid var(--sand-dark);background:white;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:all .2s;}
+    .task-item.done .task-check{background:var(--sage);border-color:var(--sage);}
+    .task-check svg{display:none;}
+    .task-item.done .task-check svg{display:block;}
+    .task-label{font-size:13px;font-weight:700;flex:1;cursor:pointer;}
+    .task-item.done .task-label{text-decoration:line-through;color:var(--text-light);}
+    .task-edit-btn{background:none;border:none;font-size:14px;cursor:pointer;padding:2px 4px;opacity:.4;flex-shrink:0;}
+    .task-edit-btn:active{opacity:1;}
+    .task-add-btn{display:flex;align-items:center;gap:6px;padding:7px 10px;background:none;border:2px dashed var(--sand-dark);border-radius:10px;font-size:12px;font-weight:700;font-family:'Nunito',sans-serif;color:var(--text-light);cursor:pointer;width:100%;margin-top:4px;}
+    .task-add-btn:active{background:var(--sand);}
+
+    /* ANCHORS */
+    .anchor{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#faecc8;border:2px solid #e8d090;border-radius:14px;margin-bottom:10px;transition:opacity .3s;}
+    .anchor-icon{font-size:18px;}
+    .anchor-text strong{font-size:13px;font-weight:800;color:#7a5a10;display:block;}
+    .anchor-text span{font-size:12px;color:#a07830;font-weight:600;}
+
+    /* BOOKENDS */
+    .bookend{background:var(--card-bg);border:2px solid var(--sand-dark);border-radius:18px;padding:14px 16px;margin-bottom:10px;transition:opacity .3s;}
+    .bookend.past{opacity:.38;}
+    .bookend-header{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+    .bookend-icon{font-size:22px;}
+    .bookend-title{font-size:16px;font-weight:900;}
+    .bookend-sub{font-size:12px;color:var(--text-light);font-weight:600;}
+
+    /* SLEEP */
+    .sleep-card{background:var(--text-dark);border-radius:20px;padding:18px 20px;margin-bottom:14px;}
+    .sleep-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+    .sleep-card-label{font-size:11px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:2px;}
+    .sleep-goal{font-size:14px;font-weight:900;color:white;}
+    .sleep-hours-big{font-size:38px;font-weight:900;color:white;letter-spacing:-1px;line-height:1;}
+    .sleep-hours-sub{font-size:11px;font-weight:700;color:rgba(255,255,255,.45);margin-top:2px;}
+    .sleep-bar-wrap{background:rgba(255,255,255,.12);border-radius:8px;height:8px;overflow:hidden;margin-bottom:16px;}
+    .sleep-bar-fill{height:100%;border-radius:8px;transition:width .8s ease;background:var(--sage-light);}
+    .sleep-bar-fill.goal-met{background:#7de8a0;}
+    .sleep-btn-row{display:flex;gap:8px;margin-bottom:14px;}
+    .sleep-btn{flex:1;padding:12px 6px;border-radius:14px;font-size:12px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;border:2px solid;text-align:center;transition:all .2s;}
+    .sleep-btn.inbed{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.25);color:rgba(255,255,255,.8);}
+    .sleep-btn.inbed.active{background:var(--wind);border-color:#7a6a90;color:white;}
+    .sleep-btn.asleep{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.25);color:rgba(255,255,255,.8);}
+    .sleep-btn.asleep.active{background:#4a6fa5;border-color:#2a4f85;color:white;}
+    .sleep-btn.awake{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.25);color:rgba(255,255,255,.8);}
+    .sleep-btn.awake.active{background:var(--gold);border-color:#b08830;color:white;}
+    .sleep-timestamps{display:flex;gap:8px;margin-bottom:14px;}
+    .sleep-stamp{flex:1;background:rgba(255,255,255,.08);border-radius:12px;padding:8px 10px;text-align:center;}
+    .sleep-stamp-label{font-size:10px;font-weight:800;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px;}
+    .sleep-stamp-val{font-size:14px;font-weight:900;color:white;}
+    .sleep-stamp-val.unset{color:rgba(255,255,255,.25);font-size:12px;}
+    .sleep-rating-row{display:flex;gap:6px;margin-bottom:6px;}
+    .sleep-rating-btn{flex:1;padding:10px 4px;border-radius:12px;font-size:18px;border:2px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);cursor:pointer;text-align:center;transition:all .2s;}
+    .sleep-rating-btn.selected{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.5);transform:scale(1.08);}
+    .sleep-rating-label{font-size:10px;font-weight:700;color:rgba(255,255,255,.35);text-align:center;letter-spacing:.5px;}
+
+    /* ACTIONS */
+    .action-row{display:flex;gap:8px;margin-bottom:14px;}
+    .action-btn{flex:1;padding:13px 6px;border-radius:16px;font-size:12px;font-weight:800;font-family:'Nunito',sans-serif;cursor:pointer;border:2px solid;text-align:center;}
+    .btn-offtrack{background:var(--card-bg);border-color:var(--rose-light);color:var(--rose);}
+    .btn-chat{background:var(--sage);border-color:var(--sage-dark);color:white;}
+    .btn-endday{background:var(--text-dark);border-color:var(--text-dark);color:white;}
+
+    /* MODALS */
+    .modal-overlay{position:fixed;inset:0;background:rgba(61,53,48,.5);z-index:100;display:none;align-items:flex-end;justify-content:center;}
+    .modal-overlay.open{display:flex;}
+    .modal{background:var(--card-bg);border-radius:24px 24px 0 0;padding:24px 20px 44px;width:100%;max-width:480px;animation:slideUp .3s ease;max-height:92vh;overflow-y:auto;}
+    @keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+    .modal-handle{width:40px;height:4px;background:var(--sand-dark);border-radius:2px;margin:0 auto 20px;}
+    .modal-title{font-size:20px;font-weight:900;margin-bottom:4px;}
+    .modal-sub{font-size:13px;color:var(--text-mid);font-weight:600;margin-bottom:16px;}
+    .modal textarea{width:100%;background:var(--sand);border:2px solid var(--sand-dark);border-radius:14px;padding:12px 14px;font-size:14px;font-weight:600;font-family:'Nunito',sans-serif;color:var(--text-dark);resize:none;outline:none;min-height:90px;margin-bottom:12px;}
+    .modal-btns{display:flex;gap:8px;}
+    .modal-cancel{flex:1;padding:14px;background:var(--sand);border:2px solid var(--sand-dark);border-radius:14px;font-size:14px;font-weight:800;font-family:'Nunito',sans-serif;color:var(--text-mid);cursor:pointer;}
+    .modal-submit{flex:2;padding:14px;background:var(--sage);border:none;border-radius:14px;font-size:14px;font-weight:800;font-family:'Nunito',sans-serif;color:white;cursor:pointer;}
+    .modal-submit.dark{background:var(--text-dark);}
+
+    /* CHAT */
+    .chat-messages{display:flex;flex-direction:column;gap:10px;min-height:180px;max-height:42vh;overflow-y:auto;margin-bottom:14px;padding:4px 0;}
+    .chat-msg{padding:10px 14px;border-radius:16px;font-size:13px;font-weight:600;line-height:1.5;max-width:88%;}
+    .chat-msg.user{background:var(--sage);color:white;align-self:flex-end;border-radius:16px 16px 4px 16px;}
+    .chat-msg.claude{background:var(--sand);color:var(--text-dark);align-self:flex-start;border-radius:16px 16px 16px 4px;}
+    .chat-msg.claude.thinking{opacity:.6;}
+    .chat-input-row{display:flex;gap:8px;}
+    .chat-input{flex:1;background:var(--sand);border:2px solid var(--sand-dark);border-radius:14px;padding:12px 14px;font-size:13px;font-weight:600;font-family:'Nunito',sans-serif;color:var(--text-dark);outline:none;}
+    .chat-input::placeholder{color:var(--text-light);}
+    .chat-send{width:44px;height:44px;background:var(--sage);border:none;border-radius:14px;color:white;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .chat-prompts{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+    .chat-prompt{background:var(--sand);border:2px solid var(--sand-dark);border-radius:20px;padding:6px 12px;font-size:11px;font-weight:700;font-family:'Nunito',sans-serif;color:var(--text-mid);cursor:pointer;}
+    .chat-section-label{font-size:10px;font-weight:800;color:var(--text-light);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+
+    /* ACHIEVEMENTS MODAL */
+    .ach-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+    .ach-badge{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;background:var(--sand);border-radius:14px;border:2px solid var(--sand-dark);opacity:.35;transition:all .3s;}
+    .ach-badge.unlocked{opacity:1;border-color:var(--gold);background:#fdf8ee;}
+    .ach-badge.unlocked.new{animation:badgePop .5s ease;}
+    @keyframes badgePop{0%{transform:scale(.8);}60%{transform:scale(1.15);}100%{transform:scale(1);}}
+    .ach-emoji{font-size:28px;}
+    .ach-name{font-size:9px;font-weight:800;color:var(--text-mid);text-align:center;letter-spacing:.3px;}
+    .ach-badge.unlocked .ach-name{color:var(--text-dark);}
+
+    /* PUNCH CARD */
+    .punch-card{background:var(--card-bg);border:2px solid var(--sand-dark);border-radius:16px;padding:14px;margin-bottom:12px;}
+    .punch-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+    .punch-card-title{font-size:14px;font-weight:900;}
+    .punch-card-sub{font-size:11px;color:var(--text-light);font-weight:600;}
+    .punch-dots{display:flex;gap:6px;flex-wrap:wrap;}
+    .punch-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--sand-dark);background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .3s;}
+    .punch-dot.filled{background:var(--sage);border-color:var(--sage-dark);}
+    .punch-dot.filled::after{content:'✓';color:white;font-size:12px;font-weight:900;}
+    .punch-dot.filled{font-size:0;}
+
+    /* EOD */
+    .eod-section{margin-bottom:16px;}
+    .eod-label{font-size:12px;font-weight:800;color:var(--text-mid);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;display:block;}
+    .pill-group{display:flex;flex-wrap:wrap;gap:6px;}
+    .pill-opt{background:var(--sand);border:2px solid var(--sand-dark);border-radius:20px;padding:7px 14px;font-size:12px;font-weight:700;font-family:'Nunito',sans-serif;color:var(--text-mid);cursor:pointer;}
+    .pill-opt.selected{background:var(--sage);border-color:var(--sage-dark);color:white;}
+    .pill-opt.red.selected{background:var(--rose);border-color:#a05850;color:white;}
+    .pill-opt.gold.selected{background:var(--gold);border-color:#b08830;color:white;}
+
+    /* TOAST & ACHIEVEMENT POPUP */
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--sage-dark);color:white;padding:12px 20px;border-radius:20px;font-size:13px;font-weight:800;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;}
+    .toast.show{opacity:1;}
+    .ach-popup{position:fixed;top:80px;left:50%;transform:translateX(-50%) translateY(-20px);background:var(--text-dark);color:white;padding:14px 20px;border-radius:20px;font-size:13px;font-weight:800;z-index:201;opacity:0;transition:all .4s;pointer-events:none;text-align:center;min-width:200px;white-space:nowrap;}
+    .ach-popup.show{opacity:1;transform:translateX(-50%) translateY(0);}
+    .ach-popup-emoji{font-size:24px;display:block;margin-bottom:4px;}
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">float<span>.</span></div>
+  <div class="header-right">
+    <span class="date-badge" id="todayDate"></span>
+    <span class="dot"></span>
+    <div class="avatar">M</div>
+  </div>
+</div>
+
+<div class="content">
+  <div class="sync-badge"><div class="sync-dot" id="syncDot"></div><span id="syncLabel">not synced today</span></div>
+
+  <!-- CLOCK -->
+  <div class="live-clock-card">
+    <div class="live-clock" id="liveClock">--:--</div>
+    <div class="clock-right">
+      <div class="clock-block-label">you are here</div>
+      <div class="clock-block-name" id="clockBlockName">–</div>
+      <div class="clock-time-left" id="clockTimeLeft">–</div>
+    </div>
+  </div>
+
+  <!-- XP CARD -->
+  <div class="xp-card" onclick="openModal('achievements')">
+    <div class="xp-top">
+      <div class="xp-level">
+        <div class="xp-level-badge" id="xpLevelBadge">LVL 1</div>
+        <div class="xp-level-name" id="xpLevelName">Just Getting Started</div>
+      </div>
+      <div class="xp-nums" id="xpNums">0 / 100 XP</div>
+    </div>
+    <div class="xp-bar-wrap"><div class="xp-bar-fill" id="xpBarFill" style="width:0%"></div></div>
+    <div class="xp-streak-row">
+      <div class="xp-streak"><div class="xp-streak-num" id="streakDays">0</div><div class="xp-streak-label">🔥 day streak</div></div>
+      <div class="xp-streak"><div class="xp-streak-num" id="sleepStreak">0</div><div class="xp-streak-label">🌙 sleep streak</div></div>
+      <div class="xp-streak"><div class="xp-streak-num" id="totalBadges">0</div><div class="xp-streak-label">🏅 badges</div></div>
+    </div>
+  </div>
+
+  <!-- BOUNTIES -->
+  <div class="bounty-card">
+    <div class="bounty-label">⚔️ today's bounties</div>
+    <div class="bounty-list" id="bountyList"></div>
+  </div>
+
+  <!-- DAY CARD -->
+  <div class="day-card">
+    <div class="day-card-label">today's schedule</div>
+    <div class="day-title" id="greeting">good morning ☀️</div>
+    <div class="day-subtitle">meds at 9am · kids up at 9 · nap 1:30–3:30 · bed by 10</div>
+    <div class="progress-row">
+      <div class="progress-pill"><div class="p-num" id="doneCount">0</div><div class="p-label">done</div></div>
+      <div class="progress-pill"><div class="p-num" id="leftCount">0</div><div class="p-label">left</div></div>
+      <div class="progress-pill"><div class="p-num" id="blockCount">5</div><div class="p-label">blocks</div></div>
+    </div>
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:0%"></div></div>
+  </div>
+
+  <!-- MEDS -->
+  <div class="meds-card" id="medsCard">
+    <div class="meds-icon">💊</div>
+    <div class="meds-text"><strong>take meds at 9am</strong><span>with breakfast · before waking kids</span></div>
+    <button class="meds-btn" id="medsBtn" onclick="toggleMeds()">mark taken</button>
+  </div>
+
+  <div class="section-label">⏱ time blocks</div>
+
+  <!-- MORNING RITUAL -->
+  <div class="bookend" id="bookend-morning">
+    <div class="bookend-header">
+      <div class="bookend-icon">🚿</div>
+      <div><div class="bookend-title">wake-up ritual · 5:30–6:30am</div><div class="bookend-sub">signals your body it's starting</div></div>
+    </div>
+    <div class="task-list" id="tasks-morning">
+      <div class="task-item" data-id="m1"><div class="task-check" onclick="toggleTask(this.parentElement)"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="task-label" onclick="editTaskLabel(this)">🚿 shower (Gare's warm water)</span><button class="task-edit-btn" onclick="deleteTask(this.parentElement)">×</button></div>
+      <div class="task-item" data-id="m2"><div class="task-check" onclick="toggleTask(this.parentElement)"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="task-label" onclick="editTaskLabel(this)">🧴 morning skincare</span><button class="task-edit-btn" onclick="deleteTask(this.parentElement)">×</button></div>
+      <div class="task-item" data-id="m3"><div class="task-check" onclick="toggleTask(this.parentElement)"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="task-label" onclick="editTaskLabel(this)">☕ coffee</span><button class="task-edit-btn" onclick="deleteTask(this.parentElement)">×</button></div>
+    </div>
+    <button class="task-add-btn" onclick="addTask('tasks-morning')">+ add step</button>
+  </div>
+
+  <div class="block free" id="block-free">
+    <div class="block-header"><div class="block-time">6:30 – 9:00am</div><div class="block-badge badge-free">free time</div></div>
+    <div class="block-title">ease in 🎮</div>
+    <div class="block-desc">games · drawing · reading · no pressure.<br/>meds not active yet — don't fight it.</div>
+  </div>
+
+  <div class="anchor" id="anchor-9am"><div class="anchor-icon">⏰</div><div class="anchor-text"><strong>9:00am — hard anchor</strong><span>wake kids · take meds with breakfast</span></div></div>
+
+  <div class="block kids" id="block-kids">
+    <div class="block-header"><div class="block-time">9:00am – 1:30pm</div><div class="block-badge badge-kids">kids mode</div></div>
+    <div class="block-title">mornings with the kids 👧🏻</div>
+    <div class="block-desc">fully present · no work guilt.<br/>meds kicking in — your brain is sharpening.</div>
+  </div>
+
+  <div class="anchor" id="anchor-nap"><div class="anchor-icon">😴</div><div class="anchor-text"><strong>1:30pm — hard anchor</strong><span>kids down · start work immediately</span></div></div>
+
+  <div class="block peak" id="block-peak">
+    <div class="block-header"><div class="block-time">1:30 – 3:30pm</div><div class="block-badge badge-peak">🔥 peak focus</div></div>
+    <div class="block-title">deep work</div>
+    <div class="block-desc">meds fully active · one task at a time.</div>
+    <div class="task-list" id="tasks-peak">
+      <div class="task-item" data-id="p1"><div class="task-check" onclick="toggleTask(this.parentElement)"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="task-label" onclick="editTaskLabel(this)">tap to edit or add your tasks for today</span><button class="task-edit-btn" onclick="deleteTask(this.parentElement)">×</button></div>
+    </div>
+    <button class="task-add-btn" onclick="addTask('tasks-peak')">+ add task</button>
+  </div>
+
+  <div class="anchor" id="anchor-gare"><div class="anchor-icon">🏠</div><div class="anchor-text"><strong>~3:30pm — Gare home</strong><span>hand off kids · afternoon work block</span></div></div>
+
+  <div class="block afternoon" id="block-afternoon">
+    <div class="block-header"><div class="block-time">3:30pm – dinner</div><div class="block-badge badge-afternoon">work block</div></div>
+    <div class="block-title">afternoon focus 🌿</div>
+    <div class="block-desc">outside if possible · meds still active.</div>
+    <div class="task-list" id="tasks-afternoon"></div>
+    <button class="task-add-btn" onclick="addTask('tasks-afternoon')">+ add task</button>
+  </div>
+
+  <div class="block wind" id="block-wind">
+    <div class="block-header"><div class="block-time">after dinner – 10pm</div><div class="block-badge badge-wind">wind down</div></div>
+    <div class="block-title">family time 🌙</div>
+    <div class="block-desc">meds worn off · don't fight it.<br/>off the couch by 9:30 — no negotiating.</div>
+  </div>
+
+  <div class="anchor" id="anchor-stop" style="background:#f0e8f5;border-color:#d4b8e8;"><div class="anchor-icon">🛑</div><div class="anchor-text"><strong style="color:#6b3a8a;">10:00pm — hard stop</strong><span style="color:#8a5aaa;">in bed · not on couch · no negotiating</span></div></div>
+
+  <!-- NIGHT RITUAL -->
+  <div class="section-label">🌙 night ritual</div>
+  <div class="bookend" id="bookend-night">
+    <div class="bookend-header">
+      <div class="bookend-icon">✨</div>
+      <div><div class="bookend-title">wind-down routine</div><div class="bookend-sub">signals your body it's done</div></div>
+    </div>
+    <div class="task-list" id="tasks-night">
+      <div class="task-item" data-id="n1"><div class="task-check" onclick="toggleTask(this.parentElement)"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="task-label" onclick="editTaskLabel(this)">🧴 night skincare routine</span><button class="task-edit-btn" onclick="deleteTask(this.parentElement)">×</button></div>
+      <div class="task-item" data-id="n2"><div class="task-check" onclick="toggleTask(this.parentElement)"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="task-label" onclick="editTaskLabel(this)">📵 phone down, in bed with Gare</span><button class="task-edit-btn" onclick="deleteTask(this.parentElement)">×</button></div>
+      <div class="task-item" data-id="n3"><div class="task-check" onclick="toggleTask(this.parentElement)"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="task-label" onclick="editTaskLabel(this)">😴 asleep by 10:30pm</span><button class="task-edit-btn" onclick="deleteTask(this.parentElement)">×</button></div>
+    </div>
+    <button class="task-add-btn" onclick="addTask('tasks-night')">+ add step</button>
+  </div>
+
+  <!-- SLEEP TRACKER -->
+  <div class="section-label">😴 sleep tracker</div>
+  <div class="sleep-card">
+    <div class="sleep-card-top">
+      <div><div class="sleep-card-label">tonight's goal</div><div class="sleep-goal">10:00pm → 6:00am · 8hrs</div></div>
+      <div style="text-align:right;"><div class="sleep-hours-big" id="sleepHoursBig">– h</div><div class="sleep-hours-sub" id="sleepHoursSub">not logged yet</div></div>
+    </div>
+    <div class="sleep-bar-wrap"><div class="sleep-bar-fill" id="sleepBarFill" style="width:0%"></div></div>
+    <div class="sleep-btn-row">
+      <button class="sleep-btn inbed" id="btn-inbed" onclick="logSleep('inbed')">🛏️ in bed</button>
+      <button class="sleep-btn asleep" id="btn-asleep" onclick="logSleep('asleep')">💤 asleep</button>
+      <button class="sleep-btn awake" id="btn-awake" onclick="logSleep('awake')">☀️ awake</button>
+    </div>
+    <div class="sleep-timestamps">
+      <div class="sleep-stamp"><div class="sleep-stamp-label">🛏 in bed</div><div class="sleep-stamp-val" id="stamp-inbed"><span class="unset">––:––</span></div></div>
+      <div class="sleep-stamp"><div class="sleep-stamp-label">💤 asleep</div><div class="sleep-stamp-val" id="stamp-asleep"><span class="unset">––:––</span></div></div>
+      <div class="sleep-stamp"><div class="sleep-stamp-label">☀️ awake</div><div class="sleep-stamp-val" id="stamp-awake"><span class="unset">––:––</span></div></div>
+    </div>
+    <div class="sleep-rating-row">
+      <button class="sleep-rating-btn" id="rate-1" onclick="rateSleep(1)">😩</button>
+      <button class="sleep-rating-btn" id="rate-2" onclick="rateSleep(2)">😕</button>
+      <button class="sleep-rating-btn" id="rate-3" onclick="rateSleep(3)">😐</button>
+      <button class="sleep-rating-btn" id="rate-4" onclick="rateSleep(4)">🙂</button>
+      <button class="sleep-rating-btn" id="rate-5" onclick="rateSleep(5)">😄</button>
+    </div>
+    <div class="sleep-rating-label">how did you sleep?</div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="action-row">
+    <button class="action-btn btn-offtrack" onclick="openModal('offtrack')">😬 off track</button>
+    <button class="action-btn btn-chat" onclick="openModal('chat')">💬 chat / log</button>
+    <button class="action-btn btn-endday" onclick="openModal('endday')">🌙✨ log day</button>
+  </div>
+
+</div><!-- end content -->
+
+<!-- OFF TRACK MODAL -->
+<div class="modal-overlay" id="modal-offtrack" onclick="closeModalOutside(event,'offtrack')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">got off track? 😬</div>
+    <div class="modal-sub">tell me what happened — i'll help you adjust and keep the day</div>
+    <textarea id="offTrackText" placeholder="e.g. I have a call at 1pm · kids didn't nap · I fell asleep · anything..."></textarea>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal('offtrack')">cancel</button>
+      <button class="modal-submit" onclick="submitOffTrack()">adjust my day ➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHAT MODAL -->
+<div class="modal-overlay" id="modal-chat" onclick="closeModalOutside(event,'chat')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">chat + daily log 💬</div>
+    <div class="modal-sub">food · thoughts · plan tomorrow · set up today's tasks</div>
+    <div class="chat-section-label">quick actions</div>
+    <div class="chat-prompts">
+      <button class="chat-prompt" onclick="chatQuickLog('setup')">🌅 set up today</button>
+      <button class="chat-prompt" onclick="chatQuickLog('reschedule')">🔄 reschedule</button>
+      <button class="chat-prompt" onclick="chatQuickLog('food')">🍽️ log food</button>
+      <button class="chat-prompt" onclick="chatQuickLog('tomorrow')">📅 plan tomorrow</button>
+      <button class="chat-prompt" onclick="chatQuickLog('win')">🎉 log a win</button>
+      <button class="chat-prompt" onclick="chatQuickLog('bedtime')">🛑 bedtime check</button>
+    </div>
+    <div class="chat-section-label">conversation</div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-msg claude">hey 👋 what's on your mind? i can help set up your tasks, reschedule around something new, log food or wins, plan tomorrow, or just talk.</div>
+    </div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chatInput" type="text" placeholder="type anything..."/>
+      <button class="chat-send" onclick="sendChat()">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- ACHIEVEMENTS MODAL -->
+<div class="modal-overlay" id="modal-achievements" onclick="closeModalOutside(event,'achievements')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">achievements 🏅</div>
+    <div class="modal-sub">tap a badge to see what it's for</div>
+
+    <div class="ach-grid" id="achGrid"></div>
+
+    <div class="section-label">📋 punch cards</div>
+    <div id="punchCards"></div>
+  </div>
+</div>
+
+<!-- END OF DAY MODAL -->
+<div class="modal-overlay" id="modal-endday" onclick="closeModalOutside(event,'endday')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">end of day 🌙✨</div>
+    <div class="modal-sub">60 seconds · earns XP · logs to notion</div>
+    <div class="eod-section"><span class="eod-label">morning routine</span><div class="pill-group" id="eod-morning"><button class="pill-opt" onclick="selectPill(this,'eod-morning')">✅ did it</button><button class="pill-opt gold" onclick="selectPill(this,'eod-morning')">⚠️ partial</button><button class="pill-opt red" onclick="selectPill(this,'eod-morning')">❌ skipped</button></div></div>
+    <div class="eod-section"><span class="eod-label">meds at 9am</span><div class="pill-group" id="eod-meds"><button class="pill-opt" onclick="selectPill(this,'eod-meds')">✅ on time</button><button class="pill-opt gold" onclick="selectPill(this,'eod-meds')">⚠️ late</button><button class="pill-opt red" onclick="selectPill(this,'eod-meds')">❌ skipped</button></div></div>
+    <div class="eod-section"><span class="eod-label">peak window used</span><div class="pill-group" id="eod-peak"><button class="pill-opt" onclick="selectPill(this,'eod-peak')">✅ used it</button><button class="pill-opt gold" onclick="selectPill(this,'eod-peak')">⚠️ partially</button><button class="pill-opt red" onclick="selectPill(this,'eod-peak')">❌ missed it</button></div></div>
+    <div class="eod-section"><span class="eod-label">couch trap</span><div class="pill-group" id="eod-couch"><button class="pill-opt" onclick="selectPill(this,'eod-couch')">✅ avoided</button><button class="pill-opt gold" onclick="selectPill(this,'eod-couch')">⚠️ almost</button><button class="pill-opt red" onclick="selectPill(this,'eod-couch')">❌ fell in</button></div></div>
+    <div class="eod-section"><span class="eod-label">bed by 10:30</span><div class="pill-group" id="eod-bed"><button class="pill-opt" onclick="selectPill(this,'eod-bed')">✅ yes</button><button class="pill-opt gold" onclick="selectPill(this,'eod-bed')">⚠️ close</button><button class="pill-opt red" onclick="selectPill(this,'eod-bed')">❌ nope</button></div></div>
+    <div class="eod-section"><span class="eod-label">night routine</span><div class="pill-group" id="eod-night"><button class="pill-opt" onclick="selectPill(this,'eod-night')">✅ did it</button><button class="pill-opt gold" onclick="selectPill(this,'eod-night')">⚠️ partial</button><button class="pill-opt red" onclick="selectPill(this,'eod-night')">❌ skipped</button></div></div>
+    <div class="eod-section"><span class="eod-label">mood</span><div class="pill-group" id="eod-mood"><button class="pill-opt" onclick="selectPill(this,'eod-mood')">good</button><button class="pill-opt" onclick="selectPill(this,'eod-mood')">content</button><button class="pill-opt" onclick="selectPill(this,'eod-mood')">calm</button><button class="pill-opt gold" onclick="selectPill(this,'eod-mood')">okay</button><button class="pill-opt gold" onclick="selectPill(this,'eod-mood')">tired</button><button class="pill-opt red" onclick="selectPill(this,'eod-mood')">anxious</button><button class="pill-opt red" onclick="selectPill(this,'eod-mood')">overwhelmed</button></div></div>
+    <div class="eod-section"><span class="eod-label">energy</span><div class="pill-group" id="eod-energy"><button class="pill-opt" onclick="selectPill(this,'eod-energy')">good</button><button class="pill-opt gold" onclick="selectPill(this,'eod-energy')">okay</button><button class="pill-opt gold" onclick="selectPill(this,'eod-energy')">low</button><button class="pill-opt red" onclick="selectPill(this,'eod-energy')">depleted</button></div></div>
+    <div class="eod-section"><span class="eod-label">anything to note</span><textarea id="eodNotes" placeholder="optional — wins, struggles, anything..." style="min-height:70px;"></textarea></div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeModal('endday')">cancel</button>
+      <button class="modal-submit dark" id="submitEodBtn" onclick="submitEndOfDay()">save + earn XP ➤</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="ach-popup" id="achPopup"><span class="ach-popup-emoji" id="achPopupEmoji"></span><span id="achPopupText"></span></div>
+
+<script>
+const NOTION_DB_ID='a312ffc6-0d56-405c-94c0-332ccde7ad7a';
+const TODAY=new Date().toISOString().split('T')[0];
+
+// ── STORAGE HELPERS ─────────────────────────────────────────────
+function gs(k,def){try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):def;}catch{return def;}}
+function ss(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
+
+// ── ACHIEVEMENT DEFINITIONS ─────────────────────────────────────
+const ACHIEVEMENTS=[
+  // Routine
+  {id:'first_morning',emoji:'🌅',name:'Rise & Shine',desc:'Complete your morning routine for the first time',xp:50,secret:false},
+  {id:'morning_5',emoji:'🚿',name:'Creature of Habit',desc:'Complete morning routine 5 days',xp:100,secret:false},
+  {id:'morning_30',emoji:'🌟',name:'Morning Person',desc:'Complete morning routine 30 days',xp:500,secret:false},
+  // Sleep
+  {id:'first_sleep',emoji:'🌙',name:'Lights Out',desc:'Log your first full sleep',xp:50,secret:false},
+  {id:'sleep_8hrs',emoji:'💤',name:'Sweet Dreams',desc:'Sleep 8+ hours for the first time',xp:75,secret:false},
+  {id:'sleep_streak_7',emoji:'🛏️',name:'Sleep Queen',desc:'Hit sleep goal 7 nights in a row',xp:200,secret:false},
+  {id:'sleep_streak_30',emoji:'👑',name:'Well Rested',desc:'Hit sleep goal 30 nights in a row',xp:1000,secret:true},
+  // Meds
+  {id:'meds_first',emoji:'💊',name:'On Time',desc:'Take meds on time for the first time',xp:25,secret:false},
+  {id:'meds_7',emoji:'⏰',name:'Clockwork',desc:'Meds on time 7 days in a row',xp:150,secret:false},
+  // Focus
+  {id:'peak_first',emoji:'🔥',name:'In the Zone',desc:'Use your full peak window',xp:50,secret:false},
+  {id:'peak_7',emoji:'⚡',name:'Peak Performer',desc:'Use peak window 7 days in a row',xp:200,secret:false},
+  // Couch trap
+  {id:'couch_first',emoji:'🛋️',name:'Couch Dodger',desc:'Avoid the couch trap once',xp:50,secret:false},
+  {id:'couch_7',emoji:'🏃',name:'No Couch November',desc:'Avoid couch trap 7 days in a row',xp:200,secret:false},
+  // Tasks
+  {id:'tasks_first',emoji:'✅',name:'Getting Things Done',desc:'Complete all your tasks in a day',xp:75,secret:false},
+  {id:'tasks_7',emoji:'📋',name:'Task Master',desc:'Complete all tasks 7 days in a row',xp:300,secret:false},
+  // Perfect day
+  {id:'perfect_day',emoji:'💎',name:'Diamond Day',desc:'Perfect day — all green across the board',xp:250,secret:true},
+  {id:'perfect_week',emoji:'🌈',name:'Legendary Week',desc:'Perfect days 7 days in a row',xp:1000,secret:true},
+  // Streaks
+  {id:'streak_3',emoji:'🔥',name:'On a Roll',desc:'3-day streak',xp:50,secret:false},
+  {id:'streak_7',emoji:'🎯',name:'One Week Strong',desc:'7-day streak',xp:150,secret:false},
+  {id:'streak_30',emoji:'🏆',name:'Unstoppable',desc:'30-day streak',xp:500,secret:false},
+  {id:'streak_100',emoji:'⭐',name:'Centurion',desc:'100-day streak',xp:2000,secret:true},
+  // Special / surprise
+  {id:'first_log',emoji:'📖',name:'Day One',desc:'Complete your first end-of-day log',xp:50,secret:false},
+  {id:'night_routine',emoji:'✨',name:'Glow Up',desc:'Complete night skincare 5 days in a row',xp:100,secret:false},
+  {id:'chat_used',emoji:'💬',name:'Open Book',desc:'Use the daily chat for the first time',xp:25,secret:false},
+  {id:'reschedule',emoji:'🔄',name:'Flexible',desc:'Reschedule your day and keep going',xp:50,secret:true},
+];
+
+// ── PUNCH CARDS ─────────────────────────────────────────────────
+const PUNCH_CARDS=[
+  {id:'pc_morning',title:'Morning Ritual',emoji:'🚿',goal:5,trackKey:'morningStreak',desc:'Complete morning routine 5 days'},
+  {id:'pc_sleep',title:'Sleep Goals',emoji:'🌙',goal:7,trackKey:'sleepStreak',desc:'Hit 8hr sleep goal 7 nights'},
+  {id:'pc_meds',title:'Meds on Time',emoji:'💊',goal:7,trackKey:'medsStreak',desc:'Take meds on time 7 days'},
+  {id:'pc_couch',title:'Couch Dodger',emoji:'🛋️',goal:5,trackKey:'couchStreak',desc:'Avoid the couch trap 5 days'},
+  {id:'pc_peak',title:'Peak Focus',emoji:'🔥',goal:7,trackKey:'peakStreak',desc:'Use peak window 7 days'},
+  {id:'pc_perfect',title:'Perfect Days',emoji:'💎',goal:3,trackKey:'perfectStreak',desc:'Have 3 perfect days'},
+];
+
+// ── BOUNTY DEFINITIONS (refreshes daily) ────────────────────────
+const ALL_BOUNTIES=[
+  {id:'b_morning',icon:'🚿',title:'Morning Warrior',sub:'Complete your full morning ritual',xp:30,key:'morning',val:'✅ did it'},
+  {id:'b_meds',icon:'💊',title:'Clockwork',sub:'Take meds on time at 9am',xp:20,key:'meds',val:'✅ on time'},
+  {id:'b_peak',icon:'🔥',title:'Peak Predator',sub:'Fully use your nap-time focus window',xp:40,key:'peak',val:'✅ used it'},
+  {id:'b_couch',icon:'🛋️',title:'Couch Slayer',sub:'Don\'t fall into the couch trap tonight',xp:30,key:'couch',val:'✅ avoided'},
+  {id:'b_bed',icon:'🛑',title:'10pm Champion',sub:'Be in bed by 10:30pm',xp:25,key:'bed',val:'✅ yes'},
+  {id:'b_sleep',icon:'💤',title:'Sleep Collector',sub:'Log all 3 sleep timestamps tonight',xp:35,key:'sleepLogged',val:true},
+  {id:'b_night',icon:'✨',title:'Night Ritual',sub:'Complete your full night routine',xp:20,key:'night',val:'✅ did it'},
+  {id:'b_tasks',icon:'✅',title:'Task Crusher',sub:'Check off every task you set today',xp:50,key:'allTasksDone',val:true},
+  {id:'b_chat',icon:'💬',title:'Check In',sub:'Use the chat or log feature today',xp:15,key:'chatUsed',val:true},
+];
+
+function getDailyBounties(){
+  // Pick 4 bounties based on day of year (rotates but is consistent per day)
+  const day=Math.floor(Date.now()/86400000);
+  const indices=[];
+  for(let i=0;i<ALL_BOUNTIES.length;i++) indices.push(i);
+  // Shuffle seeded by day
+  for(let i=indices.length-1;i>0;i--){const j=(day*13+i*7)%( i+1);[indices[i],indices[j]]=[indices[j],indices[i]];}
+  return indices.slice(0,4).map(i=>ALL_BOUNTIES[i]);
+}
+
+// ── STATE ────────────────────────────────────────────────────────
+let state={
+  xp: gs('float_xp',0),
+  level: gs('float_level',1),
+  unlocked: gs('float_unlocked',[]),
+  punchProgress: gs('float_punch',{}),
+  streak: gs('float_streak',0),
+  lastLogDate: gs('float_lastlog',null),
+  sleepStreak: gs('float_sleepstreak',0),
+  // Per-day trackers
+  morningStreak: gs('float_mstreak',0),
+  medsStreak: gs('float_medstreak',0),
+  peakStreak: gs('float_pstreak',0),
+  couchStreak: gs('float_cstreak',0),
+  perfectStreak: gs('float_perfstreak',0),
+  nightStreak: gs('float_nstreak',0),
+  chatUsed: gs('float_chat_'+TODAY,false),
+  bountyDone: gs('float_bounty_'+TODAY,{}),
+  eodData: gs('float_eod_'+TODAY,{}),
+};
+
+const LEVELS=[
+  {min:0,name:'Just Getting Started'},
+  {min:100,name:'Finding My Rhythm'},
+  {min:300,name:'Building Habits'},
+  {min:600,name:'Staying Consistent'},
+  {min:1000,name:'Creature of Habit'},
+  {min:1500,name:'Disciplined'},
+  {min:2500,name:'Self-Aware'},
+  {min:4000,name:'Highly Structured'},
+  {min:6000,name:'Peak Performer'},
+  {min:10000,name:'Legendary'},
+];
+
+function getLevelInfo(xp){
+  let lv=1,name=LEVELS[0].name,next=100;
+  for(let i=LEVELS.length-1;i>=0;i--){
+    if(xp>=LEVELS[i].min){lv=i+1;name=LEVELS[i].name;next=LEVELS[i+1]?LEVELS[i+1].min:LEVELS[i].min+5000;break;}
+  }
+  const prev=LEVELS[lv-1]?LEVELS[lv-1].min:0;
+  return{lv,name,prev,next,pct:Math.min(((xp-prev)/(next-prev))*100,100)};
+}
+
+function addXP(amount,reason){
+  state.xp+=amount;
+  ss('float_xp',state.xp);
+  updateXPUI();
+  showToast(`+${amount} XP — ${reason}`);
+}
+
+function updateXPUI(){
+  const info=getLevelInfo(state.xp);
+  document.getElementById('xpLevelBadge').textContent='LVL '+info.lv;
+  document.getElementById('xpLevelName').textContent=info.name;
+  document.getElementById('xpNums').textContent=state.xp+' / '+info.next+' XP';
+  document.getElementById('xpBarFill').style.width=info.pct+'%';
+  document.getElementById('streakDays').textContent=state.streak;
+  document.getElementById('sleepStreak').textContent=state.sleepStreak;
+  document.getElementById('totalBadges').textContent=state.unlocked.length;
+}
+
+function unlockAchievement(id){
+  if(state.unlocked.includes(id)) return;
+  const ach=ACHIEVEMENTS.find(a=>a.id===id);
+  if(!ach) return;
+  state.unlocked.push(id);
+  ss('float_unlocked',state.unlocked);
+  addXP(ach.xp,ach.name);
+  showAchievementPopup(ach);
+  renderAchievements();
+}
+
+function showAchievementPopup(ach){
+  const pop=document.getElementById('achPopup');
+  document.getElementById('achPopupEmoji').textContent=ach.emoji;
+  document.getElementById('achPopupText').textContent='Achievement: '+ach.name;
+  pop.classList.add('show');
+  setTimeout(()=>pop.classList.remove('show'),4000);
+}
+
+function renderAchievements(){
+  const grid=document.getElementById('achGrid');
+  grid.innerHTML='';
+  ACHIEVEMENTS.forEach(a=>{
+    const div=document.createElement('div');
+    div.className='ach-badge'+(state.unlocked.includes(a.id)?' unlocked':'');
+    div.innerHTML=`<div class="ach-emoji">${a.secret&&!state.unlocked.includes(a.id)?'🔒':a.emoji}</div><div class="ach-name">${a.secret&&!state.unlocked.includes(a.id)?'???':a.name}</div>`;
+    div.onclick=()=>{
+      const label=state.unlocked.includes(a.id)?`${a.emoji} ${a.name} — ${a.desc} (+${a.xp} XP)`:(a.secret?'🔒 Secret achievement — keep going!':a.desc+' (+'+a.xp+' XP)');
+      showToast(label);
+    };
+    grid.appendChild(div);
+  });
+  // Punch cards
+  const pc=document.getElementById('punchCards');
+  pc.innerHTML='';
+  PUNCH_CARDS.forEach(card=>{
+    const progress=Math.min(state[card.trackKey]||0,card.goal);
+    const div=document.createElement('div');
+    div.className='punch-card';
+    let dots='';
+    for(let i=0;i<card.goal;i++) dots+=`<div class="punch-dot${i<progress?' filled':''}"></div>`;
+    div.innerHTML=`<div class="punch-card-header"><div><div class="punch-card-title">${card.emoji} ${card.title}</div><div class="punch-card-sub">${card.desc}</div></div><div style="font-size:12px;font-weight:800;color:var(--text-light)">${progress}/${card.goal}</div></div><div class="punch-dots">${dots}</div>`;
+    pc.appendChild(div);
+  });
+}
+
+function renderBounties(){
+  const bounties=getDailyBounties();
+  const list=document.getElementById('bountyList');
+  list.innerHTML='';
+  bounties.forEach(b=>{
+    const done=state.bountyDone[b.id]||false;
+    const div=document.createElement('div');
+    div.className='bounty-item'+(done?' done':'');
+    div.innerHTML=`<div class="bounty-icon">${b.icon}</div><div class="bounty-text"><div class="bounty-title">${b.title}</div><div class="bounty-sub">${b.sub}</div></div><div class="bounty-xp">+${b.xp} XP</div><div class="bounty-check">${done?'<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}</div>`;
+    list.appendChild(div);
+  });
+}
+
+// Complete a bounty manually (called after EOD processing)
+function checkBounties(eodData){
+  const bounties=getDailyBounties();
+  bounties.forEach(b=>{
+    if(state.bountyDone[b.id]) return;
+    let met=false;
+    if(b.key==='sleepLogged') met=!!(sleepData.inbed&&sleepData.asleep&&sleepData.awake);
+    else if(b.key==='allTasksDone') met=document.querySelectorAll('.task-item').length>0&&document.querySelectorAll('.task-item:not(.done)').length===0;
+    else if(b.key==='chatUsed') met=state.chatUsed;
+    else met=eodData[b.key]===b.val;
+    if(met){
+      state.bountyDone[b.id]=true;
+      ss('float_bounty_'+TODAY,state.bountyDone);
+      addXP(b.xp,b.title+' bounty!');
+    }
+  });
+  renderBounties();
+}
+
+// ── DATE & GREETING ──────────────────────────────────────────────
+document.getElementById('todayDate').textContent=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric'});
+const hInit=new Date().getHours();
+const greetEl=document.getElementById('greeting');
+if(hInit<9) greetEl.textContent='good morning ☀️';
+else if(hInit<13) greetEl.textContent="morning's going ✨";
+else if(hInit<17) greetEl.textContent='afternoon focus 🌿';
+else if(hInit<20) greetEl.textContent='almost there 🌅';
+else greetEl.textContent='wind it down 🌙';
+
+// ── SCHEDULE BLOCKS ──────────────────────────────────────────────
+const BLOCKS=[
+  [5,30,6,30,'bookend-morning','wake-up ritual 🚿','bookend'],
+  [6,30,9,0,'block-free','ease in 🎮','block'],
+  [9,0,13,30,'block-kids','kids mode 👧🏻','block'],
+  [13,30,15,30,'block-peak','🔥 deep work','block'],
+  [15,30,18,30,'block-afternoon','afternoon focus 🌿','block'],
+  [18,30,22,0,'block-wind','family time 🌙','block'],
+  [22,0,23,59,'bookend-night','night ritual ✨','bookend'],
+];
+const ANCHORS=[[9,0,'anchor-9am'],[13,30,'anchor-nap'],[15,30,'anchor-gare']];
+function toMins(h,m){return h*60+m;}
+function fmtLeft(ml){if(ml<=0)return'ending now';const h=Math.floor(ml/60),m=ml%60;return h>0&&m>0?`${h}h ${m}m left`:h>0?`${h}h left`:`${m}m left`;}
+
+function updateClock(){
+  const n=new Date(),hours=n.getHours(),mins=n.getMinutes();
+  const ampm=hours>=12?'pm':'am',h12=hours%12||12;
+  document.getElementById('liveClock').textContent=`${h12}:${mins.toString().padStart(2,'0')} ${ampm}`;
+  const nowMins=toMins(hours,mins);
+  let cb=null;
+  for(const b of BLOCKS){if(nowMins>=toMins(b[0],b[1])&&nowMins<toMins(b[2],b[3])){cb=b;break;}}
+  if(cb){document.getElementById('clockBlockName').textContent=cb[5];document.getElementById('clockTimeLeft').textContent=fmtLeft(toMins(cb[2],cb[3])-nowMins);}
+  else if(nowMins<toMins(5,30)){document.getElementById('clockBlockName').textContent='before your day starts';document.getElementById('clockTimeLeft').textContent='';}
+  else{document.getElementById('clockBlockName').textContent='day complete 🎉';document.getElementById('clockTimeLeft').textContent='get some rest!';}
+  BLOCKS.forEach(b=>{
+    const el=document.getElementById(b[4]);if(!el)return;
+    const start=toMins(b[0],b[1]),end=toMins(b[2],b[3]);
+    el.classList.remove('current','past');
+    if(b[6]==='bookend'){if(nowMins>=end)el.classList.add('past');}
+    else{
+      if(nowMins>=end){el.classList.add('past');const y=el.querySelector('.you-are-here');if(y)y.remove();}
+      else if(nowMins>=start){
+        el.classList.add('current');
+        if(!el.querySelector('.you-are-here')){const yah=document.createElement('div');yah.className='you-are-here';yah.innerHTML='<div class="yah-dot"></div><span class="yah-label">you are here</span>';el.insertBefore(yah,el.firstChild);}
+      }
+    }
+  });
+  ANCHORS.forEach(a=>{const el=document.getElementById(a[2]);if(el)el.classList.toggle('past',nowMins>=toMins(a[0],a[1]));});
+}
+updateClock();setInterval(updateClock,30000);
+window.addEventListener('load',()=>{setTimeout(()=>{const a=document.querySelector('.block.current');if(a)a.scrollIntoView({behavior:'smooth',block:'center'});},400);});
+
+// ── EDITABLE TASKS ───────────────────────────────────────────────
+function makeTaskItem(label,listId){
+  const id='t'+Date.now()+Math.random().toString(36).slice(2,5);
+  const div=document.createElement('div');
+  div.className='task-item';div.dataset.id=id;
+  div.innerHTML=`<div class="task-check" onclick="toggleTask(this.parentElement)"><svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span class="task-label" onclick="editTaskLabel(this)">${label}</span><button class="task-edit-btn" onclick="deleteTask(this.parentElement)">×</button>`;
+  return div;
+}
+function addTask(listId){
+  const label=prompt('Task name:');
+  if(!label||!label.trim()) return;
+  const list=document.getElementById(listId);
+  const btn=list.parentElement.querySelector('.task-add-btn');
+  list.insertBefore(makeTaskItem(label.trim(),listId),null);
+  updateProgress();
+  showToast('task added!');
+}
+function editTaskLabel(el){
+  const current=el.textContent;
+  const newLabel=prompt('Edit task:',current);
+  if(newLabel&&newLabel.trim()) el.textContent=newLabel.trim();
+}
+function deleteTask(el){el.remove();updateProgress();}
+function toggleTask(el){
+  if(el.classList.contains('done')){el.classList.remove('done');}
+  else{el.classList.add('done');}
+  updateProgress();
+  checkAllTasksDone();
+}
+function checkAllTasksDone(){
+  const all=document.querySelectorAll('.task-item');
+  const done=document.querySelectorAll('.task-item.done');
+  if(all.length>0&&done.length===all.length) unlockAchievement('tasks_first');
+}
+function updateProgress(){
+  const all=document.querySelectorAll('.task-item'),done=document.querySelectorAll('.task-item.done');
+  document.getElementById('doneCount').textContent=done.length;
+  document.getElementById('leftCount').textContent=all.length-done.length;
+  document.getElementById('progressBar').style.width=(all.length?(done.length/all.length)*100:0)+'%';
+}
+updateProgress();
+
+// Populate tasks from Claude suggestion (called by chat)
+function populateTasks(taskArray,listId){
+  const list=document.getElementById(listId);
+  // Clear placeholder
+  list.querySelectorAll('.task-item').forEach(t=>{if(t.querySelector('.task-label').textContent.includes('tap to edit')) t.remove();});
+  taskArray.forEach(label=>{list.appendChild(makeTaskItem(label,listId));});
+  updateProgress();
+}
+
+// ── MEDS ────────────────────────────────────────────────────────
+let medsTaken=gs('float_meds_'+TODAY,false);
+function toggleMeds(){
+  medsTaken=!medsTaken;ss('float_meds_'+TODAY,medsTaken);
+  document.getElementById('medsBtn').textContent=medsTaken?'✓ taken':'mark taken';
+  document.getElementById('medsBtn').classList.toggle('taken',medsTaken);
+  document.getElementById('medsCard').style.borderColor=medsTaken?'#c8e0d0':'';
+  document.getElementById('medsCard').style.background=medsTaken?'#e8f5ee':'';
+  if(medsTaken) unlockAchievement('meds_first');
+}
+if(medsTaken){document.getElementById('medsBtn').textContent='✓ taken';document.getElementById('medsBtn').classList.add('taken');document.getElementById('medsCard').style.borderColor='#c8e0d0';document.getElementById('medsCard').style.background='#e8f5ee';}
+
+// ── MODALS ───────────────────────────────────────────────────────
+function openModal(id){document.getElementById('modal-'+id).classList.add('open');}
+function closeModal(id){document.getElementById('modal-'+id).classList.remove('open');}
+function closeModalOutside(e,id){if(e.target===document.getElementById('modal-'+id))closeModal(id);}
+
+// ── TOAST ────────────────────────────────────────────────────────
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+
+// ── SYNC STATUS ──────────────────────────────────────────────────
+function setSyncing(){document.getElementById('syncDot').className='sync-dot syncing';document.getElementById('syncLabel').textContent='syncing to notion...';}
+function setSynced(){document.getElementById('syncDot').className='sync-dot synced';document.getElementById('syncLabel').textContent='synced to notion ✓';}
+function setSyncFailed(){document.getElementById('syncDot').className='sync-dot';document.getElementById('syncLabel').textContent='sync failed — try again';}
+
+// ── PILLS (EOD) ──────────────────────────────────────────────────
+function selectPill(el,gid){document.querySelectorAll(`#${gid} .pill-opt`).forEach(p=>p.classList.remove('selected'));el.classList.add('selected');}
+function getPillValue(gid){const s=document.querySelector(`#${gid} .pill-opt.selected`);return s?s.textContent.trim():null;}
+
+// ── OFF TRACK ────────────────────────────────────────────────────
+let offTrackLog=[];
+async function submitOffTrack(){
+  const text=document.getElementById('offTrackText').value.trim();
+  if(!text) return;
+  offTrackLog.push(`[${new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}] ${text}`);
+  document.getElementById('offTrackText').value='';
+  closeModal('offtrack');
+  unlockAchievement('reschedule');
+  state.chatUsed=true;ss('float_chat_'+TODAY,true);
+  openModal('chat');
+  addChatMsg('user',text);
+  const nowH=new Date().getHours(),nowM=new Date().getMinutes();
+  await claudeReply(`My schedule got disrupted: ${text}. Current time is ${nowH}:${nowM.toString().padStart(2,'0')}. My schedule: wake ritual 5:30-6:30am, ease in 6:30-9am, kids 9am-1:30pm, deep work nap 1:30-3:30pm (MOST VALUABLE), afternoon work 3:30-~6:30pm, wind down 6:30-10pm, hard stop 10pm. Help me restructure the REST of today to protect as much productive time as possible. Be specific about what to do right now. List any task changes as a JSON array at the end like TASKS:["task 1","task 2"] if I should update my task list. I have ADHD.`);
+}
+
+// ── CHAT ─────────────────────────────────────────────────────────
+const CHAT_SYSTEM=`You are Mary's daily schedule companion in her Float app. She has ADHD, takes stimulant + antidepressant at 9am. Schedule: wake ritual 5:30-6:30am, ease in 6:30-9am, kids 9am-1:30pm, deep work nap 1:30-3:30pm, Gare home ~3:30pm, afternoon work until dinner, wind down after dinner, 10pm hard stop, bed by 10:30pm. She is building discipline, self-awareness, and routine. She easily talks herself out of things — never validate avoidance. She wants to collect badges and level up. When she says she has a call or appointment that disrupts her schedule, help her restructure specifically and protect as much focus time as possible. When she wants to set up today's tasks, ask what's on her plate and suggest a prioritized list. If she wants tasks populated in the app, end your response with TASKS:["task 1","task 2",...] and I will add them automatically. Be warm, concise, practical. Max 3-4 sentences unless making a plan.`;
+let chatHistory=[];
+
+function addChatMsg(role,text){
+  const msgs=document.getElementById('chatMessages');
+  const div=document.createElement('div');div.className='chat-msg '+role;div.textContent=text;
+  msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
+  if(role==='user') chatHistory.push({role:'user',content:text});
+  return div;
+}
+async function claudeReply(userMsg){
+  const msgs=document.getElementById('chatMessages');
+  const thinking=document.createElement('div');thinking.className='chat-msg claude thinking';thinking.textContent='...';msgs.appendChild(thinking);msgs.scrollTop=msgs.scrollHeight;
+  const history=[...chatHistory];
+  if(userMsg) history.push({role:'user',content:userMsg});
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:CHAT_SYSTEM,messages:history})});
+    const data=await res.json();
+    let reply=data.content?.[0]?.text||"having trouble connecting — but you've got this.";
+    // Check for TASKS array in response
+    const taskMatch=reply.match(/TASKS:\s*(\[[\s\S]*?\])/);
+    if(taskMatch){
+      try{
+        const tasks=JSON.parse(taskMatch[1]);
+        populateTasks(tasks,'tasks-peak');
+        reply=reply.replace(/TASKS:\s*\[[\s\S]*?\]/,'').trim()+'  \n✅ Tasks added to your deep work block!';
+      }catch{}
+    }
+    thinking.remove();
+    const div=addChatMsg('claude',reply);
+    chatHistory.push({role:'assistant',content:data.content?.[0]?.text||reply});
+    unlockAchievement('chat_used');
+    state.chatUsed=true;ss('float_chat_'+TODAY,true);
+  }catch(e){
+    thinking.textContent="can't connect — but you've got this. pick the next smallest step.";thinking.classList.remove('thinking');
+  }
+}
+async function sendChat(){
+  const input=document.getElementById('chatInput');
+  const msg=input.value.trim();if(!msg)return;
+  input.value='';addChatMsg('user',msg);await claudeReply(msg);
+}
+document.getElementById('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat();});
+
+function chatQuickLog(type){
+  const prompts={
+    setup:"Good morning! Help me set up today's tasks. Ask me what's on my plate and then suggest a prioritized list for my deep work block and afternoon block.",
+    reschedule:`It's ${new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})} and I need to reschedule. What's the best way to structure what's left of my day?`,
+    food:"I want to log what I ate today.",
+    tomorrow:`Help me plan tomorrow. I want to keep my schedule — wake 5:30am, shower, skincare, kids at 9am, meds at 9am. Remind me: staying up late to catch up doesn't work and will ruin my morning. Help me plan it simply.`,
+    win:"I want to log a win from today — something I did well.",
+    bedtime:"It's close to bedtime. Help me do a check-in and make sure I'm not falling into the couch trap. I want to hit my 10pm hard stop."
+  };
+  openModal('chat');addChatMsg('user',prompts[type]);claudeReply(prompts[type]);
+}
+
+// ── SLEEP TRACKER ─────────────────────────────────────────────────
+const SLEEP_GOAL_HRS=8;
+const SLEEP_KEY='float_sleep_'+TODAY;
+let sleepData=gs(SLEEP_KEY,{});
+function fmtTime12(iso){if(!iso)return null;const d=new Date(iso),h=d.getHours(),m=d.getMinutes();return`${h%12||12}:${m.toString().padStart(2,'0')}${h>=12?'pm':'am'}`;}
+function calcSleepHours(){if(!sleepData.asleep||!sleepData.awake)return null;return(new Date(sleepData.awake)-new Date(sleepData.asleep))/3600000;}
+function updateSleepUI(){
+  ['inbed','asleep','awake'].forEach(k=>{const el=document.getElementById('stamp-'+k),t=fmtTime12(sleepData[k]);el.innerHTML=t?`<span>${t}</span>`:'<span class="unset">––:––</span>';});
+  ['inbed','asleep','awake'].forEach(k=>document.getElementById('btn-'+k).classList.toggle('active',!!sleepData[k]));
+  const hrs=calcSleepHours();
+  if(hrs!==null){
+    const h=Math.floor(hrs),m=Math.round((hrs%1)*60);
+    document.getElementById('sleepHoursBig').textContent=`${h}h ${m}m`;
+    const pct=Math.min((hrs/SLEEP_GOAL_HRS)*100,100);
+    const bar=document.getElementById('sleepBarFill');bar.style.width=pct+'%';bar.classList.toggle('goal-met',hrs>=SLEEP_GOAL_HRS);
+    document.getElementById('sleepHoursSub').textContent=hrs>=SLEEP_GOAL_HRS?'🎉 goal met!':`${Math.floor(SLEEP_GOAL_HRS-hrs)}h ${Math.round(((SLEEP_GOAL_HRS-hrs)%1)*60)}m short`;
+    if(hrs>=SLEEP_GOAL_HRS){unlockAchievement('sleep_8hrs');}
+  }else if(sleepData.asleep){
+    const elapsed=(Date.now()-new Date(sleepData.asleep))/3600000;
+    document.getElementById('sleepHoursBig').textContent=`${Math.floor(elapsed)}h ${Math.round((elapsed%1)*60)}m`;
+    document.getElementById('sleepHoursSub').textContent='sleeping… 💤';
+    document.getElementById('sleepBarFill').style.width=Math.min((elapsed/SLEEP_GOAL_HRS)*100,100)+'%';
+  }else{document.getElementById('sleepHoursBig').textContent='– h';document.getElementById('sleepHoursSub').textContent='tap to start tracking';document.getElementById('sleepBarFill').style.width='0%';}
+  for(let i=1;i<=5;i++) document.getElementById('rate-'+i).classList.toggle('selected',sleepData.rating===i);
+}
+function logSleep(type){
+  if(sleepData[type]){delete sleepData[type];showToast(type+' cleared');}
+  else{sleepData[type]=new Date().toISOString();const labels={inbed:'🛏️ in bed logged',asleep:'💤 sleep started',awake:'☀️ wake logged'};showToast(labels[type]);}
+  ss(SLEEP_KEY,sleepData);updateSleepUI();
+  if(type==='awake') unlockAchievement('first_sleep');
+}
+function rateSleep(n){sleepData.rating=sleepData.rating===n?null:n;ss(SLEEP_KEY,sleepData);updateSleepUI();if(sleepData.rating)showToast('sleep rated!');}
+updateSleepUI();
+setInterval(()=>{if(sleepData.asleep&&!sleepData.awake)updateSleepUI();},60000);
+
+// ── END OF DAY ────────────────────────────────────────────────────
+async function submitEndOfDay(){
+  const btn=document.getElementById('submitEodBtn');btn.textContent='saving...';btn.disabled=true;setSyncing();
+  const allTasks=document.querySelectorAll('.task-item').length,doneTasks=document.querySelectorAll('.task-item.done').length;
+  const completedTasks=[...document.querySelectorAll('.task-item.done .task-label')].map(el=>el.textContent.trim());
+  const remainingTasks=[...document.querySelectorAll('.task-item:not(.done) .task-label')].map(el=>el.textContent.trim());
+  const offTrackSummary=offTrackLog.length>0?offTrackLog.join(' | '):'none';
+  const chatSummary=chatHistory.filter(m=>m.role==='user').map(m=>m.content).join(' | ')||'none';
+  const morning=getPillValue('eod-morning'),meds=getPillValue('eod-meds'),peak=getPillValue('eod-peak');
+  const couch=getPillValue('eod-couch'),bed=getPillValue('eod-bed'),night=getPillValue('eod-night');
+  const mood=getPillValue('eod-mood'),energy=getPillValue('eod-energy');
+  const notes=document.getElementById('eodNotes').value.trim();
+  const hrs=calcSleepHours();
+  const sleepSummary=sleepData.asleep&&sleepData.awake?`in bed:${fmtTime12(sleepData.inbed)||'?'} asleep:${fmtTime12(sleepData.asleep)} awake:${fmtTime12(sleepData.awake)} hrs:${hrs?hrs.toFixed(1):'?'} rating:${sleepData.rating?sleepData.rating+'/5':'unrated'}`:'not logged';
+
+  // XP for EOD completion
+  let xpEarned=25; // base for logging
+  const eodData={morning,meds,peak,couch,bed,night};
+  ss('float_eod_'+TODAY,eodData);
+
+  // Award XP + check achievements
+  if(morning==='✅ did it'){xpEarned+=20;state.morningStreak=(gs('float_mstreak',0)||0)+1;ss('float_mstreak',state.morningStreak);if(state.morningStreak===1)unlockAchievement('first_morning');if(state.morningStreak>=5)unlockAchievement('morning_5');if(state.morningStreak>=30)unlockAchievement('morning_30');}else{state.morningStreak=0;ss('float_mstreak',0);}
+  if(meds==='✅ on time'){xpEarned+=15;state.medsStreak=(state.medsStreak||0)+1;ss('float_medstreak',state.medsStreak);if(state.medsStreak>=7)unlockAchievement('meds_7');}else{state.medsStreak=0;ss('float_medstreak',0);}
+  if(peak==='✅ used it'){xpEarned+=30;state.peakStreak=(state.peakStreak||0)+1;ss('float_pstreak',state.peakStreak);if(state.peakStreak===1)unlockAchievement('peak_first');if(state.peakStreak>=7)unlockAchievement('peak_7');}else{state.peakStreak=0;ss('float_pstreak',0);}
+  if(couch==='✅ avoided'){xpEarned+=20;state.couchStreak=(state.couchStreak||0)+1;ss('float_cstreak',state.couchStreak);if(state.couchStreak===1)unlockAchievement('couch_first');if(state.couchStreak>=7)unlockAchievement('couch_7');}else{state.couchStreak=0;ss('float_cstreak',0);}
+  if(night==='✅ did it'){xpEarned+=15;state.nightStreak=(state.nightStreak||0)+1;ss('float_nstreak',state.nightStreak);if(state.nightStreak>=5)unlockAchievement('night_routine');}else{state.nightStreak=0;ss('float_nstreak',0);}
+
+  // Streak
+  const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);const yStr=yesterday.toISOString().split('T')[0];
+  if(state.lastLogDate===yStr){state.streak+=1;}else if(state.lastLogDate!==TODAY){state.streak=1;}
+  state.lastLogDate=TODAY;ss('float_streak',state.streak);ss('float_lastlog',TODAY);
+  if(state.streak>=3)unlockAchievement('streak_3');if(state.streak>=7)unlockAchievement('streak_7');if(state.streak>=30)unlockAchievement('streak_30');if(state.streak>=100)unlockAchievement('streak_100');
+
+  // Perfect day
+  if(morning==='✅ did it'&&meds==='✅ on time'&&peak==='✅ used it'&&couch==='✅ avoided'&&bed==='✅ yes'&&night==='✅ did it'){
+    xpEarned+=50;state.perfectStreak=(state.perfectStreak||0)+1;ss('float_perfstreak',state.perfectStreak);
+    unlockAchievement('perfect_day');if(state.perfectStreak>=7)unlockAchievement('perfect_week');
+  }else{state.perfectStreak=0;ss('float_perfstreak',0);}
+
+  // First log
+  unlockAchievement('first_log');
+
+  // Bounties
+  checkBounties(eodData);
+
+  // Add XP
+  state.xp+=xpEarned;ss('float_xp',state.xp);updateXPUI();
+  showToast(`+${xpEarned} XP earned today! 🎉`);
+
+  // Notion sync
+  const todayISO=TODAY,todayLabel=new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+  const redFlags=[];
+  if(meds==='❌ skipped')redFlags.push('skipped meds');if(couch==='❌ fell in')redFlags.push('couch trap');
+  if(bed==='❌ nope')redFlags.push('missed bedtime');if(peak==='❌ missed it')redFlags.push('missed peak window');
+  if(morning==='❌ skipped')redFlags.push('no morning routine');if(night==='❌ skipped')redFlags.push('no night routine');
+
+  try{
+    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system:`Save Mary's schedule log to Notion (collection ID: ${NOTION_DB_ID}). She earned ${xpEarned} XP today, is at level ${getLevelInfo(state.xp).lv} (${getLevelInfo(state.xp).name}), on a ${state.streak}-day streak. Write AI Summary covering the full day, wins, patterns, and a one-line encouragement. Under 3 sentences. Warm, no shame.`,messages:[{role:"user",content:`Save today's log — ${todayLabel}:
+Morning: ${morning||'?'} | Meds: ${meds||'?'} | Peak: ${peak||'?'} | Couch: ${couch||'?'} | Bed: ${bed||'?'} | Night: ${night||'?'}
+Tasks: ${doneTasks}/${allTasks} done. Completed: ${completedTasks.join(', ')||'none'}. Remaining: ${remainingTasks.join(', ')||'all done!'}
+Sleep: ${sleepSummary} | Mood: ${mood||'?'} | Energy: ${energy||'?'}
+Off track log: ${offTrackSummary} | Chat log: ${chatSummary}
+Pattern flags: ${redFlags.join(', ')||'none'} | XP earned: ${xpEarned} | Total XP: ${state.xp} | Streak: ${state.streak} days
+Notes: ${notes||'none'}
+Write AI Summary then save to Notion.`}],mcp_servers:[{type:"url",url:"https://mcp.notion.com/mcp",name:"notion-mcp"}]})});
+    setSynced();showToast('✓ logged to notion!');closeModal('endday');
+  }catch(e){setSyncFailed();showToast('sync failed — check connection');}
+  finally{btn.textContent='save + earn XP ➤';btn.disabled=false;}
+}
+
+// ── INIT ──────────────────────────────────────────────────────────
+updateXPUI();
+renderAchievements();
+renderBounties();
+</script>
+</body>
+</html>
