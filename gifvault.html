@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GifVault</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface2: #1a1a1a;
+    --surface3: #222222;
+    --border: rgba(255,255,255,0.07);
+    --border-hover: rgba(255,255,255,0.15);
+    --accent: #e8ff47;
+    --accent-dim: rgba(232,255,71,0.12);
+    --accent-dim2: rgba(232,255,71,0.06);
+    --text: #f0f0f0;
+    --text-muted: #666;
+    --text-dim: #444;
+    --danger: #ff4d4d;
+    --success: #47ffb4;
+    --font-display: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --radius: 10px;
+    --radius-lg: 16px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-display);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,10,10,0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 20px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .logo {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .logo span { color: var(--accent); }
+
+  .search-wrap {
+    flex: 1;
+    max-width: 480px;
+    position: relative;
+  }
+  .search-wrap svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+  }
+  #search {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 9px 12px 9px 38px;
+    color: var(--text);
+    font-family: var(--font-display);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  #search:focus { border-color: var(--accent); }
+  #search::placeholder { color: var(--text-dim); }
+
+  .header-actions { display: flex; gap: 8px; margin-left: auto; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--border-hover); color: var(--text); background: var(--surface2); }
+  .btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0a0a0a;
+    font-weight: 600;
+  }
+  .btn.primary:hover { background: #d4eb30; border-color: #d4eb30; }
+  .btn svg { flex-shrink: 0; }
+
+  /* LAYOUT */
+  .app-body {
+    display: flex;
+    height: calc(100vh - 60px);
+  }
+
+  /* SIDEBAR */
+  aside {
+    width: 200px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border);
+    padding: 16px 10px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .sidebar-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 8px 10px 4px;
+  }
+
+  .tag-filter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 13px;
+    color: var(--text-muted);
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    font-family: var(--font-display);
+  }
+  .tag-filter:hover { background: var(--surface2); color: var(--text); }
+  .tag-filter.active { background: var(--accent-dim2); color: var(--accent); }
+  .tag-filter .count {
+    margin-left: auto;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--text-dim);
+  }
+  .tag-filter.active .count { color: var(--accent); opacity: 0.6; }
+
+  /* MAIN GRID */
+  main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+  }
+
+  .grid-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .grid-title {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+  }
+  .grid-title span { color: var(--accent); }
+
+  .sort-select {
+    margin-left: auto;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 10px;
+    color: var(--text-muted);
+    font-family: var(--font-display);
+    font-size: 12px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .gif-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+  }
+
+  .gif-card {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s;
+    aspect-ratio: 1;
+    group: true;
+  }
+  .gif-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(232,255,71,0.08);
+  }
+  .gif-card img, .gif-card video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .gif-card .overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity 0.2s;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 10px;
+  }
+  .gif-card:hover .overlay { opacity: 1; }
+  .gif-card .gif-name {
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 6px;
+  }
+  .gif-card .gif-actions {
+    display: flex;
+    gap: 6px;
+  }
+  .gif-action-btn {
+    flex: 1;
+    padding: 5px;
+    border-radius: 6px;
+    border: none;
+    font-size: 10px;
+    font-family: var(--font-display);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+  }
+  .gif-action-btn.copy-btn { background: var(--accent); color: #0a0a0a; }
+  .gif-action-btn.copy-btn:hover { background: #d4eb30; }
+  .gif-action-btn.del-btn { background: rgba(255,77,77,0.2); color: var(--danger); }
+  .gif-action-btn.del-btn:hover { background: rgba(255,77,77,0.35); }
+
+  .gif-card .type-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0,0,0,0.7);
+    color: var(--text-muted);
+    font-size: 9px;
+    font-family: var(--font-mono);
+    padding: 2px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .gif-card .tag-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin-bottom: 6px;
+  }
+  .tag-pill {
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: var(--accent-dim);
+    color: var(--accent);
+    font-family: var(--font-mono);
+  }
+
+  /* EMPTY STATE */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    gap: 12px;
+    color: var(--text-dim);
+    text-align: center;
+  }
+  .empty-state svg { opacity: 0.3; }
+  .empty-state h3 { font-size: 18px; font-weight: 700; color: var(--text-muted); }
+  .empty-state p { font-size: 13px; font-family: var(--font-mono); max-width: 280px; line-height: 1.6; }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(8px);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border-hover);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 500px;
+    padding: 24px;
+    transform: translateY(10px);
+    transition: transform 0.2s;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+
+  .modal-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .modal-title svg { color: var(--accent); }
+
+  .form-group { margin-bottom: 14px; }
+  .form-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .form-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    color: var(--text);
+    font-family: var(--font-display);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-input:focus { border-color: var(--accent); }
+  .form-input::placeholder { color: var(--text-dim); }
+
+  .drop-zone {
+    border: 2px dashed var(--border-hover);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--surface2);
+    position: relative;
+  }
+  .drop-zone:hover, .drop-zone.drag-over {
+    border-color: var(--accent);
+    background: var(--accent-dim2);
+  }
+  .drop-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+  .drop-zone-text { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+  .drop-zone-text strong { color: var(--accent); }
+
+  .tab-row {
+    display: flex;
+    gap: 0;
+    background: var(--surface2);
+    border-radius: var(--radius);
+    padding: 3px;
+    margin-bottom: 16px;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 7px;
+    border-radius: 8px;
+    border: none;
+    background: none;
+    color: var(--text-muted);
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .tab-btn.active { background: var(--surface3); color: var(--text); }
+
+  .modal-footer {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .modal-footer .btn { flex: 1; justify-content: center; }
+
+  /* TOAST */
+  .toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-end;
+  }
+  .toast {
+    background: var(--surface3);
+    border: 1px solid var(--border-hover);
+    border-radius: var(--radius);
+    padding: 10px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: slideIn 0.2s ease;
+    max-width: 280px;
+  }
+  .toast.success { border-color: rgba(71,255,180,0.3); color: var(--success); }
+  .toast.error { border-color: rgba(255,77,77,0.3); color: var(--danger); }
+  .toast.info { color: var(--accent); border-color: rgba(232,255,71,0.2); }
+  @keyframes slideIn { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  /* SETUP BANNER */
+  .setup-banner {
+    background: var(--accent-dim);
+    border: 1px solid rgba(232,255,71,0.2);
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .setup-banner p { font-size: 13px; color: var(--text); flex: 1; line-height: 1.5; }
+  .setup-banner p strong { color: var(--accent); }
+
+  /* COPY FEEDBACK */
+  .copied-flash {
+    position: absolute;
+    inset: 0;
+    background: rgba(232,255,71,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    border-radius: var(--radius-lg);
+    animation: flashAnim 0.6s ease forwards;
+    pointer-events: none;
+  }
+  @keyframes flashAnim {
+    0% { opacity: 1; }
+    60% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  /* LOADING */
+  .loading-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+  }
+  .skeleton {
+    aspect-ratio: 1;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    animation: pulse 1.4s ease infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.7; }
+  }
+
+  /* PROGRESS BAR */
+  .upload-progress {
+    height: 3px;
+    background: var(--surface3);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .upload-progress-bar {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.3s;
+    width: 0%;
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border-hover); }
+
+  @media (max-width: 640px) {
+    aside { display: none; }
+    .gif-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+    .modal { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">gif<span>vault</span></div>
+  <div class="search-wrap">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="search" placeholder="search by name or tag..." autocomplete="off">
+  </div>
+  <div class="header-actions">
+    <button class="btn" id="setupBtn" style="display:none">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      Setup DB
+    </button>
+    <button class="btn primary" id="addBtn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add GIF
+    </button>
+  </div>
+</header>
+
+<div class="app-body">
+  <aside id="sidebar">
+    <div class="sidebar-label">Filter</div>
+    <button class="tag-filter active" data-tag="all">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      All
+      <span class="count" id="allCount">0</span>
+    </button>
+    <div class="sidebar-label" style="margin-top:8px">Tags</div>
+    <div id="tagList"></div>
+  </aside>
+
+  <main id="mainContent">
+    <div class="grid-header">
+      <span class="grid-title" id="gridTitle">Loading...</span>
+      <select class="sort-select" id="sortSelect">
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+        <option value="name">Name A-Z</option>
+      </select>
+    </div>
+    <div id="gifGrid" class="loading-grid">
+      <div class="skeleton"></div><div class="skeleton"></div>
+      <div class="skeleton"></div><div class="skeleton"></div>
+      <div class="skeleton"></div><div class="skeleton"></div>
+    </div>
+  </main>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-title">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add to GifVault
+    </div>
+
+    <div class="tab-row">
+      <button class="tab-btn active" data-tab="upload">Upload File</button>
+      <button class="tab-btn" data-tab="url">Paste URL</button>
+    </div>
+
+    <div id="uploadTab">
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="fileInput" accept="image/gif,image/png,image/jpeg,image/webp,video/mp4,video/webm">
+        <div class="drop-zone-text">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:8px;color:var(--text-dim)"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><br>
+          <strong>Drop your GIF/image/video here</strong><br>
+          or click to browse<br>
+          <span style="font-size:11px;color:var(--text-dim);font-family:var(--font-mono)">GIF · PNG · JPG · MP4 · WEBM</span>
+        </div>
+        <div class="upload-progress" id="uploadProgress" style="display:none">
+          <div class="upload-progress-bar" id="uploadProgressBar"></div>
+        </div>
+      </div>
+      <div id="filePreviewWrap" style="display:none;margin-top:12px;text-align:center;">
+        <img id="filePreview" style="max-height:140px;border-radius:8px;border:1px solid var(--border);">
+        <video id="videoPreview" style="display:none;max-height:140px;border-radius:8px;border:1px solid var(--border);" muted loop autoplay></video>
+      </div>
+    </div>
+
+    <div id="urlTab" style="display:none">
+      <div class="form-group">
+        <label class="form-label">URL</label>
+        <input type="url" id="urlInput" class="form-input" placeholder="https://...gif or tenor/giphy link">
+      </div>
+      <div id="urlPreviewWrap" style="display:none;margin-top:4px;margin-bottom:8px;text-align:center;">
+        <img id="urlPreview" style="max-height:140px;border-radius:8px;border:1px solid var(--border);">
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-top:14px">
+      <label class="form-label">Name</label>
+      <input type="text" id="gifName" class="form-input" placeholder="e.g. excited-dog, side-eye-chloe">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Tags <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-dim)">(comma separated)</span></label>
+      <input type="text" id="gifTags" class="form-input" placeholder="reaction, funny, animals">
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn" id="cancelBtn">Cancel</button>
+      <button class="btn primary" id="saveBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save to Vault
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const SUPABASE_URL = 'https://mpwnbsztpulwwmtuabtd.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wd25ic3p0cHVsd3dtdHVhYnRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0NjQxMDcsImV4cCI6MjA5NTA0MDEwN30.X5QxoTPZvjmS35_Xw_-vdJp3oY6-SX2wydM3KASa1nk';
+const BUCKET = 'gif-files';
+const TABLE = 'gifs';
+
+const headers = {
+  'apikey': SUPABASE_KEY,
+  'Authorization': `Bearer ${SUPABASE_KEY}`,
+  'Content-Type': 'application/json',
+  'Prefer': 'return=representation'
+};
+
+let allGifs = [];
+let activeTag = 'all';
+let searchQuery = '';
+let sortOrder = 'newest';
+let selectedFile = null;
+let addTab = 'upload';
+
+// --- API ---
+async function sbFetch(path, opts = {}) {
+  const res = await fetch(`${SUPABASE_URL}${path}`, {
+    ...opts,
+    headers: { ...headers, ...(opts.headers || {}) }
+  });
+  return res;
+}
+
+async function setupDatabase() {
+  toast('Setting up database...', 'info');
+  try {
+    // Create table via SQL edge function isn't available with anon key
+    // Instead we try inserting a dummy row and see what error we get
+    const res = await sbFetch(`/rest/v1/${TABLE}`, {
+      method: 'POST',
+      body: JSON.stringify({ name: '__test__', url: '__test__', tags: [], file_path: '', source_type: 'url', created_at: new Date().toISOString() })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      // clean up test row
+      const id = Array.isArray(data) ? data[0]?.id : data?.id;
+      if (id) await sbFetch(`/rest/v1/${TABLE}?id=eq.${id}`, { method: 'DELETE' });
+      toast('Database ready!', 'success');
+      document.getElementById('setupBtn').style.display = 'none';
+      loadGifs();
+    } else if (data?.code === '42P01') {
+      toast('Table not found. Please create it manually — see instructions.', 'error');
+      showSetupInstructions();
+    } else {
+      toast('DB check: ' + (data?.message || 'unknown error'), 'error');
+    }
+  } catch(e) {
+    toast('Connection error: ' + e.message, 'error');
+  }
+}
+
+async function loadGifs() {
+  try {
+    const res = await sbFetch(`/rest/v1/${TABLE}?order=created_at.desc&select=*`);
+    if (!res.ok) {
+      const err = await res.json();
+      if (err?.code === '42P01') {
+        showSetupBanner();
+        renderGrid([]);
+        return;
+      }
+      throw new Error(err?.message || 'Load failed');
+    }
+    allGifs = await res.json();
+    renderAll();
+  } catch(e) {
+    renderGrid([]);
+    document.getElementById('gridTitle').innerHTML = `<span style="color:var(--danger)">Error loading — check console</span>`;
+    console.error(e);
+  }
+}
+
+async function uploadFile(file) {
+  const ext = file.name.split('.').pop();
+  const path = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+
+  const bar = document.getElementById('uploadProgressBar');
+  const prog = document.getElementById('uploadProgress');
+  prog.style.display = 'block';
+  bar.style.width = '30%';
+
+  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': file.type,
+      'x-upsert': 'false'
+    },
+    body: file
+  });
+  bar.style.width = '80%';
+  if (!res.ok) {
+    const err = await res.json();
+    // Bucket may not exist yet
+    if (err?.error === 'Bucket not found' || err?.statusCode === '404') {
+      // Try to create bucket
+      await sbFetch('/storage/v1/bucket', {
+        method: 'POST',
+        body: JSON.stringify({ id: BUCKET, name: BUCKET, public: true })
+      });
+      // Retry upload
+      const res2 = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': file.type,
+          'x-upsert': 'false'
+        },
+        body: file
+      });
+      if (!res2.ok) throw new Error('Upload failed after bucket creation');
+    } else {
+      throw new Error(err?.message || 'Upload failed');
+    }
+  }
+  bar.style.width = '100%';
+  setTimeout(() => { prog.style.display = 'none'; bar.style.width = '0'; }, 500);
+  return {
+    path,
+    url: `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`
+  };
+}
+
+async function saveGif({ name, url, file_path, source_type, tags }) {
+  const res = await sbFetch(`/rest/v1/${TABLE}`, {
+    method: 'POST',
+    body: JSON.stringify({ name, url, file_path: file_path || '', source_type, tags, created_at: new Date().toISOString() })
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err?.message || 'Save failed');
+  }
+  return await res.json();
+}
+
+async function deleteGif(gif) {
+  if (!confirm(`Delete "${gif.name}"?`)) return;
+  if (gif.file_path) {
+    await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${gif.file_path}`, {
+      method: 'DELETE',
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
+  }
+  await sbFetch(`/rest/v1/${TABLE}?id=eq.${gif.id}`, { method: 'DELETE' });
+  allGifs = allGifs.filter(g => g.id !== gif.id);
+  renderAll();
+  toast(`Deleted "${gif.name}"`, 'success');
+}
+
+// --- RENDER ---
+function getFiltered() {
+  let gifs = [...allGifs];
+  if (activeTag !== 'all') gifs = gifs.filter(g => g.tags && g.tags.includes(activeTag));
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    gifs = gifs.filter(g =>
+      g.name?.toLowerCase().includes(q) ||
+      (g.tags || []).some(t => t.toLowerCase().includes(q))
+    );
+  }
+  if (sortOrder === 'oldest') gifs.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+  else if (sortOrder === 'name') gifs.sort((a,b) => a.name.localeCompare(b.name));
+  else gifs.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+  return gifs;
+}
+
+function renderAll() {
+  renderSidebar();
+  renderGrid(getFiltered());
+}
+
+function renderSidebar() {
+  document.getElementById('allCount').textContent = allGifs.length;
+  const tagMap = {};
+  allGifs.forEach(g => (g.tags || []).forEach(t => { tagMap[t] = (tagMap[t]||0)+1; }));
+  const tagList = document.getElementById('tagList');
+  const colors = ['#e8ff47','#47ffb4','#ff7eb3','#7eb8ff','#ffb347','#b347ff'];
+  let html = '';
+  Object.entries(tagMap).sort((a,b) => b[1]-a[1]).forEach(([tag, count], i) => {
+    const c = colors[i % colors.length];
+    html += `<button class="tag-filter${activeTag===tag?' active':''}" data-tag="${tag}" style="${activeTag===tag?'':''}">
+      <span style="width:6px;height:6px;border-radius:50%;background:${c};flex-shrink:0;display:inline-block;"></span>
+      ${tag}
+      <span class="count">${count}</span>
+    </button>`;
+  });
+  tagList.innerHTML = html;
+  tagList.querySelectorAll('.tag-filter').forEach(b => {
+    b.addEventListener('click', () => {
+      activeTag = b.dataset.tag;
+      document.querySelectorAll('.tag-filter').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      renderAll();
+    });
+  });
+}
+
+function renderGrid(gifs) {
+  const grid = document.getElementById('gifGrid');
+  const title = document.getElementById('gridTitle');
+  title.innerHTML = `<span style="color:var(--accent)">${gifs.length}</span> ${activeTag === 'all' ? 'gifs' : `in #${activeTag}`}`;
+  grid.className = 'gif-grid';
+  if (!gifs.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      <h3>${allGifs.length === 0 ? 'Your vault is empty' : 'No results'}</h3>
+      <p>${allGifs.length === 0 ? 'Add your first GIF to get started.' : 'Try a different tag or search term.'}</p>
+    </div>`;
+    return;
+  }
+  grid.innerHTML = gifs.map(gif => {
+    const isVideo = gif.url && (gif.url.includes('.mp4') || gif.url.includes('.webm') || gif.source_type === 'video');
+    const tagPills = (gif.tags || []).slice(0,3).map(t => `<span class="tag-pill">#${t}</span>`).join('');
+    const ext = gif.url?.split('.').pop()?.split('?')[0]?.toUpperCase() || 'GIF';
+    return `<div class="gif-card" data-id="${gif.id}">
+      ${isVideo
+        ? `<video src="${gif.url}" muted loop autoplay playsinline style="width:100%;height:100%;object-fit:cover;"></video>`
+        : `<img src="${gif.url}" alt="${gif.name}" loading="lazy">`
+      }
+      <span class="type-badge">${ext}</span>
+      <div class="overlay">
+        ${tagPills ? `<div class="tag-pills">${tagPills}</div>` : ''}
+        <div class="gif-name">${gif.name}</div>
+        <div class="gif-actions">
+          <button class="gif-action-btn copy-btn" data-url="${gif.url}">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            Copy
+          </button>
+          <button class="gif-action-btn del-btn" data-id="${gif.id}">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  grid.querySelectorAll('.copy-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      copyGif(btn.dataset.url, btn.closest('.gif-card'));
+    });
+  });
+  grid.querySelectorAll('.del-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const gif = allGifs.find(g => g.id == btn.dataset.id);
+      if (gif) deleteGif(gif);
+    });
+  });
+}
+
+async function copyGif(url, card) {
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+    const flash = document.createElement('div');
+    flash.className = 'copied-flash';
+    flash.textContent = '✓ Copied!';
+    card.appendChild(flash);
+    setTimeout(() => flash.remove(), 700);
+    toast('Copied to clipboard!', 'success');
+  } catch(e) {
+    // Fallback: copy URL
+    navigator.clipboard.writeText(url);
+    toast('URL copied (image copy requires HTTPS)', 'info');
+  }
+}
+
+// --- MODAL ---
+function openModal() {
+  document.getElementById('addModal').classList.add('open');
+  document.getElementById('gifName').value = '';
+  document.getElementById('gifTags').value = '';
+  document.getElementById('urlInput').value = '';
+  document.getElementById('filePreviewWrap').style.display = 'none';
+  document.getElementById('urlPreviewWrap').style.display = 'none';
+  selectedFile = null;
+  switchTab('upload');
+}
+
+function closeModal() {
+  document.getElementById('addModal').classList.remove('open');
+  selectedFile = null;
+}
+
+function switchTab(tab) {
+  addTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.getElementById('uploadTab').style.display = tab === 'upload' ? 'block' : 'none';
+  document.getElementById('urlTab').style.display = tab === 'url' ? 'block' : 'none';
+}
+
+document.querySelectorAll('.tab-btn').forEach(b => {
+  b.addEventListener('click', () => switchTab(b.dataset.tab));
+});
+
+// File input
+const fileInput = document.getElementById('fileInput');
+const dropZone = document.getElementById('dropZone');
+
+fileInput.addEventListener('change', e => {
+  if (e.target.files[0]) handleFile(e.target.files[0]);
+});
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+
+function handleFile(file) {
+  selectedFile = file;
+  const isVideo = file.type.startsWith('video/');
+  const img = document.getElementById('filePreview');
+  const vid = document.getElementById('videoPreview');
+  img.style.display = isVideo ? 'none' : 'block';
+  vid.style.display = isVideo ? 'block' : 'none';
+  const url = URL.createObjectURL(file);
+  if (isVideo) vid.src = url;
+  else img.src = url;
+  document.getElementById('filePreviewWrap').style.display = 'block';
+  if (!document.getElementById('gifName').value) {
+    document.getElementById('gifName').value = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
+  }
+}
+
+// URL preview
+document.getElementById('urlInput').addEventListener('input', e => {
+  const url = e.target.value.trim();
+  if (url.startsWith('http')) {
+    document.getElementById('urlPreview').src = url;
+    document.getElementById('urlPreviewWrap').style.display = 'block';
+  }
+});
+
+// Save
+document.getElementById('saveBtn').addEventListener('click', async () => {
+  const name = document.getElementById('gifName').value.trim();
+  const tagsRaw = document.getElementById('gifTags').value.trim();
+  const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim().toLowerCase()).filter(Boolean) : [];
+
+  if (!name) { toast('Please enter a name', 'error'); return; }
+
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  try {
+    if (addTab === 'upload') {
+      if (!selectedFile) { toast('Please select a file', 'error'); return; }
+      const { path, url } = await uploadFile(selectedFile);
+      const source_type = selectedFile.type.startsWith('video/') ? 'video' : 'image';
+      const saved = await saveGif({ name, url, file_path: path, source_type, tags });
+      const newGif = Array.isArray(saved) ? saved[0] : saved;
+      allGifs.unshift(newGif);
+    } else {
+      const url = document.getElementById('urlInput').value.trim();
+      if (!url) { toast('Please enter a URL', 'error'); return; }
+      const saved = await saveGif({ name, url, file_path: '', source_type: 'url', tags });
+      const newGif = Array.isArray(saved) ? saved[0] : saved;
+      allGifs.unshift(newGif);
+    }
+    renderAll();
+    closeModal();
+    toast('Added to vault!', 'success');
+  } catch(e) {
+    toast('Error: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save to Vault`;
+  }
+});
+
+document.getElementById('addBtn').addEventListener('click', openModal);
+document.getElementById('cancelBtn').addEventListener('click', closeModal);
+document.getElementById('addModal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+document.getElementById('setupBtn').addEventListener('click', setupDatabase);
+
+document.getElementById('search').addEventListener('input', e => {
+  searchQuery = e.target.value.trim();
+  renderGrid(getFiltered());
+});
+
+document.getElementById('sortSelect').addEventListener('change', e => {
+  sortOrder = e.target.value;
+  renderGrid(getFiltered());
+});
+
+// Tag filter - all
+document.querySelector('[data-tag="all"]').addEventListener('click', () => {
+  activeTag = 'all';
+  document.querySelectorAll('.tag-filter').forEach(x => x.classList.remove('active'));
+  document.querySelector('[data-tag="all"]').classList.add('active');
+  renderAll();
+});
+
+// --- TOAST ---
+function toast(msg, type = 'info') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `${type==='success'?'✓':type==='error'?'✕':'✦'} ${msg}`;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+function showSetupBanner() {
+  const main = document.getElementById('mainContent');
+  const existing = main.querySelector('.setup-banner');
+  if (existing) return;
+  const banner = document.createElement('div');
+  banner.className = 'setup-banner';
+  banner.innerHTML = `
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--accent);flex-shrink:0"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    <p>First-time setup needed. You need to <strong>create the database table</strong> in Supabase. Open your Supabase project → SQL Editor → run the SQL below, then refresh. <button onclick="showSQL()" style="background:none;border:none;color:var(--accent);cursor:pointer;font-family:var(--font-display);font-size:13px;text-decoration:underline;padding:0;">Show SQL →</button></p>
+  `;
+  main.insertBefore(banner, main.firstChild);
+}
+
+function showSQL() {
+  const sql = `-- Run this in your Supabase SQL editor\ncreate table if not exists gifs (\n  id bigserial primary key,\n  name text not null,\n  url text not null,\n  file_path text,\n  source_type text default 'url',\n  tags text[] default '{}',\n  created_at timestamptz default now()\n);\n\nalter table gifs enable row level security;\ncreate policy "Allow all" on gifs for all using (true) with check (true);\n\n-- Also create the storage bucket in Storage tab:\n-- Bucket name: gif-files, Public: true`;
+  const pre = document.createElement('pre');
+  pre.style.cssText = 'background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px;font-size:12px;font-family:var(--font-mono);color:var(--text-muted);white-space:pre-wrap;word-break:break-all;margin-top:12px;line-height:1.7';
+  pre.textContent = sql;
+  const banner = document.querySelector('.setup-banner');
+  if (banner && !banner.querySelector('pre')) banner.after(pre);
+}
+
+// --- INIT ---
+loadGifs();
+</script>
+</body>
+</html>
