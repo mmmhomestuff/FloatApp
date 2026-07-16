@@ -272,7 +272,16 @@
       outline: none;
     }
     .chore-search-input::placeholder { color: var(--text-light); }
-    .sort-pills { display: flex; gap: 8px; overflow-x: auto; }
+    .sort-pills { display: flex; gap: 8px; overflow-x: auto; flex-wrap: wrap; }
+    .freq-subheader {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 14px 2px 4px;
+    }
+    .freq-subheader:first-child { padding-top: 0; }
     .sort-pill {
       flex-shrink: 0;
       padding: 7px 14px;
@@ -397,8 +406,8 @@
       margin-top: 4px;
     }
 
-    .pets-grid { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
-    .pet-chip {
+    .group-grid { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; }
+    .group-chip {
       background: var(--green-soft);
       border-radius: 20px;
       padding: 8px 16px;
@@ -410,13 +419,13 @@
       font-family: var(--font);
       transition: all 0.15s;
     }
-    .pet-chip:active { transform: scale(0.95); }
-    .pet-chip.unselected {
+    .group-chip:active { transform: scale(0.95); }
+    .group-chip.unselected {
       background: var(--surface);
       color: var(--text-light);
       border-color: var(--border);
     }
-    .pets-hint {
+    .group-hint {
       font-size: 12px;
       color: var(--text-light);
       text-align: center;
@@ -518,6 +527,8 @@
         <button type="button" class="sort-pill active" data-sort="az" onclick="setSort('az')">A–Z</button>
         <button type="button" class="sort-pill" data-sort="attention" onclick="setSort('attention')">Needs Attention</button>
         <button type="button" class="sort-pill" data-sort="recent" onclick="setSort('recent')">Recently Done</button>
+        <button type="button" class="sort-pill" data-sort="frequency" onclick="setSort('frequency')">By Frequency</button>
+        <button type="button" class="sort-pill" data-sort="upcoming" onclick="setSort('upcoming')">Upcoming</button>
       </div>
     </div>
     <div class="chore-list" id="chore-list"></div>
@@ -554,24 +565,24 @@
   </div>
 </div>
 
-<div class="modal-backdrop" id="modal-pets" onclick="closeModal('modal-pets', event)">
+<div class="modal-backdrop" id="modal-group" onclick="closeModal('modal-group', event)">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
-    <div class="modal-icon">🐾</div>
-    <div class="modal-title">Feed Pets</div>
-    <div class="modal-subtitle" id="pets-subtitle">Marks Bo, Toast, and Dozer all done</div>
-    <div class="pets-grid" id="pets-grid"></div>
-    <div class="pets-hint">tap a pet to include or skip it</div>
-    <div class="done-label">Who fed them?</div>
+    <div class="modal-icon" id="group-icon">🐾</div>
+    <div class="modal-title" id="group-title">–</div>
+    <div class="modal-subtitle" id="group-subtitle">–</div>
+    <div class="group-grid" id="group-grid"></div>
+    <div class="group-hint">tap a pet to include or skip it</div>
+    <div class="done-label" id="group-prompt-label">Who did it?</div>
     <div class="done-btns">
-      <button class="done-btn" onclick="markPetsDone('Mary')"><span class="done-avatar">🌸</span>Mary</button>
-      <button class="done-btn" onclick="markPetsDone('Garrett')"><span class="done-avatar">🌿</span>Garrett</button>
+      <button class="done-btn" onclick="markGroupDone('Mary')"><span class="done-avatar">🌸</span>Mary</button>
+      <button class="done-btn" onclick="markGroupDone('Garrett')"><span class="done-avatar">🌿</span>Garrett</button>
     </div>
     <div class="history-section">
-      <div class="history-title">🕓 Recent Log Entries (Bo, Toast &amp; Dozer combined)</div>
-      <div class="history-list" id="pets-history"><div class="history-loading">Loading…</div></div>
+      <div class="history-title" id="group-history-title">🕓 Recent Log Entries</div>
+      <div class="history-list" id="group-history"><div class="history-loading">Loading…</div></div>
     </div>
-    <button class="dismiss-btn" onclick="closeModal('modal-pets')">cancel</button>
+    <button class="dismiss-btn" onclick="closeModal('modal-group')">cancel</button>
   </div>
 </div>
 
@@ -584,17 +595,44 @@ let activeChore = null;
 let chatHistory = [];
 let allChores = [];
 
-const DEFAULT_PETS = [
-  { id: 'bo',    name: 'Bo',    icon: '🐱' },
-  { id: 'toast', name: 'Toast', icon: '🐱' },
-  { id: 'dozer', name: 'Dozer', icon: '🐶' },
+// Combined-tile groups. Add a new group here (real Notion chore titles as members) to get
+// the same "one tile, pick who's included, log together" pattern for anything else that
+// makes sense combined — no need to duplicate the modal/logging logic per group.
+const CHORE_GROUPS = [
+  {
+    id: 'group-food',
+    label: 'Feed Pets',
+    icon: '🐾',
+    frequency: 'daily',
+    members: ['Bo - cat food', 'Toast - cat food', 'Dozer - dog food'],
+    promptLabel: 'Who fed them?',
+    doneVerb: 'fed',
+  },
+  {
+    id: 'group-meds',
+    label: 'Monthly Flea & Tick',
+    icon: '💊',
+    frequency: 'monthly',
+    members: [
+      'Bo - Revolution Plus (flea/tick/ear mites)',
+      'Toast - Revolution Plus (flea/tick/ear mites)',
+      'Dozer - Simparica Trio (flea/tick/heartworm)',
+    ],
+    promptLabel: 'Who gave it?',
+    doneVerb: 'given flea & tick',
+  },
 ];
 
-let selectedPetIds = new Set();
-let modalPetsList = [];
+let selectedMemberIds = new Set();
+let modalMembersList = [];
+let activeGroupTile = null;
 
 const FALLBACK_CHORES = [
-  { id: 'pets-combined', name: 'Feed Pets', icon: '🐾', frequency: 'daily', lastDone: null, lastDoneBy: null, isPetGroup: true, petPageIds: [] },
+  ...CHORE_GROUPS.map(group => ({
+    id: group.id, name: group.label, icon: group.icon, frequency: group.frequency,
+    lastDone: null, lastDoneBy: null, isGroup: true, groupConfig: group, memberPageIds: [],
+    members: group.members.map(m => ({ id: m, name: petShortName(m), icon: iconForPetName(m) })),
+  })),
   { id: 'placeholder-dishes',  name: 'Dishes',         icon: '🍽️', frequency: 'daily',  lastDone: null, lastDoneBy: null },
   { id: 'placeholder-laundry', name: 'Laundry',        icon: '🧺', frequency: 'weekly', lastDone: null, lastDoneBy: null },
   { id: 'placeholder-trash',   name: 'Take Out Trash', icon: '🗑️', frequency: 'weekly', lastDone: null, lastDoneBy: null },
@@ -654,39 +692,76 @@ function petShortName(name) {
   return name.split(' - ')[0].trim();
 }
 
+function toTitleCase(str) {
+  return str.replace(/\w\S*/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+}
+
 // Drop trailing explanatory parentheticals ("(flea/tick/heartworm)") and normalize
 // casing so the list reads clean regardless of how the Notion title was typed.
 // Display-only — the underlying chore.name (used for matching/logging) is untouched.
 function displayName(chore) {
   const stripped = chore.name.replace(/\s*\([^)]*\)\s*$/, '').trim();
-  return stripped.replace(/\w\S*/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+  return toTitleCase(stripped);
+}
+
+// One source of truth for "how many days between occurrences" — used by both isOverdue
+// and daysUntilDue, and by the frequency-grouped sort order below.
+// null = no fixed cadence ("as needed" chores are never overdue and never "coming due").
+const FREQUENCY_ORDER = ['daily', 'every 2 days', 'twice a week', 'weekly', 'every 2 weeks', 'monthly', 'quarterly', 'yearly', 'as needed'];
+const FREQUENCY_DAYS = {
+  'daily': 1,
+  'every 2 days': 2,
+  'twice a week': 3.5, // approximation — "twice a week" isn't a fixed interval, this is a reasonable midpoint
+  'weekly': 7,
+  'every 2 weeks': 14,
+  'monthly': 30,
+  'quarterly': 90,
+  'yearly': 365,
+  'as needed': null,
+};
+
+function frequencyLabel(frequency) {
+  return toTitleCase(frequency || 'as needed');
 }
 
 function normalizeChores(rawChores) {
-  // Exact-match the three known daily feeding chores only.
-  // A substring match on 'bo'/'toast'/'dozer' was catching "cat box" (contains "bo")
-  // and the monthly medicine chores (Revolution Plus, Simparica Trio) — those are real
-  // Bo/Toast/Dozer chores, just not feeding, and don't belong in the daily food tile.
-  const petFoodNames = ['bo - cat food', 'toast - cat food', 'dozer - dog food'];
-  const pets = rawChores.filter(c => petFoodNames.includes(c.name.toLowerCase().trim()));
-  const nonPets = rawChores.filter(c => !petFoodNames.includes(c.name.toLowerCase().trim()));
-  const result = [...nonPets];
-  if (pets.length > 0) {
-    const latestPetDate = pets.map(p => p.lastDone).filter(Boolean).sort().pop() || null;
-    const petDoneBy = pets.find(p => p.lastDone === latestPetDate)?.lastDoneBy || null;
-    result.unshift({ id: 'pets-combined', name: 'Feed Pets', icon: '🐾', frequency: 'daily',
-      lastDone: latestPetDate, lastDoneBy: petDoneBy, isPetGroup: true, petPageIds: pets.map(p => p.id),
-      pets: pets.map(p => ({ id: p.id, name: petShortName(p.name), icon: iconForPetName(p.name) })) });
-  }
-  return result;
+  // Exact-match each group's known chore titles — a substring match on 'bo'/'toast'/'dozer'
+  // used to catch "cat box" (contains "bo") and pull medicine chores into the food tile.
+  let remaining = [...rawChores];
+  const groupTiles = [];
+  CHORE_GROUPS.forEach(group => {
+    const lowerMembers = group.members.map(m => m.toLowerCase());
+    const matched = remaining.filter(c => lowerMembers.includes(c.name.toLowerCase().trim()));
+    if (matched.length === 0) return;
+    remaining = remaining.filter(c => !matched.includes(c));
+    const latestDate = matched.map(p => p.lastDone).filter(Boolean).sort().pop() || null;
+    const latestBy = matched.find(p => p.lastDone === latestDate)?.lastDoneBy || null;
+    groupTiles.push({
+      id: group.id, name: group.label, icon: group.icon, frequency: group.frequency,
+      lastDone: latestDate, lastDoneBy: latestBy, isGroup: true, groupConfig: group,
+      memberPageIds: matched.map(p => p.id),
+      members: matched.map(p => ({ id: p.id, name: petShortName(p.name), icon: iconForPetName(p.name) })),
+    });
+  });
+  return [...groupTiles, ...remaining];
 }
 
 function isOverdue(chore) {
   if (!chore.lastDone) return true;
+  const interval = FREQUENCY_DAYS[chore.frequency];
+  if (interval == null) return false; // as-needed, or an unrecognized frequency — no schedule to be late against
   const daysDiff = (new Date() - new Date(chore.lastDone)) / (1000 * 60 * 60 * 24);
-  if (chore.frequency === 'daily')  return daysDiff >= 1;
-  if (chore.frequency === 'weekly') return daysDiff >= 7;
-  return false;
+  return daysDiff >= interval;
+}
+
+// Days remaining until next due (negative = overdue). Used for the "Upcoming" sort so
+// Mary can see what's coming due soon and get ahead of it, not just what's already late.
+function daysUntilDue(chore) {
+  if (!chore.lastDone) return -Infinity;
+  const interval = FREQUENCY_DAYS[chore.frequency];
+  if (interval == null) return Infinity; // as-needed chores have no due date to count down to
+  const daysDiff = (new Date() - new Date(chore.lastDone)) / (1000 * 60 * 60 * 24);
+  return interval - daysDiff;
 }
 
 function daysAgoLabel(dateStr) {
@@ -711,6 +786,7 @@ function renderChores() {
   const query = (searchInput?.value || '').toLowerCase().trim();
 
   let items = allChores.filter(chore => !query || displayName(chore).toLowerCase().includes(query));
+  let groupByFrequency = false;
 
   if (currentSort === 'az') {
     items = [...items].sort((a, b) => displayName(a).localeCompare(displayName(b)));
@@ -722,14 +798,39 @@ function renderChores() {
     });
   } else if (currentSort === 'recent') {
     items = [...items].sort((a, b) => (b.lastDone || '').localeCompare(a.lastDone || ''));
+  } else if (currentSort === 'frequency') {
+    groupByFrequency = true;
+    items = [...items].sort((a, b) => {
+      const ai = FREQUENCY_ORDER.indexOf(a.frequency), bi = FREQUENCY_ORDER.indexOf(b.frequency);
+      const aRank = ai === -1 ? FREQUENCY_ORDER.length : ai, bRank = bi === -1 ? FREQUENCY_ORDER.length : bi;
+      if (aRank !== bRank) return aRank - bRank;
+      return displayName(a).localeCompare(displayName(b));
+    });
+  } else if (currentSort === 'upcoming') {
+    // Getting-ahead view: what's coming due soon, on purpose excluding what's already
+    // overdue (that's Needs Attention's job) so this stays focused on planning ahead.
+    items = items.filter(c => !isOverdue(c));
+    items = [...items].sort((a, b) => daysUntilDue(a) - daysUntilDue(b));
   }
 
   list.innerHTML = '';
   if (items.length === 0) {
-    list.innerHTML = '<div class="history-empty">No chores match "' + query + '"</div>';
+    const msg = currentSort === 'upcoming' ? 'Nothing coming up — you\'re ahead 🌿' : `No chores match "${query}"`;
+    list.innerHTML = `<div class="history-empty">${msg}</div>`;
     return;
   }
+  let lastHeader = null;
   items.forEach(chore => {
+    if (groupByFrequency) {
+      const label = frequencyLabel(chore.frequency);
+      if (label !== lastHeader) {
+        lastHeader = label;
+        const header = document.createElement('div');
+        header.className = 'freq-subheader';
+        header.textContent = label;
+        list.appendChild(header);
+      }
+    }
     const overdue = isOverdue(chore);
     const row = document.createElement('div');
     row.className = 'chore-row' + (overdue ? ' overdue' : '');
@@ -757,7 +858,7 @@ function updateStats() {
 }
 
 function openChoreModal(chore) {
-  if (chore.isPetGroup) { renderPetsModal(chore); openModal('modal-pets'); return; }
+  if (chore.isGroup) { renderGroupModal(chore); openModal('modal-group'); return; }
   activeChore = chore;
   document.getElementById('detail-icon').textContent = chore.icon;
   document.getElementById('detail-name').textContent = displayName(chore);
@@ -767,34 +868,41 @@ function openChoreModal(chore) {
   openModal('modal-chore');
 }
 
-function renderPetsModal(petGroup) {
-  modalPetsList = (petGroup.pets && petGroup.pets.length) ? petGroup.pets : DEFAULT_PETS;
-  selectedPetIds = new Set(modalPetsList.map(p => p.id));
-  const grid = document.getElementById('pets-grid');
-  grid.innerHTML = modalPetsList.map(p =>
-    `<button type="button" class="pet-chip" data-pet-id="${p.id}" onclick="togglePetChip('${p.id}')">${p.icon} ${p.name}</button>`
+function renderGroupModal(tile) {
+  activeGroupTile = tile;
+  modalMembersList = tile.members || [];
+  selectedMemberIds = new Set(modalMembersList.map(m => m.id));
+  document.getElementById('group-icon').textContent = tile.icon;
+  document.getElementById('group-title').textContent = tile.name;
+  document.getElementById('group-prompt-label').textContent = tile.groupConfig?.promptLabel || 'Who did it?';
+  document.getElementById('group-history-title').textContent =
+    `🕓 Recent Log Entries (${modalMembersList.map(m => m.name).join(', ')} combined)`;
+  const grid = document.getElementById('group-grid');
+  grid.innerHTML = modalMembersList.map(m =>
+    `<button type="button" class="group-chip" data-member-id="${m.id}" onclick="toggleGroupChip('${m.id}')">${m.icon} ${m.name}</button>`
   ).join('');
-  updatePetsSubtitle();
-  if (petGroup.petPageIds && petGroup.petPageIds.length) {
-    loadHistoryInto('pets-history', modalPetsList);
+  updateGroupSubtitle();
+  if (tile.memberPageIds && tile.memberPageIds.length) {
+    loadHistoryInto('group-history', modalMembersList);
   } else {
-    document.getElementById('pets-history').innerHTML = '<div class="history-empty">No logs yet 🌱</div>';
+    document.getElementById('group-history').innerHTML = '<div class="history-empty">No logs yet 🌱</div>';
   }
 }
 
-function togglePetChip(id) {
-  if (selectedPetIds.has(id)) selectedPetIds.delete(id); else selectedPetIds.add(id);
-  const chip = document.querySelector(`.pet-chip[data-pet-id="${id}"]`);
-  if (chip) chip.classList.toggle('unselected', !selectedPetIds.has(id));
-  updatePetsSubtitle();
+function toggleGroupChip(id) {
+  if (selectedMemberIds.has(id)) selectedMemberIds.delete(id); else selectedMemberIds.add(id);
+  const chip = document.querySelector(`.group-chip[data-member-id="${id}"]`);
+  if (chip) chip.classList.toggle('unselected', !selectedMemberIds.has(id));
+  updateGroupSubtitle();
 }
 
-function updatePetsSubtitle() {
-  const names = modalPetsList.filter(p => selectedPetIds.has(p.id)).map(p => p.name);
-  const el = document.getElementById('pets-subtitle');
-  if (names.length === 0) el.textContent = 'Pick at least one pet below';
-  else if (names.length === modalPetsList.length) el.textContent = `Marks ${names.join(', ')} all done`;
-  else el.textContent = `Marks ${names.join(', ')} done`;
+function updateGroupSubtitle() {
+  const names = modalMembersList.filter(m => selectedMemberIds.has(m.id)).map(m => m.name);
+  const el = document.getElementById('group-subtitle');
+  const verb = activeGroupTile?.groupConfig?.doneVerb || 'done';
+  if (names.length === 0) el.textContent = 'Pick at least one below';
+  else if (names.length === modalMembersList.length) el.textContent = `Marks ${names.join(', ')} all ${verb}`;
+  else el.textContent = `Marks ${names.join(', ')} ${verb}`;
 }
 
 // ── History: fetch + render up to 5 recent log entries, each individually deletable ──
@@ -868,16 +976,17 @@ async function deleteLogEntry(logId, choreId, containerId) {
     // Reflect the recomputed mirror in local state for whichever chore this was
     const chore = allChores.find(c => c.id === choreId);
     if (chore) { chore.lastDone = data.newLastDone; chore.lastDoneBy = data.newLastDoneBy; }
-    const petGroup = allChores.find(c => c.isPetGroup);
-    if (petGroup && petGroup.petPageIds?.includes(choreId)) {
-      // Combined pet tile mirrors whichever pet was most recently done — recompute from the freshest of all three
-      const dates = petGroup.petPageIds.map(id => (id === choreId ? data.newLastDone : allChores.find(c => c.id === id)?.lastDone)).filter(Boolean);
-      petGroup.lastDone = dates.length ? dates.sort().pop() : null;
+    // If this chore is a member of a combined tile, that tile's mirror needs recomputing too —
+    // it shows the freshest of all its members, not just this one.
+    const parentGroup = allChores.find(c => c.isGroup && c.memberPageIds?.includes(choreId));
+    if (parentGroup) {
+      const dates = parentGroup.memberPageIds.map(id => (id === choreId ? data.newLastDone : allChores.find(c => c.id === id)?.lastDone)).filter(Boolean);
+      parentGroup.lastDone = dates.length ? dates.sort().pop() : null;
     }
     renderChores(); updateStats();
     // Refresh whichever history list is open
     if (containerId === 'chore-history' && activeChore) loadHistoryInto('chore-history', [{ id: activeChore.id, icon: activeChore.icon, name: activeChore.name }]);
-    if (containerId === 'pets-history' && petGroup) loadHistoryInto('pets-history', modalPetsList);
+    if (containerId === 'group-history' && parentGroup) loadHistoryInto('group-history', modalMembersList);
     showToast('🗑️ Log entry deleted');
   } catch { showToast("⚠️ Couldn't delete — check connection", true); }
 }
@@ -899,16 +1008,16 @@ async function markDone(person) {
   } catch { showToast("⚠️ Couldn't log — check connection", true); }
 }
 
-async function markPetsDone(person) {
-  if (selectedPetIds.size === 0) { showToast('Pick at least one pet first', true); return; }
-  const petGroup = allChores.find(c => c.isPetGroup);
-  if (!petGroup) return;
-  const namesLogged = modalPetsList.filter(p => selectedPetIds.has(p.id)).map(p => p.name).join(', ');
-  const realPageIds = (petGroup.petPageIds || []).filter(id => selectedPetIds.has(id));
+async function markGroupDone(person) {
+  if (selectedMemberIds.size === 0) { showToast('Pick at least one first', true); return; }
+  const tile = activeGroupTile;
+  if (!tile) return;
+  const namesLogged = modalMembersList.filter(m => selectedMemberIds.has(m.id)).map(m => m.name).join(', ');
+  const realPageIds = (tile.memberPageIds || []).filter(id => selectedMemberIds.has(id));
   if (realPageIds.length === 0) {
-    showToast(`🐾 ${namesLogged} logged! (deploy Edge Function to sync Notion)`);
-    petGroup.lastDone = new Date().toISOString().split('T')[0];
-    petGroup.lastDoneBy = person;
+    showToast(`${tile.icon} ${namesLogged} logged! (deploy Edge Function to sync Notion)`);
+    tile.lastDone = new Date().toISOString().split('T')[0];
+    tile.lastDoneBy = person;
     renderChores(); updateStats(); return;
   }
   try {
@@ -918,14 +1027,14 @@ async function markPetsDone(person) {
     ));
     const succeeded = outcomes.filter(o => o.status === 'fulfilled').map(o => o.value);
     const failed = outcomes.length - succeeded.length;
-    petGroup.lastDone = new Date().toISOString().split('T')[0];
-    petGroup.lastDoneBy = person;
+    tile.lastDone = new Date().toISOString().split('T')[0];
+    tile.lastDoneBy = person;
     renderChores(); updateStats();
-    loadHistoryInto('pets-history', modalPetsList);
+    loadHistoryInto('group-history', modalMembersList);
     if (failed === 0) {
-      showToast(`🐾 ${namesLogged} fed by ${person}!`);
+      showToast(`${tile.icon} ${namesLogged} logged for ${person}!`);
     } else {
-      const succeededNames = modalPetsList.filter(p => succeeded.includes(p.id)).map(p => p.name).join(', ') || 'none';
+      const succeededNames = modalMembersList.filter(m => succeeded.includes(m.id)).map(m => m.name).join(', ') || 'none';
       showToast(`⚠️ Only ${succeededNames} logged — ${failed} failed, check history`, true);
     }
   } catch { showToast("⚠️ Couldn't log — check connection", true); }
