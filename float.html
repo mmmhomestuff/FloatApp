@@ -392,6 +392,7 @@
       font-family: var(--font);
     }
     .done-btn:hover, .done-btn:active { border-color: var(--accent); background: var(--overdue-bg); color: var(--accent); }
+    .done-btn:disabled { opacity: 0.5; pointer-events: none; }
     .done-btn .done-avatar { font-size: 24px; display: block; margin-bottom: 4px; }
     .dismiss-btn {
       width: 100%;
@@ -553,7 +554,7 @@
     <div class="modal-title" id="detail-name">–</div>
     <div class="modal-subtitle" id="detail-last">–</div>
     <div class="done-label">Who did it?</div>
-    <div class="done-btns">
+    <div class="done-btns" id="chore-done-btns">
       <button class="done-btn" onclick="markDone('Mary')"><span class="done-avatar">🌸</span>Mary</button>
       <button class="done-btn" onclick="markDone('Garrett')"><span class="done-avatar">🌿</span>Garrett</button>
     </div>
@@ -574,7 +575,7 @@
     <div class="group-grid" id="group-grid"></div>
     <div class="group-hint">tap a pet to include or skip it</div>
     <div class="done-label" id="group-prompt-label">Who did it?</div>
-    <div class="done-btns">
+    <div class="done-btns" id="group-done-btns">
       <button class="done-btn" onclick="markGroupDone('Mary')"><span class="done-avatar">🌸</span>Mary</button>
       <button class="done-btn" onclick="markGroupDone('Garrett')"><span class="done-avatar">🌿</span>Garrett</button>
     </div>
@@ -991,8 +992,16 @@ async function deleteLogEntry(logId, choreId, containerId) {
   } catch { showToast("⚠️ Couldn't delete — check connection", true); }
 }
 
+let choreLogInFlight = false;
+
+function setButtonsLocked(containerId, locked) {
+  document.querySelectorAll(`#${containerId} .done-btn`).forEach(b => b.disabled = locked);
+}
+
 async function markDone(person) {
-  if (!activeChore) return;
+  if (!activeChore || choreLogInFlight) return; // ignore re-taps while a request is already running
+  choreLogInFlight = true;
+  setButtonsLocked('chore-done-btns', true);
   const chore = activeChore;
   try {
     const res = await fetch(CHORE_LOG_URL, {
@@ -1006,19 +1015,25 @@ async function markDone(person) {
     loadHistoryInto('chore-history', [{ id: chore.id, icon: chore.icon, name: chore.name }]);
     showToast(`${chore.icon} Logged for ${person}!`);
   } catch { showToast("⚠️ Couldn't log — check connection", true); }
+  finally { choreLogInFlight = false; setButtonsLocked('chore-done-btns', false); }
 }
 
 async function markGroupDone(person) {
   if (selectedMemberIds.size === 0) { showToast('Pick at least one first', true); return; }
+  if (choreLogInFlight) return; // ignore re-taps while a request is already running
   const tile = activeGroupTile;
   if (!tile) return;
+  choreLogInFlight = true;
+  setButtonsLocked('group-done-btns', true);
   const namesLogged = modalMembersList.filter(m => selectedMemberIds.has(m.id)).map(m => m.name).join(', ');
   const realPageIds = (tile.memberPageIds || []).filter(id => selectedMemberIds.has(id));
   if (realPageIds.length === 0) {
     showToast(`${tile.icon} ${namesLogged} logged! (deploy Edge Function to sync Notion)`);
     tile.lastDone = new Date().toISOString().split('T')[0];
     tile.lastDoneBy = person;
-    renderChores(); updateStats(); return;
+    renderChores(); updateStats();
+    choreLogInFlight = false; setButtonsLocked('group-done-btns', false);
+    return;
   }
   try {
     const outcomes = await Promise.allSettled(realPageIds.map(pageId =>
@@ -1038,6 +1053,7 @@ async function markGroupDone(person) {
       showToast(`⚠️ Only ${succeededNames} logged — ${failed} failed, check history`, true);
     }
   } catch { showToast("⚠️ Couldn't log — check connection", true); }
+  finally { choreLogInFlight = false; setButtonsLocked('group-done-btns', false); }
 }
 
 async function sendChat() {
