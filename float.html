@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Float</title>
+  <title>Float 🌿</title>
   <style>
     /* ── Design System ─────────────────────────────────── */
     :root {
@@ -259,6 +259,35 @@
       text-transform: uppercase;
       letter-spacing: 0.06em;
     }
+    .chore-controls { padding: 0 20px 12px; display: flex; flex-direction: column; gap: 10px; }
+    .chore-search-input {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      font-size: 14px;
+      font-family: var(--font);
+      color: var(--text);
+      outline: none;
+    }
+    .chore-search-input::placeholder { color: var(--text-light); }
+    .sort-pills { display: flex; gap: 8px; overflow-x: auto; }
+    .sort-pill {
+      flex-shrink: 0;
+      padding: 7px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      font-family: var(--font);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+    .sort-pill.active { background: var(--accent); border-color: var(--accent); color: #fff; }
     .chore-list { padding: 0 20px; display: flex; flex-direction: column; gap: 10px; }
 
     .chore-row {
@@ -483,6 +512,14 @@
 
     <div id="chore-error" class="error-banner hidden"></div>
     <div class="chore-list-header">Chores</div>
+    <div class="chore-controls">
+      <input type="text" class="chore-search-input" id="chore-search" placeholder="Search chores…" oninput="renderChores()" />
+      <div class="sort-pills">
+        <button type="button" class="sort-pill active" data-sort="az" onclick="setSort('az')">A–Z</button>
+        <button type="button" class="sort-pill" data-sort="attention" onclick="setSort('attention')">Needs Attention</button>
+        <button type="button" class="sort-pill" data-sort="recent" onclick="setSort('recent')">Recently Done</button>
+      </div>
+    </div>
     <div class="chore-list" id="chore-list"></div>
   </div>
 
@@ -611,6 +648,20 @@ function iconForPetName(name) {
   return '🐱';
 }
 
+// "Bo - cat food" -> "Bo". Chip labels don't need to repeat the context
+// the modal title already establishes (this picker IS the food one).
+function petShortName(name) {
+  return name.split(' - ')[0].trim();
+}
+
+// Drop trailing explanatory parentheticals ("(flea/tick/heartworm)") and normalize
+// casing so the list reads clean regardless of how the Notion title was typed.
+// Display-only — the underlying chore.name (used for matching/logging) is untouched.
+function displayName(chore) {
+  const stripped = chore.name.replace(/\s*\([^)]*\)\s*$/, '').trim();
+  return stripped.replace(/\w\S*/g, w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+}
+
 function normalizeChores(rawChores) {
   // Exact-match the three known daily feeding chores only.
   // A substring match on 'bo'/'toast'/'dozer' was catching "cat box" (contains "bo")
@@ -625,7 +676,7 @@ function normalizeChores(rawChores) {
     const petDoneBy = pets.find(p => p.lastDone === latestPetDate)?.lastDoneBy || null;
     result.unshift({ id: 'pets-combined', name: 'Feed Pets', icon: '🐾', frequency: 'daily',
       lastDone: latestPetDate, lastDoneBy: petDoneBy, isPetGroup: true, petPageIds: pets.map(p => p.id),
-      pets: pets.map(p => ({ id: p.id, name: p.name, icon: iconForPetName(p.name) })) });
+      pets: pets.map(p => ({ id: p.id, name: petShortName(p.name), icon: iconForPetName(p.name) })) });
   }
   return result;
 }
@@ -646,17 +697,46 @@ function daysAgoLabel(dateStr) {
   return `${diff} days ago`;
 }
 
+let currentSort = 'az';
+
+function setSort(sort) {
+  currentSort = sort;
+  document.querySelectorAll('.sort-pill').forEach(b => b.classList.toggle('active', b.dataset.sort === sort));
+  renderChores();
+}
+
 function renderChores() {
   const list = document.getElementById('chore-list');
+  const searchInput = document.getElementById('chore-search');
+  const query = (searchInput?.value || '').toLowerCase().trim();
+
+  let items = allChores.filter(chore => !query || displayName(chore).toLowerCase().includes(query));
+
+  if (currentSort === 'az') {
+    items = [...items].sort((a, b) => displayName(a).localeCompare(displayName(b)));
+  } else if (currentSort === 'attention') {
+    items = [...items].sort((a, b) => {
+      const aOver = isOverdue(a), bOver = isOverdue(b);
+      if (aOver !== bOver) return aOver ? -1 : 1;
+      return (a.lastDone || '').localeCompare(b.lastDone || ''); // oldest/never-done first within each group
+    });
+  } else if (currentSort === 'recent') {
+    items = [...items].sort((a, b) => (b.lastDone || '').localeCompare(a.lastDone || ''));
+  }
+
   list.innerHTML = '';
-  allChores.forEach(chore => {
+  if (items.length === 0) {
+    list.innerHTML = '<div class="history-empty">No chores match "' + query + '"</div>';
+    return;
+  }
+  items.forEach(chore => {
     const overdue = isOverdue(chore);
     const row = document.createElement('div');
     row.className = 'chore-row' + (overdue ? ' overdue' : '');
     row.innerHTML = `
       <span class="chore-icon">${chore.icon}</span>
       <div class="chore-info">
-        <div class="chore-name">${chore.name}</div>
+        <div class="chore-name">${displayName(chore)}</div>
         <div class="chore-last">${chore.lastDoneBy ? `${chore.lastDoneBy} — ${daysAgoLabel(chore.lastDone)}` : daysAgoLabel(chore.lastDone)}</div>
       </div>
       <span class="chore-chevron">›</span>`;
@@ -680,7 +760,7 @@ function openChoreModal(chore) {
   if (chore.isPetGroup) { renderPetsModal(chore); openModal('modal-pets'); return; }
   activeChore = chore;
   document.getElementById('detail-icon').textContent = chore.icon;
-  document.getElementById('detail-name').textContent = chore.name;
+  document.getElementById('detail-name').textContent = displayName(chore);
   document.getElementById('detail-last').textContent =
     chore.lastDoneBy ? `${chore.lastDoneBy} — ${daysAgoLabel(chore.lastDone)}` : daysAgoLabel(chore.lastDone);
   loadHistoryInto('chore-history', [{ id: chore.id, icon: chore.icon, name: chore.name }]);
