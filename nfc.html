@@ -1,151 +1,182 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Float">
-<title>Float — Chore Log</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
-<style>
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;background:linear-gradient(135deg,#FBF5ED 0%,#FDF8F2 100%);font-family:'Nunito',sans-serif;display:flex;align-items:center;justify-content:center;}
-.card{background:#FFFBF7;border-radius:32px;border:2.5px solid #D4A57D;padding:40px 28px 36px;width:90%;max-width:360px;text-align:center;box-shadow:0 12px 40px rgba(212,165,125,0.2);}
-.chore-icon{font-size:64px;margin-bottom:16px;animation:pop 0.4s cubic-bezier(0.34,1.56,0.64,1);}
-@keyframes pop{from{transform:scale(0);}to{transform:scale(1);}}
-.chore-name{font-size:22px;font-weight:900;color:#4A3F2F;margin-bottom:6px;line-height:1.2;}
-.chore-label{font-size:12px;font-weight:700;color:#A89884;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:32px;}
-.q{font-size:14px;font-weight:800;color:#6A7A5A;margin-bottom:16px;text-transform:uppercase;letter-spacing:0.06em;}
-.btns{display:flex;gap:12px;}
-.btn{flex:1;padding:18px 12px;border-radius:20px;border:2.5px solid;font-size:16px;font-weight:900;cursor:pointer;font-family:'Nunito',sans-serif;transition:all 0.2s cubic-bezier(0.34,1.56,0.64,1);display:flex;flex-direction:column;align-items:center;gap:6px;}
-.btn:active{transform:scale(0.93);}
-.btn-mary{background:linear-gradient(135deg,#FFF5E8,#FFF0DC);border-color:#D4A57D;color:#6A7A5A;}
-.btn-garrett{background:linear-gradient(135deg,#F5FBF1,#F0F7E8);border-color:#BED2BA;color:#4A6B46;}
-.btn-emoji{font-size:28px;}
-
-/* Success state */
-.success{display:none;flex-direction:column;align-items:center;padding:40px 28px 36px;}
-.success-icon{font-size:80px;animation:pop 0.5s cubic-bezier(0.34,1.56,0.64,1);}
-.success-title{font-size:24px;font-weight:900;color:#4A3F2F;margin:16px 0 6px;}
-.success-sub{font-size:13px;font-weight:700;color:#A89884;margin-bottom:24px;}
-.success-open{padding:14px 28px;border-radius:999px;background:linear-gradient(135deg,#8DAF9B,#6A9E82);border:none;color:#fff;font-size:14px;font-weight:900;cursor:pointer;font-family:'Nunito',sans-serif;box-shadow:0 4px 16px rgba(106,158,130,0.25);}
-
-/* Loading state */
-.loading{font-size:13px;font-weight:700;color:#A89884;margin-top:16px;display:none;}
-.spin{display:inline-block;animation:spin 1s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
-
-/* Error state */
-.error-msg{font-size:12px;color:#C47080;font-weight:700;margin-top:12px;display:none;}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Float — NFC Tap 🌿</title>
+  <style>
+    :root {
+      --bg:         #FFF8F0;
+      --surface:    #FFFFFF;
+      --surface-alt:#FDF3E8;
+      --accent:     #C9705A;
+      --accent-soft:#F2D4C8;
+      --green:      #5C8A6A;
+      --green-soft: #D4E8D8;
+      --gold:       #D6A853;
+      --text:       #2A1F1A;
+      --text-muted: #7A6A62;
+      --text-light: #A89890;
+      --border:     #ECD9C8;
+      --radius:     20px;
+      --radius-sm:  12px;
+      --shadow:     0 4px 20px rgba(60,30,10,0.10);
+      --font:       -apple-system, 'Helvetica Neue', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .state { display: none; flex-direction: column; align-items: center; text-align: center; gap: 16px; width: 100%; max-width: 340px; }
+    .state.active { display: flex; }
+    .big-icon { font-size: 72px; animation: pop-in 0.4s cubic-bezier(0.34,1.56,0.64,1) both; }
+    @keyframes pop-in { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px 20px; width: 100%; box-shadow: var(--shadow); }
+    .chore-name { font-size: 24px; font-weight: 800; color: var(--text); letter-spacing: -0.02em; margin-bottom: 4px; }
+    .chore-meta { font-size: 14px; color: var(--text-muted); }
+    .who-label { font-size: 14px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.02em; }
+    .who-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; }
+    .who-btn {
+      padding: 20px 12px;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      transition: all 0.15s;
+      font-family: var(--font);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .who-btn .avatar { font-size: 32px; }
+    .who-btn:active { border-color: var(--accent); background: var(--accent-soft); transform: scale(0.97); }
+    .star-loader { font-size: 48px; animation: bounce-star 0.5s ease-in-out infinite alternate; }
+    @keyframes bounce-star { from { transform: translateY(0); } to { transform: translateY(-16px); } }
+    .success-icon { font-size: 72px; animation: pop-in 0.4s cubic-bezier(0.34,1.56,0.64,1) both; }
+    .success-title { font-size: 26px; font-weight: 800; color: var(--green); letter-spacing: -0.02em; }
+    .success-sub { font-size: 15px; color: var(--text-muted); }
+    .back-link { font-size: 14px; color: var(--text-light); margin-top: 8px; text-decoration: none; }
+    .error-title { font-size: 20px; font-weight: 700; color: var(--accent); }
+    .error-sub { font-size: 14px; color: var(--text-muted); }
+    .retry-btn { padding: 14px 28px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 15px; font-weight: 600; cursor: pointer; font-family: var(--font); }
+    .nochor-title { font-size: 20px; font-weight: 700; color: var(--text); }
+    .nochor-sub { font-size: 14px; color: var(--text-muted); line-height: 1.5; }
+    .float-logo { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); font-size: 13px; color: var(--text-light); letter-spacing: 0.06em; font-weight: 500; }
+  </style>
 </head>
 <body>
-<div class="card" id="main-card">
-  <div class="chore-icon" id="chore-icon">🧹</div>
-  <div class="chore-name" id="chore-name">—</div>
-  <div class="chore-label">tap to log</div>
-  <div class="q">who did this?</div>
-  <div class="btns">
-    <button class="btn btn-mary" onclick="log('Mary')">
-      <span class="btn-emoji">🌸</span>
-      Mary
-    </button>
-    <button class="btn btn-garrett" onclick="log('Garrett')">
-      <span class="btn-emoji">🌿</span>
-      Garrett
-    </button>
+<div class="float-logo">✦ Float</div>
+
+<div class="state active" id="state-ask">
+  <div class="big-icon" id="ask-icon">🧹</div>
+  <div class="card">
+    <div class="chore-name" id="ask-chore-name">Loading…</div>
+    <div class="chore-meta" id="ask-chore-meta"></div>
   </div>
-  <div class="loading" id="loading"><span class="spin">⏳</span> saving...</div>
-  <div class="error-msg" id="error-msg">couldn't save — try again</div>
+  <div class="who-label">Who did it?</div>
+  <div class="who-btns">
+    <button class="who-btn" onclick="logChore('Mary')"><span class="avatar">🌸</span>Mary</button>
+    <button class="who-btn" onclick="logChore('Garrett')"><span class="avatar">🌿</span>Garrett</button>
+  </div>
 </div>
 
-<div class="card success" id="success-card">
-  <span class="success-icon" id="success-icon">✅</span>
-  <div class="success-title" id="success-title">done!</div>
-  <div class="success-sub" id="success-sub"></div>
-  <button class="success-open" onclick="window.location.href='./index.html'">open float →</button>
+<div class="state" id="state-loading">
+  <span class="star-loader">✦</span>
+  <div style="font-size:15px;color:var(--text-muted)">Logging…</div>
+</div>
+
+<div class="state" id="state-success">
+  <div class="success-icon">✅</div>
+  <div class="success-title">Done! 🌿</div>
+  <div class="success-sub" id="success-msg">–</div>
+  <a href="float.html" class="back-link">← Back to Float</a>
+</div>
+
+<div class="state" id="state-error">
+  <div class="big-icon">⚠️</div>
+  <div class="error-title">Couldn't log that</div>
+  <div class="error-sub" id="error-msg">Check connection and try again.</div>
+  <button class="retry-btn" onclick="retry()">Try again</button>
+</div>
+
+<div class="state" id="state-nochore">
+  <div class="big-icon">📲</div>
+  <div class="nochor-title">No chore specified</div>
+  <div class="nochor-sub">Tap an NFC tag to log a chore,<br>or open Float directly.</div>
+  <a href="float.html" class="back-link">← Back to Float</a>
 </div>
 
 <script>
-const SUPABASE_URL = 'https://mpwnbsztpulwwmtuabtd.supabase.co';
-const ANON_KEY = 'sb_publishable_wKtxou7d4xd9eVomBOBC1A_KjTpmtVa';
-const EDGE_URL = SUPABASE_URL + '/functions/v1/chore-reminder?action=log';
-
-// Icon map — expand as you add chores
-const ICONS = {
-  'cat box':'🐱','litter box':'🐱',
-  'dozer - dog food':'🐕','dozer dog food':'🐕','dozer':'🐕',
-  'bo - cat food':'🐈','bo cat food':'🐈','bo':'🐈',
-  'toast - cat food':'🐈','toast cat food':'🐈','toast':'🐈',
-  'start laundry':'👕','laundry':'👕',
-  'start dishwasher':'🍽️','dishes':'🍽️',
-  'trash':'🗑️','vacuum':'🧹','sweep':'🧹','mop':'🫧'
-};
-
-// Read chore name from URL
+const CHORE_LOG_URL = 'https://mpwnbsztpulwwmtuabtd.supabase.co/functions/v1/chore-log';
 const params = new URLSearchParams(window.location.search);
-const choreName = decodeURIComponent(params.get('chore') || '').replace(/\+/g,' ').trim();
+const choreId   = params.get('chore');
+const choreName = params.get('name') || 'Chore';
+const choreIcon = params.get('icon') || '🧹';
+const lastDone  = params.get('last') || null;
+const lastBy    = params.get('by')   || null;
 
-if(!choreName){
-  document.getElementById('chore-name').textContent = 'no chore specified';
-} else {
-  document.getElementById('chore-name').textContent = choreName;
-  const key = choreName.toLowerCase();
-  const icon = Object.entries(ICONS).find(([k]) => key.includes(k))?.[1] || '🧹';
-  document.getElementById('chore-icon').textContent = icon;
+function init() {
+  if (!choreId) { showState('nochore'); return; }
+  document.getElementById('ask-icon').textContent = choreIcon;
+  document.getElementById('ask-chore-name').textContent = choreName;
+  let meta = '';
+  if (lastBy && lastDone) {
+    const days = daysDiff(lastDone);
+    meta = `Last: ${lastBy} — ${days === 0 ? 'today ✓' : days === 1 ? '1 day ago' : days + ' days ago'}`;
+  } else if (lastDone) {
+    const days = daysDiff(lastDone);
+    meta = `Last done: ${days === 0 ? 'today' : days === 1 ? 'yesterday' : days + ' days ago'}`;
+  } else {
+    meta = 'Never done yet — be the first! 🌱';
+  }
+  document.getElementById('ask-chore-meta').textContent = meta;
 }
 
-// Haptic feedback
-function haptic(){ if(navigator.vibrate) navigator.vibrate([10,50,20]); }
+function daysDiff(dateStr) {
+  return Math.floor((new Date() - new Date(dateStr)) / (1000 * 60 * 60 * 24));
+}
 
-async function log(who){
-  if(!choreName) return;
-  haptic();
+let selectedPerson = null;
 
-  // Disable buttons
-  document.querySelectorAll('.btn').forEach(b => b.disabled = true);
-  document.getElementById('loading').style.display = 'block';
-  document.getElementById('error-msg').style.display = 'none';
-
+async function logChore(person) {
+  selectedPerson = person;
+  showState('loading');
   try {
-    const res = await fetch(EDGE_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + ANON_KEY
-      },
-      body: JSON.stringify({
-        chore: choreName,
-        who,
-        logged_at: new Date().toISOString()
-      })
+    const res = await fetch(CHORE_LOG_URL, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pageId: choreId, doneBy: person }),
     });
-
-    if(!res.ok) throw new Error('edge function error ' + res.status);
-
-    // Show success
-    const key = choreName.toLowerCase();
-    const icon = Object.entries(ICONS).find(([k]) => key.includes(k))?.[1] || '✅';
-    document.getElementById('success-icon').textContent = icon;
-    document.getElementById('success-title').textContent = choreName + ' done!';
-    document.getElementById('success-sub').textContent = who + ' · ' + new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
-    document.getElementById('main-card').style.display = 'none';
-    document.getElementById('success-card').style.display = 'flex';
-    if(navigator.vibrate) navigator.vibrate([10,50,20]);
-
-    // Auto-close back to Float after 3 seconds if opened from NFC
-    setTimeout(function(){
-      window.location.href = './index.html';
-    }, 3000);
-
-  } catch(e) {
-    console.error('log error:', e);
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('error-msg').style.display = 'block';
-    document.querySelectorAll('.btn').forEach(b => b.disabled = false);
+    if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || `HTTP ${res.status}`); }
+    document.getElementById('success-msg').textContent = `${choreIcon} ${choreName} logged for ${person}`;
+    showState('success');
+    setTimeout(() => { window.location.href = 'float.html'; }, 3000);
+  } catch (e) {
+    document.getElementById('error-msg').textContent = e.message || 'Check your connection and try again.';
+    showState('error');
   }
 }
+
+function retry() { if (selectedPerson) logChore(selectedPerson); else showState('ask'); }
+
+function showState(name) {
+  const map = { ask: 'state-ask', loading: 'state-loading', success: 'state-success', error: 'state-error', nochore: 'state-nochore' };
+  document.querySelectorAll('.state').forEach(s => s.classList.remove('active'));
+  document.getElementById(map[name])?.classList.add('active');
+}
+
+init();
 </script>
 </body>
 </html>
