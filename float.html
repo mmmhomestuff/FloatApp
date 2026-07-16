@@ -361,8 +361,42 @@
       font-size: 14px;
       font-weight: 600;
       color: var(--green);
-      border: 1px solid var(--green);
+      border: 2px solid var(--green);
+      cursor: pointer;
+      font-family: var(--font);
+      transition: all 0.15s;
     }
+    .pet-chip:active { transform: scale(0.95); }
+    .pet-chip.unselected {
+      background: var(--surface);
+      color: var(--text-light);
+      border-color: var(--border);
+    }
+    .pets-hint {
+      font-size: 12px;
+      color: var(--text-light);
+      text-align: center;
+      margin-top: -12px;
+      margin-bottom: 16px;
+    }
+    #toast.editable { cursor: pointer; }
+
+    .undo-btn {
+      width: 100%;
+      padding: 12px;
+      margin-top: 4px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--overdue);
+      background: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--overdue);
+      font-family: var(--font);
+      transition: all 0.15s;
+    }
+    .undo-btn.confirming { background: var(--overdue-bg); }
+    .undo-btn:active { transform: scale(0.98); }
 
     #toast {
       position: fixed;
@@ -487,6 +521,7 @@
       <button class="done-btn" onclick="markDone('Mary')"><span class="done-avatar">🌸</span>Mary</button>
       <button class="done-btn" onclick="markDone('Garrett')"><span class="done-avatar">🌿</span>Garrett</button>
     </div>
+    <button class="undo-btn hidden" id="chore-undo-btn" onclick="armConfirm(this, '🗑️ Undo this log', 'Tap again to confirm', undoChoreLog)">🗑️ Undo this log</button>
     <button class="dismiss-btn" onclick="closeModal('modal-chore')">cancel</button>
   </div>
 </div>
@@ -496,17 +531,15 @@
     <div class="modal-handle"></div>
     <div class="modal-icon">🐾</div>
     <div class="modal-title">Feed Pets</div>
-    <div class="modal-subtitle">Marks Bo, Toast, and Dozer all done</div>
-    <div class="pets-grid">
-      <span class="pet-chip">🐱 Bo</span>
-      <span class="pet-chip">🐶 Toast</span>
-      <span class="pet-chip">🐾 Dozer</span>
-    </div>
+    <div class="modal-subtitle" id="pets-subtitle">Marks Bo, Toast, and Dozer all done</div>
+    <div class="pets-grid" id="pets-grid"></div>
+    <div class="pets-hint">tap a pet to include or skip it</div>
     <div class="done-label">Who fed them?</div>
     <div class="done-btns">
       <button class="done-btn" onclick="markPetsDone('Mary')"><span class="done-avatar">🌸</span>Mary</button>
       <button class="done-btn" onclick="markPetsDone('Garrett')"><span class="done-avatar">🌿</span>Garrett</button>
     </div>
+    <button class="undo-btn hidden" id="pets-undo-btn" onclick="armConfirm(this, '🗑️ Undo log for selected pets', 'Tap again to confirm', undoPetsLog)">🗑️ Undo log for selected pets</button>
     <button class="dismiss-btn" onclick="closeModal('modal-pets')">cancel</button>
   </div>
 </div>
@@ -519,6 +552,15 @@ const CLAUDE_CHAT_URL = `${SUPABASE}/claude-chat`;
 let activeChore = null;
 let chatHistory = [];
 let allChores = [];
+
+const DEFAULT_PETS = [
+  { id: 'bo',    name: 'Bo',    icon: '🐱' },
+  { id: 'toast', name: 'Toast', icon: '🐱' },
+  { id: 'dozer', name: 'Dozer', icon: '🐶' },
+];
+
+let selectedPetIds = new Set();
+let modalPetsList = [];
 
 const FALLBACK_CHORES = [
   { id: 'pets-combined', name: 'Feed Pets', icon: '🐾', frequency: 'daily', lastDone: null, lastDoneBy: null, isPetGroup: true, petPageIds: [] },
@@ -569,6 +611,12 @@ async function loadChores() {
   updateStats();
 }
 
+function iconForPetName(name) {
+  const n = name.toLowerCase();
+  if (n.includes('dozer')) return '🐶';
+  return '🐱';
+}
+
 function normalizeChores(rawChores) {
   const petNames = ['bo', 'toast', 'dozer'];
   const pets = rawChores.filter(c => petNames.some(p => c.name.toLowerCase().includes(p)));
@@ -578,7 +626,8 @@ function normalizeChores(rawChores) {
     const latestPetDate = pets.map(p => p.lastDone).filter(Boolean).sort().pop() || null;
     const petDoneBy = pets.find(p => p.lastDone === latestPetDate)?.lastDoneBy || null;
     result.unshift({ id: 'pets-combined', name: 'Feed Pets', icon: '🐾', frequency: 'daily',
-      lastDone: latestPetDate, lastDoneBy: petDoneBy, isPetGroup: true, petPageIds: pets.map(p => p.id) });
+      lastDone: latestPetDate, lastDoneBy: petDoneBy, isPetGroup: true, petPageIds: pets.map(p => p.id),
+      pets: pets.map(p => ({ id: p.id, name: p.name, icon: iconForPetName(p.name) })) });
   }
   return result;
 }
@@ -630,7 +679,7 @@ function updateStats() {
 }
 
 function openChoreModal(chore) {
-  if (chore.isPetGroup) { openModal('modal-pets'); return; }
+  if (chore.isPetGroup) { renderPetsModal(chore); openModal('modal-pets'); return; }
   activeChore = chore;
   document.getElementById('detail-icon').textContent = chore.icon;
   document.getElementById('detail-name').textContent = chore.name;
@@ -638,46 +687,143 @@ function openChoreModal(chore) {
     chore.lastDoneBy ? `${chore.lastDoneBy} — ${daysAgoLabel(chore.lastDone)}` : daysAgoLabel(chore.lastDone);
   document.getElementById('lb-alltime').innerHTML = '<div class="lb-empty">No logs yet 🌱</div>';
   document.getElementById('lb-recent').innerHTML = '<div class="lb-empty">No logs yet 🌱</div>';
+  const undoBtn = document.getElementById('chore-undo-btn');
+  undoBtn.classList.toggle('hidden', !chore.lastDone);
+  undoBtn.textContent = '🗑️ Undo this log';
+  undoBtn.classList.remove('confirming');
+  undoBtn.dataset.armed = '0';
   openModal('modal-chore');
+}
+
+function renderPetsModal(petGroup) {
+  modalPetsList = (petGroup.pets && petGroup.pets.length) ? petGroup.pets : DEFAULT_PETS;
+  selectedPetIds = new Set(modalPetsList.map(p => p.id));
+  const grid = document.getElementById('pets-grid');
+  grid.innerHTML = modalPetsList.map(p =>
+    `<button type="button" class="pet-chip" data-pet-id="${p.id}" onclick="togglePetChip('${p.id}')">${p.icon} ${p.name}</button>`
+  ).join('');
+  updatePetsSubtitle();
+  const undoBtn = document.getElementById('pets-undo-btn');
+  undoBtn.classList.toggle('hidden', !petGroup.lastDone);
+  undoBtn.textContent = '🗑️ Undo log for selected pets';
+  undoBtn.classList.remove('confirming');
+  undoBtn.dataset.armed = '0';
+}
+
+function togglePetChip(id) {
+  if (selectedPetIds.has(id)) selectedPetIds.delete(id); else selectedPetIds.add(id);
+  const chip = document.querySelector(`.pet-chip[data-pet-id="${id}"]`);
+  if (chip) chip.classList.toggle('unselected', !selectedPetIds.has(id));
+  updatePetsSubtitle();
+}
+
+function updatePetsSubtitle() {
+  const names = modalPetsList.filter(p => selectedPetIds.has(p.id)).map(p => p.name);
+  const el = document.getElementById('pets-subtitle');
+  if (names.length === 0) el.textContent = 'Pick at least one pet below';
+  else if (names.length === modalPetsList.length) el.textContent = `Marks ${names.join(', ')} all done`;
+  else el.textContent = `Marks ${names.join(', ')} done`;
 }
 
 async function markDone(person) {
   if (!activeChore) return;
+  const chore = activeChore;
   closeModal('modal-chore');
   try {
     const res = await fetch(CHORE_LOG_URL, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pageId: activeChore.id, doneBy: person }),
+      body: JSON.stringify({ pageId: chore.id, doneBy: person }),
     });
     if (!res.ok) throw new Error();
-    showToast(`${activeChore.icon} Logged for ${person}!`);
-    activeChore.lastDone = new Date().toISOString().split('T')[0];
-    activeChore.lastDoneBy = person;
+    chore.lastDone = new Date().toISOString().split('T')[0];
+    chore.lastDoneBy = person;
     renderChores(); updateStats();
+    showToast(`${chore.icon} Logged for ${person}! Tap to fix`, false, () => openChoreModal(chore));
   } catch { showToast("⚠️ Couldn't log — check connection", true); }
 }
 
 async function markPetsDone(person) {
-  closeModal('modal-pets');
+  if (selectedPetIds.size === 0) { showToast('Pick at least one pet first', true); return; }
   const petGroup = allChores.find(c => c.isPetGroup);
   if (!petGroup) return;
-  const pageIds = petGroup.petPageIds?.length ? petGroup.petPageIds : [];
-  if (pageIds.length === 0) {
-    showToast('🐾 Logged! (deploy Edge Function to sync Notion)');
+  closeModal('modal-pets');
+  const namesLogged = modalPetsList.filter(p => selectedPetIds.has(p.id)).map(p => p.name).join(', ');
+  const realPageIds = (petGroup.petPageIds || []).filter(id => selectedPetIds.has(id));
+  if (realPageIds.length === 0) {
+    showToast(`🐾 ${namesLogged} logged! (deploy Edge Function to sync Notion)`, false, () => openChoreModal(petGroup));
     petGroup.lastDone = new Date().toISOString().split('T')[0];
     petGroup.lastDoneBy = person;
     renderChores(); updateStats(); return;
   }
   try {
-    await Promise.all(pageIds.map(pageId =>
+    await Promise.all(realPageIds.map(pageId =>
       fetch(CHORE_LOG_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pageId, doneBy: person }) })
     ));
-    showToast(`🐾 All pets fed by ${person}!`);
+    showToast(`🐾 ${namesLogged} fed by ${person}! Tap to fix`, false, () => openChoreModal(petGroup));
     petGroup.lastDone = new Date().toISOString().split('T')[0];
     petGroup.lastDoneBy = person;
     renderChores(); updateStats();
   } catch { showToast("⚠️ Couldn't log — check connection", true); }
+}
+
+function armConfirm(btn, label, confirmLabel, onConfirm) {
+  if (btn.dataset.armed === '1') {
+    btn.dataset.armed = '0';
+    btn.classList.remove('confirming');
+    btn.textContent = label;
+    onConfirm();
+    return;
+  }
+  btn.dataset.armed = '1';
+  btn.classList.add('confirming');
+  btn.textContent = confirmLabel;
+  setTimeout(() => {
+    if (btn.dataset.armed === '1') {
+      btn.dataset.armed = '0';
+      btn.classList.remove('confirming');
+      btn.textContent = label;
+    }
+  }, 2500);
+}
+
+async function undoChoreLog() {
+  if (!activeChore) return;
+  const chore = activeChore;
+  closeModal('modal-chore');
+  try {
+    const res = await fetch(CHORE_LOG_URL, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pageId: chore.id, action: 'clear' }),
+    });
+    if (!res.ok) throw new Error();
+    chore.lastDone = null;
+    chore.lastDoneBy = null;
+    renderChores(); updateStats();
+    showToast(`${chore.icon} Log cleared`, false, () => openChoreModal(chore));
+  } catch { showToast("⚠️ Couldn't clear — check connection", true); }
+}
+
+async function undoPetsLog() {
+  const petGroup = allChores.find(c => c.isPetGroup);
+  if (!petGroup) return;
+  closeModal('modal-pets');
+  const realPageIds = (petGroup.petPageIds || []).filter(id => selectedPetIds.has(id));
+  if (realPageIds.length === 0) {
+    petGroup.lastDone = null; petGroup.lastDoneBy = null;
+    renderChores(); updateStats();
+    showToast('🐾 Cleared', false, () => openChoreModal(petGroup));
+    return;
+  }
+  try {
+    await Promise.all(realPageIds.map(pageId =>
+      fetch(CHORE_LOG_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pageId, action: 'clear' }) })
+    ));
+    petGroup.lastDone = null; petGroup.lastDoneBy = null;
+    renderChores(); updateStats();
+    showToast('🐾 Log cleared for selected pets', false, () => openChoreModal(petGroup));
+  } catch { showToast("⚠️ Couldn't clear — check connection", true); }
 }
 
 async function sendChat() {
@@ -734,12 +880,15 @@ function closeModal(id, e) {
   activeChore = null;
 }
 
-function showToast(msg, isError = false) {
+function showToast(msg, isError = false, onTap = null) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.style.background = isError ? 'var(--accent)' : 'var(--green)';
+  t.onclick = onTap ? () => { t.classList.remove('show'); onTap(); } : null;
+  t.classList.toggle('editable', !!onTap);
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
+  clearTimeout(t._hideTimer);
+  t._hideTimer = setTimeout(() => t.classList.remove('show'), onTap ? 3600 : 2800);
 }
 
 boot();
