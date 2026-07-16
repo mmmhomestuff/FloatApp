@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Float 🌿</title>
+  <title>Float</title>
   <style>
     /* ── Design System ─────────────────────────────────── */
     :root {
@@ -612,9 +612,13 @@ function iconForPetName(name) {
 }
 
 function normalizeChores(rawChores) {
-  const petNames = ['bo', 'toast', 'dozer'];
-  const pets = rawChores.filter(c => petNames.some(p => c.name.toLowerCase().includes(p)));
-  const nonPets = rawChores.filter(c => !petNames.some(p => c.name.toLowerCase().includes(p)));
+  // Exact-match the three known daily feeding chores only.
+  // A substring match on 'bo'/'toast'/'dozer' was catching "cat box" (contains "bo")
+  // and the monthly medicine chores (Revolution Plus, Simparica Trio) — those are real
+  // Bo/Toast/Dozer chores, just not feeding, and don't belong in the daily food tile.
+  const petFoodNames = ['bo - cat food', 'toast - cat food', 'dozer - dog food'];
+  const pets = rawChores.filter(c => petFoodNames.includes(c.name.toLowerCase().trim()));
+  const nonPets = rawChores.filter(c => !petFoodNames.includes(c.name.toLowerCase().trim()));
   const result = [...nonPets];
   if (pets.length > 0) {
     const latestPetDate = pets.map(p => p.lastDone).filter(Boolean).sort().pop() || null;
