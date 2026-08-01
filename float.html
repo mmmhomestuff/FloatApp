@@ -1494,17 +1494,19 @@ function renderNeeds() {
 }
 
 function needRowHtml(n) {
-  const subParts = [n.quantity, n.notes].filter(Boolean);
-  if (n.projectedCost != null) subParts.push(`~$${n.projectedCost.toFixed(2)}`);
-  const sub = subParts.join(' · ');
+  const sub = [n.quantity, n.notes].filter(Boolean).join(' · ');
   const pillClass = n.status === 'On List' ? 'onlist' : 'needed';
+  // Price at a glance beats the Needed/On List label — color still carries
+  // the stage, the text now carries the number. Falls back to the status
+  // word only when there's genuinely no price to show yet.
+  const pillLabel = n.projectedCost != null ? `~$${n.projectedCost.toFixed(2)}` : (n.status || 'Needed');
   return `
     <div class="needs-row" onclick="openNeedsEdit('${n.pageId}')">
       <div class="needs-item-info">
         <div class="needs-item-name">${escapeHtml(n.item)}</div>
         ${sub ? `<div class="needs-item-sub">${escapeHtml(sub)}</div>` : ''}
       </div>
-      <div class="status-pill ${pillClass}" onclick="event.stopPropagation(); cycleNeedStatus('${n.pageId}')">${escapeHtml(n.status || 'Needed')}</div>
+      <div class="status-pill ${pillClass}" onclick="event.stopPropagation(); cycleNeedStatus('${n.pageId}')">${escapeHtml(pillLabel)}</div>
     </div>`;
 }
 
