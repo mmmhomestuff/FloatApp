@@ -752,10 +752,11 @@
       </div>
     </div>
 
-    <button class="details-toggle" id="needs-details-toggle" onclick="toggleNeedsDetails()">+ quantity / notes</button>
+    <button class="details-toggle" id="needs-details-toggle" onclick="toggleNeedsDetails()">+ quantity / notes / estimated cost</button>
     <div class="details-fields hidden" id="needs-details-fields">
       <input type="text" class="needs-input" id="needs-quantity-input" placeholder="Quantity (optional)" autocomplete="off" />
       <input type="text" class="needs-input" id="needs-notes-input" placeholder="Notes (optional)" autocomplete="off" />
+      <input type="number" step="0.01" inputmode="decimal" class="needs-input" id="needs-est-cost-input" placeholder="Estimated cost (optional)" autocomplete="off" />
     </div>
 
     <div class="chore-list-header needs-list-header">
@@ -844,14 +845,32 @@
       <input type="text" class="needs-input" id="needs-edit-quantity" placeholder="Quantity" autocomplete="off" />
       <input type="text" class="needs-input" id="needs-edit-notes" placeholder="Notes" autocomplete="off" />
     </div>
+    <div class="needs-edit-row">
+      <input type="number" step="0.01" inputmode="decimal" class="needs-input" id="needs-edit-est-cost" placeholder="Estimated cost" autocomplete="off" />
+    </div>
     <div class="status-chip-row" id="needs-edit-status-chips">
       <button type="button" class="status-chip" data-status="Needed" onclick="setEditStatus('Needed')">Needed</button>
       <button type="button" class="status-chip" data-status="On List" onclick="setEditStatus('On List')">On List</button>
-      <button type="button" class="status-chip" data-status="Purchased" onclick="setEditStatus('Purchased')">Purchased</button>
     </div>
+    <div class="details-toggle" style="text-align:center;padding:0 0 10px;">Mark Purchased from the list — tap the status pill</div>
     <button class="add-btn" id="needs-save-btn" style="width:100%;" onclick="saveNeedEdit()">Save changes</button>
     <button type="button" class="archive-btn" id="needs-archive-btn" data-armed="0" onclick="armArchive()">🗄️ Archive this item</button>
     <button class="dismiss-btn" onclick="closeModal('modal-needs-edit')">cancel</button>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-purchase" onclick="closeModal('modal-purchase', event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-icon">🧾</div>
+    <div class="modal-title" id="purchase-item-name">–</div>
+    <div class="modal-subtitle" id="purchase-estimate-note">–</div>
+    <div class="needs-edit-row">
+      <input type="number" step="0.01" inputmode="decimal" class="needs-input" id="purchase-actual-cost" placeholder="Actual price paid" autocomplete="off" />
+      <input type="text" class="needs-input" id="purchase-store" placeholder="Store (optional)" autocomplete="off" />
+    </div>
+    <button class="add-btn" id="purchase-confirm-btn" style="width:100%;" onclick="confirmPurchase()">Mark purchased</button>
+    <button class="dismiss-btn" onclick="closeModal('modal-purchase')">cancel</button>
   </div>
 </div>
 
@@ -1497,26 +1516,27 @@ function findNeed(pageId) {
   return null;
 }
 
-// Needed → On List → Purchased, same tap-to-cycle pattern as the wardrobe tab.
+// Needed → On List is a quick tap-cycle, same pattern as the wardrobe tab.
+// On List → Purchased opens the purchase modal instead — that's the moment
+// a real price exists, and Mary wants to see it against the estimate before
+// it's locked in as a purchase event.
 async function cycleNeedStatus(pageId) {
   const n = findNeed(pageId);
   if (!n) return;
+  if (n.status !== 'Needed') {
+    openPurchaseModal(pageId);
+    return;
+  }
   const prevStatus = n.status;
-  const next = n.status === 'Needed' ? 'On List' : 'Purchased';
-  n.status = next;
+  n.status = 'On List';
   renderNeeds();
   try {
     const res = await floatWrite(`${HOUSEHOLD_NEEDS_URL}/${pageId}`, {
       method: 'PATCH',
-      body: JSON.stringify({ status: next }),
+      body: JSON.stringify({ status: 'On List' }),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    if (next === 'Purchased') {
-      showToast(`${n.item} — purchased ✓  tap to undo`, false, () => undoPurchase(pageId, n.item, prevStatus));
-      await loadNeeds(); // purchased items drop out of the active view
-    } else {
-      showToast(`${n.item} — moved to On List`);
-    }
+    showToast(`${n.item} — moved to On List`);
   } catch (e) {
     n.status = prevStatus;
     renderNeeds();
@@ -1535,6 +1555,67 @@ async function undoPurchase(pageId, name, prevStatus) {
     await loadNeeds();
   } catch (e) {
     showToast(`Couldn't undo — check the list`, true);
+  }
+}
+
+// ── Mark Purchased (captures actual cost vs. estimate) ─
+let purchasingPageId = null;
+
+function openPurchaseModal(pageId) {
+  const n = findNeed(pageId);
+  if (!n) return;
+  purchasingPageId = pageId;
+  const est = n.estimatedCost ?? n.projectedCost ?? null;
+  document.getElementById('purchase-item-name').textContent = n.item;
+  document.getElementById('purchase-estimate-note').textContent =
+    est != null ? `Estimated ~$${Number(est).toFixed(2)}` : 'No estimate on file';
+  const actualInput = document.getElementById('purchase-actual-cost');
+  actualInput.value = est != null ? Number(est).toFixed(2) : '';
+  document.getElementById('purchase-store').value = n.store || '';
+  openModal('modal-purchase');
+}
+
+// "Drastically different" = at least $1 off AND at least 20% off the
+// estimate — a plain threshold, not tuned on real data yet. Worth
+// revisiting once actual purchases start accumulating.
+function costDeltaNote(actual, estimate) {
+  if (estimate == null) return '';
+  const diff = actual - estimate;
+  if (Math.abs(diff) < 1 || Math.abs(diff) < estimate * 0.2) return '';
+  return diff > 0
+    ? ` — $${diff.toFixed(2)} more than estimated`
+    : ` — $${Math.abs(diff).toFixed(2)} cheaper than estimated!`;
+}
+
+async function confirmPurchase() {
+  if (!purchasingPageId) return;
+  const n = findNeed(purchasingPageId);
+  const actualRaw = document.getElementById('purchase-actual-cost').value.trim();
+  const actualCost = actualRaw ? Number(actualRaw) : null;
+  const store = document.getElementById('purchase-store').value.trim();
+  const est = n?.estimatedCost ?? n?.projectedCost ?? null;
+
+  const payload = { status: 'Purchased' };
+  if (actualCost != null && !Number.isNaN(actualCost)) payload.actualCost = actualCost;
+  if (store) payload.store = store;
+
+  const btn = document.getElementById('purchase-confirm-btn');
+  btn.disabled = true;
+  try {
+    const res = await floatWrite(`${HOUSEHOLD_NEEDS_URL}/${purchasingPageId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    closeModal('modal-purchase');
+    const name = n?.item || 'Item';
+    const note = actualCost != null ? costDeltaNote(actualCost, est) : '';
+    showToast(`${name} — purchased ✓${note}  tap to undo`, false, () => undoPurchase(purchasingPageId, name, 'On List'));
+    await loadNeeds();
+  } catch (e) {
+    showToast(`Couldn't mark purchased — try again`, true);
+  } finally {
+    btn.disabled = false;
   }
 }
 
@@ -1585,7 +1666,7 @@ function toggleNeedsDetails() {
   const f = document.getElementById('needs-details-fields');
   const willOpen = f.classList.contains('hidden');
   f.classList.toggle('hidden');
-  document.getElementById('needs-details-toggle').textContent = willOpen ? '– hide details' : '+ quantity / notes';
+  document.getElementById('needs-details-toggle').textContent = willOpen ? '– hide details' : '+ quantity / notes / estimated cost';
 }
 
 // ── Add item ────────────────────────────────────────────
@@ -1597,17 +1678,20 @@ async function addNeed() {
   const category = document.getElementById('needs-category-select').value || undefined;
   const quantity = document.getElementById('needs-quantity-input').value.trim() || undefined;
   const notes = document.getElementById('needs-notes-input').value.trim() || undefined;
+  const estCostRaw = document.getElementById('needs-est-cost-input').value.trim();
+  const estimatedCost = estCostRaw && !Number.isNaN(Number(estCostRaw)) ? Number(estCostRaw) : undefined;
   const saveBtn2 = document.getElementById('needs-add-btn');
   saveBtn2.disabled = true;
   try {
     const res = await floatWrite(HOUSEHOLD_NEEDS_URL, {
-      body: JSON.stringify({ item, category, quantity, notes }),
+      body: JSON.stringify({ item, category, quantity, notes, estimatedCost }),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     input.value = '';
     document.getElementById('needs-quantity-input').value = '';
     document.getElementById('needs-notes-input').value = '';
+    document.getElementById('needs-est-cost-input').value = '';
     document.getElementById('needs-category-select').value = '';
     hideSuggestion();
     // category was left blank -> the backend guessed one (catalog history,
@@ -1717,6 +1801,7 @@ function openNeedsEdit(pageId) {
   document.getElementById('needs-edit-category').value = n.category || '';
   document.getElementById('needs-edit-quantity').value = n.quantity || '';
   document.getElementById('needs-edit-notes').value = n.notes || '';
+  document.getElementById('needs-edit-est-cost').value = n.estimatedCost != null ? n.estimatedCost : '';
   setEditStatus(n.status || 'Needed');
   const archiveBtn = document.getElementById('needs-archive-btn');
   archiveBtn.dataset.armed = '0';
@@ -1740,11 +1825,13 @@ async function saveNeedEdit() {
   const category = document.getElementById('needs-edit-category').value;
   const quantity = document.getElementById('needs-edit-quantity').value.trim();
   const notes = document.getElementById('needs-edit-notes').value.trim();
+  const estCostRaw = document.getElementById('needs-edit-est-cost').value.trim();
+  const estimatedCost = estCostRaw && !Number.isNaN(Number(estCostRaw)) ? Number(estCostRaw) : null;
 
-  // quantity/notes are sent even when empty so the edit can clear them —
-  // the Edge Function treats `undefined` (omitted) as "leave alone" and
-  // `''` (present, empty) as "clear this field."
-  const payload = { item, quantity, notes };
+  // quantity/notes/estimatedCost are sent even when empty so the edit can
+  // clear them — the Edge Function treats `undefined` (omitted) as "leave
+  // alone" and `''`/`null` (present, empty) as "clear this field."
+  const payload = { item, quantity, notes, estimatedCost };
   if (category) payload.category = category;
   if (editingStatus && editingStatus !== editOriginalStatus) payload.status = editingStatus;
 
