@@ -450,6 +450,13 @@
     .status-pill.onlist { background: var(--accent-soft); color: var(--accent); }
     .needs-empty { padding: 24px 20px; text-align: center; color: var(--text-light); font-size: 14px; font-style: italic; }
 
+    .needs-filter-row { display: flex; gap: 8px; padding: 4px 20px 0; }
+    .needs-filter-hint {
+      font-size: 11px;
+      color: var(--text-light);
+      padding: 6px 20px 4px;
+    }
+
     .needs-total-bar {
       margin: 0 20px 12px;
       padding: 12px 16px;
@@ -759,6 +766,13 @@
       <input type="number" step="0.01" inputmode="decimal" class="needs-input" id="needs-est-cost-input" placeholder="Estimated cost (optional)" autocomplete="off" />
     </div>
 
+    <div class="needs-filter-row" id="needs-filter-row">
+      <button type="button" class="sort-pill active" data-filter="all" onclick="setNeedsFilter('all')">All</button>
+      <button type="button" class="sort-pill" data-filter="Needed" onclick="setNeedsFilter('Needed')">Needed</button>
+      <button type="button" class="sort-pill" data-filter="On List" onclick="setNeedsFilter('On List')">On List</button>
+    </div>
+    <div class="needs-filter-hint">Needed = on your radar · On List = ready for the next trip</div>
+
     <div class="chore-list-header needs-list-header">
       <span>Household Needs</span>
       <button class="screenshot-btn" onclick="screenshotNeeds()" title="Save a photo backup of this list">📷 Save list</button>
@@ -852,6 +866,7 @@
       <button type="button" class="status-chip" data-status="Needed" onclick="setEditStatus('Needed')">Needed</button>
       <button type="button" class="status-chip" data-status="On List" onclick="setEditStatus('On List')">On List</button>
     </div>
+    <div class="needs-filter-hint" style="text-align:center;padding:0 0 10px;">Needed = on your radar · On List = ready for the next trip</div>
     <div class="details-toggle" style="text-align:center;padding:0 0 10px;">Mark Purchased from the list — tap the status pill</div>
     <button class="add-btn" id="needs-save-btn" style="width:100%;" onclick="saveNeedEdit()">Save changes</button>
     <button type="button" class="archive-btn" id="needs-archive-btn" data-armed="0" onclick="armArchive()">🗄️ Archive this item</button>
@@ -886,7 +901,6 @@ let allChores = [];
 
 // ── Household Needs tab state ─────────────────────────
 let needsGrouped = {};
-let needsTotal = { totalProjected: 0, itemsWithCost: 0, count: 0 };
 let currentTopSuggestion = null;
 let needsSearchTimer = null;
 const CATEGORY_ORDER = ['Grocery', 'Pet', 'Baby', 'Household', 'Project', 'Personal Care', 'Other'];
@@ -1441,6 +1455,8 @@ function escapeHtml(s) {
 }
 
 // ── Load + render ──────────────────────────────────────
+let needsFilter = 'all';
+
 async function loadNeeds() {
   const errEl = document.getElementById('needs-error');
   errEl.classList.add('hidden');
@@ -1449,12 +1465,6 @@ async function loadNeeds() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     needsGrouped = data.grouped || {};
-    needsTotal = {
-      totalProjected: data.totalProjected ?? 0,
-      itemsWithCost: data.itemsWithCost ?? 0,
-      count: data.count ?? 0,
-    };
-    renderNeedsTotal();
     renderNeeds();
   } catch (e) {
     errEl.textContent = `Couldn't load the needs list (${e.message}). Try again in a bit.`;
@@ -1462,40 +1472,63 @@ async function loadNeeds() {
   }
 }
 
+function setNeedsFilter(filter) {
+  needsFilter = filter;
+  document.querySelectorAll('#needs-filter-row .sort-pill').forEach(b => b.classList.toggle('active', b.dataset.filter === filter));
+  renderNeeds();
+}
+
+function filteredCategoryItems(cat) {
+  const items = needsGrouped[cat] || [];
+  return needsFilter === 'all' ? items : items.filter(n => n.status === needsFilter);
+}
+
+// Total reflects whatever's currently in view — switching to the On List
+// filter for a shopping trip shows the trip's total, not the whole backlog's.
 function renderNeedsTotal() {
   const bar = document.getElementById('needs-total-bar');
-  const { totalProjected, itemsWithCost, count } = needsTotal;
-  if (!count) { bar.classList.add('hidden'); bar.innerHTML = ''; return; }
+  const items = Object.keys(needsGrouped).flatMap(filteredCategoryItems);
+  if (!items.length) { bar.classList.add('hidden'); bar.innerHTML = ''; return; }
   bar.classList.remove('hidden');
-  if (!itemsWithCost) {
+  const withCost = items.filter(n => n.projectedCost != null);
+  if (!withCost.length) {
     bar.classList.add('empty');
     bar.innerHTML = 'No price history yet — totals show once a purchase is logged';
     return;
   }
   bar.classList.remove('empty');
-  const coverage = itemsWithCost < count ? `<span class="total-note">${itemsWithCost} of ${count} priced</span>` : `<span class="total-note">estimated</span>`;
-  bar.innerHTML = `<span class="total-amount">~$${totalProjected.toFixed(2)}</span>${coverage}`;
+  const total = withCost.reduce((sum, n) => sum + n.projectedCost, 0);
+  const coverage = withCost.length < items.length ? `<span class="total-note">${withCost.length} of ${items.length} priced</span>` : `<span class="total-note">estimated</span>`;
+  bar.innerHTML = `<span class="total-amount">~$${total.toFixed(2)}</span>${coverage}`;
 }
 
 function renderNeeds() {
   const list = document.getElementById('needs-list');
-  const cats = CATEGORY_ORDER.filter(c => (needsGrouped[c] || []).length);
+  const cats = CATEGORY_ORDER.filter(c => filteredCategoryItems(c).length);
   for (const c of Object.keys(needsGrouped)) {
-    if (!CATEGORY_ORDER.includes(c) && (needsGrouped[c] || []).length) cats.push(c);
+    if (!CATEGORY_ORDER.includes(c) && filteredCategoryItems(c).length) cats.push(c);
   }
   if (!cats.length) {
-    list.innerHTML = `<div class="needs-empty">Nothing on the list right now. Add something above when you think of it.</div>`;
+    const emptyMsg = needsFilter === 'On List'
+      ? 'Nothing queued for the next trip yet.'
+      : needsFilter === 'Needed'
+        ? 'Nothing in the backlog right now.'
+        : 'Nothing on the list right now. Add something above when you think of it.';
+    list.innerHTML = `<div class="needs-empty">${emptyMsg}</div>`;
+    renderNeedsTotal();
     return;
   }
   list.innerHTML = cats.map(cat => `
     <div class="freq-subheader">${CATEGORY_ICON[cat] || '📦'} ${escapeHtml(cat)}</div>
-    ${needsGrouped[cat].map(needRowHtml).join('')}
+    ${filteredCategoryItems(cat).map(needRowHtml).join('')}
   `).join('');
+  renderNeedsTotal();
 }
 
 function needRowHtml(n) {
   const sub = [n.quantity, n.notes].filter(Boolean).join(' · ');
   const pillClass = n.status === 'On List' ? 'onlist' : 'needed';
+
   // Price at a glance beats the Needed/On List label — color still carries
   // the stage, the text now carries the number. Falls back to the status
   // word only when there's genuinely no price to show yet.
