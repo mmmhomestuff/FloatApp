@@ -320,6 +320,184 @@
     .chore-row.overdue .chore-last { color: var(--overdue); }
     .chore-chevron { font-size: 16px; color: var(--text-light); flex-shrink: 0; }
 
+    /* ── Household Needs tab ───────────────────────────── */
+    .needs-add-row { display: flex; gap: 8px; padding: 20px 20px 8px; }
+    .needs-input {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      font-size: 14px;
+      font-family: var(--font);
+      color: var(--text);
+      outline: none;
+      min-width: 0;
+    }
+    .needs-input::placeholder { color: var(--text-light); }
+    .needs-input:focus { border-color: var(--accent); }
+    .category-select {
+      padding: 10px 6px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      font-size: 13px;
+      font-family: var(--font);
+      color: var(--text);
+      max-width: 106px;
+    }
+    .add-btn {
+      padding: 10px 18px;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: var(--font);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .add-btn:active { transform: scale(0.96); }
+    .add-btn:disabled { opacity: 0.6; pointer-events: none; }
+
+    .suggestion-bar {
+      margin: 0 20px 10px;
+      background: var(--gold-soft);
+      border: 1px solid var(--gold);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 13px;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .suggestion-actions { display: flex; gap: 8px; }
+    .suggestion-btn {
+      border: none;
+      background: var(--gold);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 16px;
+      cursor: pointer;
+      font-family: var(--font);
+    }
+    .suggestion-btn.ghost { background: none; color: var(--text-muted); border: 1px solid var(--border); }
+    .suggestion-btn:active { transform: scale(0.95); }
+
+    .details-toggle {
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 0 20px 10px;
+      cursor: pointer;
+      font-family: var(--font);
+      text-align: left;
+    }
+    .details-fields { display: flex; flex-direction: column; gap: 8px; padding: 0 20px 12px; }
+
+    .needs-list-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .screenshot-btn {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-family: var(--font);
+      white-space: nowrap;
+      text-transform: none;
+      letter-spacing: normal;
+    }
+    .screenshot-btn:active { transform: scale(0.96); }
+
+    .needs-list { padding: 0 20px; display: flex; flex-direction: column; gap: 10px; }
+    .needs-row {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      cursor: pointer;
+      transition: transform 0.12s, box-shadow 0.12s;
+      box-shadow: var(--shadow);
+    }
+    .needs-row:active { transform: scale(0.98); box-shadow: none; }
+    .needs-item-info { flex: 1; min-width: 0; }
+    .needs-item-name { font-size: 16px; font-weight: 600; color: var(--text); }
+    .needs-item-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .status-pill {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 14px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .status-pill.needed { background: var(--gold-soft); color: #8A6A1F; }
+    .status-pill.onlist { background: var(--accent-soft); color: var(--accent); }
+    .needs-empty { padding: 24px 20px; text-align: center; color: var(--text-light); font-size: 14px; font-style: italic; }
+
+    .needs-edit-name-input {
+      display: block;
+      width: 100%;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      border: none;
+      border-bottom: 1px solid var(--border);
+      padding: 6px 4px 10px;
+      margin-bottom: 14px;
+      font-family: var(--font);
+      outline: none;
+      background: transparent;
+    }
+    .needs-edit-name-input:focus { border-color: var(--accent); }
+    .needs-edit-row { display: flex; gap: 8px; margin-bottom: 10px; }
+    .needs-edit-row .category-select { flex: 1; max-width: none; }
+    .status-chip-row { display: flex; gap: 8px; justify-content: center; margin: 4px 0 16px; }
+    .status-chip {
+      padding: 8px 14px;
+      border-radius: 18px;
+      border: 2px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      font-family: var(--font);
+      cursor: pointer;
+    }
+    .status-chip.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+    .status-chip:active { transform: scale(0.95); }
+    .archive-btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--font);
+      margin-top: 10px;
+    }
+    .archive-btn.confirming { border-color: var(--overdue); background: var(--overdue-bg); color: var(--overdue); }
+    .archive-btn:active { transform: scale(0.98); }
+
     .modal-backdrop {
       position: fixed; inset: 0; z-index: 200;
       background: rgba(30,15,5,0.45);
@@ -535,6 +713,44 @@
     <div class="chore-list" id="chore-list"></div>
   </div>
 
+  <div id="screen-needs" class="screen">
+    <div class="needs-add-row">
+      <input type="text" class="needs-input" id="needs-item-input" placeholder="Add something…" autocomplete="off" oninput="onNeedsInput()" />
+      <select class="category-select" id="needs-category-select">
+        <option value="">Category (auto)</option>
+        <option>Grocery</option>
+        <option>Pet</option>
+        <option>Baby</option>
+        <option>Household</option>
+        <option>Project</option>
+        <option>Personal Care</option>
+        <option>Other</option>
+      </select>
+      <button class="add-btn" id="needs-add-btn" onclick="addNeed()">Add</button>
+    </div>
+
+    <div class="suggestion-bar hidden" id="needs-suggestion">
+      <span id="needs-suggestion-text"></span>
+      <div class="suggestion-actions">
+        <button class="suggestion-btn" onclick="acceptSuggestion()">Yes, that's it</button>
+        <button class="suggestion-btn ghost" onclick="dismissSuggestion()">No, add new</button>
+      </div>
+    </div>
+
+    <button class="details-toggle" id="needs-details-toggle" onclick="toggleNeedsDetails()">+ quantity / notes</button>
+    <div class="details-fields hidden" id="needs-details-fields">
+      <input type="text" class="needs-input" id="needs-quantity-input" placeholder="Quantity (optional)" autocomplete="off" />
+      <input type="text" class="needs-input" id="needs-notes-input" placeholder="Notes (optional)" autocomplete="off" />
+    </div>
+
+    <div class="chore-list-header needs-list-header">
+      <span>Household Needs</span>
+      <button class="screenshot-btn" onclick="screenshotNeeds()" title="Save a photo backup of this list">📷 Save list</button>
+    </div>
+    <div id="needs-error" class="error-banner hidden"></div>
+    <div class="needs-list" id="needs-list"></div>
+  </div>
+
   <nav>
     <button class="nav-btn active" id="nav-home" onclick="showScreen('home')">
       <span class="nav-icon">🏠</span>
@@ -543,6 +759,10 @@
     <button class="nav-btn" id="nav-chores" onclick="showScreen('chores')">
       <span class="nav-icon">🧹</span>
       <span>Chores</span>
+    </button>
+    <button class="nav-btn" id="nav-needs" onclick="showScreen('needs')">
+      <span class="nav-icon">🛒</span>
+      <span>Needs</span>
     </button>
   </nav>
 </div>
@@ -587,14 +807,57 @@
   </div>
 </div>
 
+<div class="modal-backdrop" id="modal-needs-edit" onclick="closeModal('modal-needs-edit', event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-icon" id="needs-edit-icon">📦</div>
+    <input type="text" class="needs-edit-name-input" id="needs-edit-name" placeholder="Item name" />
+    <div class="needs-edit-row">
+      <select class="category-select" id="needs-edit-category">
+        <option value="">Category</option>
+        <option>Grocery</option>
+        <option>Pet</option>
+        <option>Baby</option>
+        <option>Household</option>
+        <option>Project</option>
+        <option>Personal Care</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="needs-edit-row">
+      <input type="text" class="needs-input" id="needs-edit-quantity" placeholder="Quantity" autocomplete="off" />
+      <input type="text" class="needs-input" id="needs-edit-notes" placeholder="Notes" autocomplete="off" />
+    </div>
+    <div class="status-chip-row" id="needs-edit-status-chips">
+      <button type="button" class="status-chip" data-status="Needed" onclick="setEditStatus('Needed')">Needed</button>
+      <button type="button" class="status-chip" data-status="On List" onclick="setEditStatus('On List')">On List</button>
+      <button type="button" class="status-chip" data-status="Purchased" onclick="setEditStatus('Purchased')">Purchased</button>
+    </div>
+    <button class="add-btn" id="needs-save-btn" style="width:100%;" onclick="saveNeedEdit()">Save changes</button>
+    <button type="button" class="archive-btn" id="needs-archive-btn" data-armed="0" onclick="armArchive()">🗄️ Archive this item</button>
+    <button class="dismiss-btn" onclick="closeModal('modal-needs-edit')">cancel</button>
+  </div>
+</div>
+
 <script>
 const SUPABASE = 'https://mpwnbsztpulwwmtuabtd.supabase.co/functions/v1';
-const CHORE_LOG_URL   = `${SUPABASE}/chore-log`;
-const CLAUDE_CHAT_URL = `${SUPABASE}/claude-chat`;
+const CHORE_LOG_URL      = `${SUPABASE}/chore-log`;
+const CLAUDE_CHAT_URL    = `${SUPABASE}/claude-chat`;
+const HOUSEHOLD_NEEDS_URL = `${SUPABASE}/household-needs`;
 
 let activeChore = null;
 let chatHistory = [];
 let allChores = [];
+
+// ── Household Needs tab state ─────────────────────────
+let needsGrouped = {};
+let currentTopSuggestion = null;
+let needsSearchTimer = null;
+const CATEGORY_ORDER = ['Grocery', 'Pet', 'Baby', 'Household', 'Project', 'Personal Care', 'Other'];
+const CATEGORY_ICON = {
+  Grocery: '🥬', Pet: '🐾', Baby: '🍼', Household: '🧻',
+  Project: '🛠️', 'Personal Care': '🧴', Other: '📦',
+};
 
 // Combined-tile groups. Add a new group here (real Notion chore titles as members) to get
 // the same "one tile, pick who's included, log together" pattern for anything else that
@@ -1100,6 +1363,7 @@ function showScreen(name) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById(`screen-${name}`).classList.add('active');
   document.getElementById(`nav-${name}`).classList.add('active');
+  if (name === 'needs') loadNeeds();
 }
 
 function openModal(id) { document.getElementById(id).classList.add('open'); document.body.style.overflow = 'hidden'; }
@@ -1119,6 +1383,394 @@ function showToast(msg, isError = false, onTap = null) {
   t.classList.add('show');
   clearTimeout(t._hideTimer);
   t._hideTimer = setTimeout(() => t.classList.remove('show'), onTap ? 3600 : 2800);
+}
+
+// ── Single write choke point ──────────────────────────
+// Everything that writes to Float goes through here. Today it's a plain
+// passthrough; the offline-mode session (Dev Rules → Offline Support,
+// decided 7/26) turns this into an IndexedDB queue-and-drain without
+// touching any call site. Needs-tab writes are routed through it now;
+// chore-log/wardrobe can move onto it later with zero behavior change.
+async function floatWrite(url, options = {}) {
+  const { method = 'POST', headers = {}, ...rest } = options;
+  return fetch(url, {
+    method,
+    headers: { 'Content-Type': 'application/json', ...headers },
+    ...rest,
+  });
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// ── Load + render ──────────────────────────────────────
+async function loadNeeds() {
+  const errEl = document.getElementById('needs-error');
+  errEl.classList.add('hidden');
+  try {
+    const res = await fetch(`${HOUSEHOLD_NEEDS_URL}?status=active`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    needsGrouped = data.grouped || {};
+    renderNeeds();
+  } catch (e) {
+    errEl.textContent = `Couldn't load the needs list (${e.message}). Try again in a bit.`;
+    errEl.classList.remove('hidden');
+  }
+}
+
+function renderNeeds() {
+  const list = document.getElementById('needs-list');
+  const cats = CATEGORY_ORDER.filter(c => (needsGrouped[c] || []).length);
+  for (const c of Object.keys(needsGrouped)) {
+    if (!CATEGORY_ORDER.includes(c) && (needsGrouped[c] || []).length) cats.push(c);
+  }
+  if (!cats.length) {
+    list.innerHTML = `<div class="needs-empty">Nothing on the list right now. Add something above when you think of it.</div>`;
+    return;
+  }
+  list.innerHTML = cats.map(cat => `
+    <div class="freq-subheader">${CATEGORY_ICON[cat] || '📦'} ${escapeHtml(cat)}</div>
+    ${needsGrouped[cat].map(needRowHtml).join('')}
+  `).join('');
+}
+
+function needRowHtml(n) {
+  const subParts = [n.quantity, n.notes].filter(Boolean);
+  if (!subParts.length && n.estimatedCost != null) subParts.push(`~$${n.estimatedCost.toFixed(2)}`);
+  const sub = subParts.join(' · ');
+  const pillClass = n.status === 'On List' ? 'onlist' : 'needed';
+  return `
+    <div class="needs-row" onclick="openNeedsEdit('${n.pageId}')">
+      <div class="needs-item-info">
+        <div class="needs-item-name">${escapeHtml(n.item)}</div>
+        ${sub ? `<div class="needs-item-sub">${escapeHtml(sub)}</div>` : ''}
+      </div>
+      <div class="status-pill ${pillClass}" onclick="event.stopPropagation(); cycleNeedStatus('${n.pageId}')">${escapeHtml(n.status || 'Needed')}</div>
+    </div>`;
+}
+
+function findNeed(pageId) {
+  for (const cat of Object.keys(needsGrouped)) {
+    const hit = needsGrouped[cat].find(n => n.pageId === pageId);
+    if (hit) return hit;
+  }
+  return null;
+}
+
+// Needed → On List → Purchased, same tap-to-cycle pattern as the wardrobe tab.
+async function cycleNeedStatus(pageId) {
+  const n = findNeed(pageId);
+  if (!n) return;
+  const prevStatus = n.status;
+  const next = n.status === 'Needed' ? 'On List' : 'Purchased';
+  n.status = next;
+  renderNeeds();
+  try {
+    const res = await floatWrite(`${HOUSEHOLD_NEEDS_URL}/${pageId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: next }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (next === 'Purchased') {
+      showToast(`${n.item} — purchased ✓  tap to undo`, false, () => undoPurchase(pageId, n.item, prevStatus));
+      await loadNeeds(); // purchased items drop out of the active view
+    } else {
+      showToast(`${n.item} — moved to On List`);
+    }
+  } catch (e) {
+    n.status = prevStatus;
+    renderNeeds();
+    showToast(`Couldn't update ${n.item} — try again`, true);
+  }
+}
+
+async function undoPurchase(pageId, name, prevStatus) {
+  try {
+    const res = await floatWrite(`${HOUSEHOLD_NEEDS_URL}/${pageId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: prevStatus }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    showToast(`${name} — back on the list`);
+    await loadNeeds();
+  } catch (e) {
+    showToast(`Couldn't undo — check the list`, true);
+  }
+}
+
+// ── Fuzzy dupe check ────────────────────────────────────
+function onNeedsInput() {
+  clearTimeout(needsSearchTimer);
+  const q = document.getElementById('needs-item-input').value.trim();
+  hideSuggestion();
+  if (q.length < 2) return;
+  needsSearchTimer = setTimeout(() => runNeedsSearch(q), 300);
+}
+
+async function runNeedsSearch(q) {
+  try {
+    const res = await fetch(`${HOUSEHOLD_NEEDS_URL}?search=${encodeURIComponent(q)}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    const top = (data.suggestions || [])[0];
+    const currentVal = document.getElementById('needs-item-input').value.trim();
+    // Bail if the field changed while this was in flight, or the match is
+    // basically what's already typed (nothing to suggest).
+    if (!top || currentVal.toLowerCase() !== q.toLowerCase() || top.item.toLowerCase() === q.toLowerCase()) return;
+    currentTopSuggestion = top;
+    showSuggestion(top);
+  } catch (e) {
+    // Dupe check is a nicety, not a blocker — fail silent.
+  }
+}
+
+function showSuggestion(top) {
+  const costNote = top.projectedCost != null ? ` · usually ~$${Number(top.projectedCost).toFixed(2)}` : '';
+  document.getElementById('needs-suggestion-text').textContent = `Did you mean "${top.item}"?${costNote}`;
+  document.getElementById('needs-suggestion').classList.remove('hidden');
+}
+function hideSuggestion() {
+  currentTopSuggestion = null;
+  document.getElementById('needs-suggestion').classList.add('hidden');
+}
+function acceptSuggestion() {
+  if (!currentTopSuggestion) return hideSuggestion();
+  document.getElementById('needs-item-input').value = currentTopSuggestion.item;
+  if (currentTopSuggestion.category) document.getElementById('needs-category-select').value = currentTopSuggestion.category;
+  hideSuggestion();
+}
+function dismissSuggestion() { hideSuggestion(); }
+
+function toggleNeedsDetails() {
+  const f = document.getElementById('needs-details-fields');
+  const willOpen = f.classList.contains('hidden');
+  f.classList.toggle('hidden');
+  document.getElementById('needs-details-toggle').textContent = willOpen ? '– hide details' : '+ quantity / notes';
+}
+
+// ── Add item ────────────────────────────────────────────
+async function addNeed() {
+  const input = document.getElementById('needs-item-input');
+  const item = input.value.trim();
+  if (!item) { showToast('Type something to add first', true); return; }
+
+  const category = document.getElementById('needs-category-select').value || undefined;
+  const quantity = document.getElementById('needs-quantity-input').value.trim() || undefined;
+  const notes = document.getElementById('needs-notes-input').value.trim() || undefined;
+  const saveBtn2 = document.getElementById('needs-add-btn');
+  saveBtn2.disabled = true;
+  try {
+    const res = await floatWrite(HOUSEHOLD_NEEDS_URL, {
+      body: JSON.stringify({ item, category, quantity, notes }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    input.value = '';
+    document.getElementById('needs-quantity-input').value = '';
+    document.getElementById('needs-notes-input').value = '';
+    document.getElementById('needs-category-select').value = '';
+    hideSuggestion();
+    // category was left blank -> the backend guessed one (catalog history,
+    // then a keyword heuristic). Say what it picked so it's never a surprise.
+    const assignedCat = data.item?.category;
+    showToast(assignedCat && data.categoryGuessed ? `${item} — added to ${assignedCat}` : `${item} — added`);
+    await loadNeeds();
+  } catch (e) {
+    showToast(`Couldn't add ${item} — try again`, true);
+  } finally {
+    saveBtn2.disabled = false;
+  }
+}
+
+// ── Screenshot backup (approved 7/26) ──────────────────
+// Renders the current active list to a canvas and hands it to the native
+// share sheet so "Save Image" drops a photo backup in the camera roll —
+// captures a list longer than one viewport without clipping a native
+// screenshot would. Falls back to a plain download where Web Share isn't
+// available (e.g. desktop browsers).
+async function screenshotNeeds() {
+  const list = document.getElementById('needs-list');
+  const rows = Array.from(list.querySelectorAll('.freq-subheader, .needs-row'));
+  if (!rows.length) { showToast('Nothing to save yet', true); return; }
+
+  const width = 720, padding = 32, lineH = 34, headerH = 88;
+  let height = headerH + padding;
+  rows.forEach(r => { height += r.classList.contains('freq-subheader') ? lineH : (r.querySelector('.needs-item-sub') ? lineH + 22 : lineH + 8); });
+  height += padding;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width; canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#FFF8F0'; ctx.fillRect(0, 0, width, height);
+
+  ctx.fillStyle = '#2A1F1A';
+  ctx.font = '700 26px -apple-system, sans-serif';
+  ctx.fillText('🛒 Household Needs', padding, 44);
+  ctx.font = '13px -apple-system, sans-serif';
+  ctx.fillStyle = '#7A6A62';
+  ctx.fillText(new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }), padding, 68);
+
+  let y = headerH + 16;
+  rows.forEach(r => {
+    if (r.classList.contains('freq-subheader')) {
+      ctx.font = '700 14px -apple-system, sans-serif';
+      ctx.fillStyle = '#7A6A62';
+      ctx.fillText(r.textContent.toUpperCase(), padding, y);
+      y += lineH;
+      return;
+    }
+    const name = r.querySelector('.needs-item-name')?.textContent || '';
+    const sub = r.querySelector('.needs-item-sub')?.textContent || '';
+    const status = r.querySelector('.status-pill')?.textContent || '';
+    ctx.font = '600 17px -apple-system, sans-serif';
+    ctx.fillStyle = '#2A1F1A';
+    ctx.fillText(`☐ ${name}`, padding + 8, y);
+    ctx.font = '11px -apple-system, sans-serif';
+    ctx.fillStyle = '#A89890';
+    ctx.textAlign = 'right';
+    ctx.fillText(status, width - padding, y);
+    ctx.textAlign = 'left';
+    if (sub) {
+      y += 20;
+      ctx.font = '13px -apple-system, sans-serif';
+      ctx.fillStyle = '#7A6A62';
+      ctx.fillText(sub, padding + 22, y);
+      y += lineH - 12;
+    } else {
+      y += lineH;
+    }
+  });
+
+  canvas.toBlob(async (blob) => {
+    if (!blob) { showToast('Screenshot failed — try again', true); return; }
+    const filename = `household-needs-${new Date().toISOString().slice(0, 10)}.png`;
+    const file = new File([blob], filename, { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: 'Household Needs' });
+        return;
+      } catch (e) {
+        // user backed out of the share sheet — fall through to download
+      }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    showToast('Saved to downloads');
+  }, 'image/png');
+}
+
+// ── Edit / Archive modal ────────────────────────────────
+let editingPageId = null;
+let editingStatus = null;
+let editOriginalStatus = null;
+
+function openNeedsEdit(pageId) {
+  const n = findNeed(pageId);
+  if (!n) return;
+  editingPageId = pageId;
+  editOriginalStatus = n.status;
+  document.getElementById('needs-edit-icon').textContent = CATEGORY_ICON[n.category] || '📦';
+  document.getElementById('needs-edit-name').value = n.item;
+  document.getElementById('needs-edit-category').value = n.category || '';
+  document.getElementById('needs-edit-quantity').value = n.quantity || '';
+  document.getElementById('needs-edit-notes').value = n.notes || '';
+  setEditStatus(n.status || 'Needed');
+  const archiveBtn = document.getElementById('needs-archive-btn');
+  archiveBtn.dataset.armed = '0';
+  archiveBtn.classList.remove('confirming');
+  archiveBtn.textContent = '🗄️ Archive this item';
+  openModal('modal-needs-edit');
+}
+
+function setEditStatus(status) {
+  editingStatus = status;
+  document.querySelectorAll('#needs-edit-status-chips .status-chip').forEach(chip => {
+    chip.classList.toggle('active', chip.dataset.status === status);
+  });
+}
+
+async function saveNeedEdit() {
+  if (!editingPageId) return;
+  const item = document.getElementById('needs-edit-name').value.trim();
+  if (!item) { showToast("Item name can't be empty", true); return; }
+
+  const category = document.getElementById('needs-edit-category').value;
+  const quantity = document.getElementById('needs-edit-quantity').value.trim();
+  const notes = document.getElementById('needs-edit-notes').value.trim();
+
+  // quantity/notes are sent even when empty so the edit can clear them —
+  // the Edge Function treats `undefined` (omitted) as "leave alone" and
+  // `''` (present, empty) as "clear this field."
+  const payload = { item, quantity, notes };
+  if (category) payload.category = category;
+  if (editingStatus && editingStatus !== editOriginalStatus) payload.status = editingStatus;
+
+  const saveBtn = document.getElementById('needs-save-btn');
+  saveBtn.disabled = true;
+  try {
+    const res = await floatWrite(`${HOUSEHOLD_NEEDS_URL}/${editingPageId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    closeModal('modal-needs-edit');
+    showToast(`${item} — saved`);
+    await loadNeeds();
+  } catch (e) {
+    showToast(`Couldn't save — try again`, true);
+  } finally {
+    saveBtn.disabled = false;
+  }
+}
+
+// Generic two-tap confirm, same idea as chore-log's history-row delete
+// (armRowDelete) but reusable with any idle label — archive isn't the
+// only thing that will eventually want this.
+function armConfirm(btn, idleLabel, onConfirm, ms = 2500) {
+  if (btn.dataset.armed === '1') {
+    btn.dataset.armed = '0';
+    btn.classList.remove('confirming');
+    btn.textContent = idleLabel;
+    onConfirm();
+    return;
+  }
+  btn.dataset.armed = '1';
+  btn.classList.add('confirming');
+  btn.textContent = 'tap again to confirm';
+  setTimeout(() => {
+    if (btn.dataset.armed === '1') {
+      btn.dataset.armed = '0';
+      btn.classList.remove('confirming');
+      btn.textContent = idleLabel;
+    }
+  }, ms);
+}
+
+function armArchive() {
+  armConfirm(document.getElementById('needs-archive-btn'), '🗄️ Archive this item', () => archiveNeed(editingPageId));
+}
+
+// Archive is not a delete — status: "Archived" is a normal PATCH, same as
+// cycling to Purchased. The item just stops appearing in the active view.
+async function archiveNeed(pageId) {
+  if (!pageId) return;
+  try {
+    const res = await floatWrite(`${HOUSEHOLD_NEEDS_URL}/${pageId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status: 'Archived' }),
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    closeModal('modal-needs-edit');
+    showToast('Archived — off the active list');
+    await loadNeeds();
+  } catch (e) {
+    showToast(`Couldn't archive — try again`, true);
+  }
 }
 
 boot();
