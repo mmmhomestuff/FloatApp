@@ -450,6 +450,21 @@
     .status-pill.onlist { background: var(--accent-soft); color: var(--accent); }
     .needs-empty { padding: 24px 20px; text-align: center; color: var(--text-light); font-size: 14px; font-style: italic; }
 
+    .needs-total-bar {
+      margin: 0 20px 12px;
+      padding: 12px 16px;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .needs-total-bar .total-amount { font-size: 18px; font-weight: 800; color: var(--accent); }
+    .needs-total-bar .total-note { font-size: 12px; color: var(--text-muted); }
+    .needs-total-bar.empty { color: var(--text-light); font-size: 13px; font-style: italic; justify-content: center; }
+
     .needs-edit-name-input {
       display: block;
       width: 100%;
@@ -748,6 +763,7 @@
       <button class="screenshot-btn" onclick="screenshotNeeds()" title="Save a photo backup of this list">📷 Save list</button>
     </div>
     <div id="needs-error" class="error-banner hidden"></div>
+    <div class="needs-total-bar" id="needs-total-bar"></div>
     <div class="needs-list" id="needs-list"></div>
   </div>
 
@@ -851,6 +867,7 @@ let allChores = [];
 
 // ── Household Needs tab state ─────────────────────────
 let needsGrouped = {};
+let needsTotal = { totalProjected: 0, itemsWithCost: 0, count: 0 };
 let currentTopSuggestion = null;
 let needsSearchTimer = null;
 const CATEGORY_ORDER = ['Grocery', 'Pet', 'Baby', 'Household', 'Project', 'Personal Care', 'Other'];
@@ -1413,11 +1430,32 @@ async function loadNeeds() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     needsGrouped = data.grouped || {};
+    needsTotal = {
+      totalProjected: data.totalProjected ?? 0,
+      itemsWithCost: data.itemsWithCost ?? 0,
+      count: data.count ?? 0,
+    };
+    renderNeedsTotal();
     renderNeeds();
   } catch (e) {
     errEl.textContent = `Couldn't load the needs list (${e.message}). Try again in a bit.`;
     errEl.classList.remove('hidden');
   }
+}
+
+function renderNeedsTotal() {
+  const bar = document.getElementById('needs-total-bar');
+  const { totalProjected, itemsWithCost, count } = needsTotal;
+  if (!count) { bar.classList.add('hidden'); bar.innerHTML = ''; return; }
+  bar.classList.remove('hidden');
+  if (!itemsWithCost) {
+    bar.classList.add('empty');
+    bar.innerHTML = 'No price history yet — totals show once a purchase is logged';
+    return;
+  }
+  bar.classList.remove('empty');
+  const coverage = itemsWithCost < count ? `<span class="total-note">${itemsWithCost} of ${count} priced</span>` : `<span class="total-note">estimated</span>`;
+  bar.innerHTML = `<span class="total-amount">~$${totalProjected.toFixed(2)}</span>${coverage}`;
 }
 
 function renderNeeds() {
@@ -1438,7 +1476,7 @@ function renderNeeds() {
 
 function needRowHtml(n) {
   const subParts = [n.quantity, n.notes].filter(Boolean);
-  if (!subParts.length && n.estimatedCost != null) subParts.push(`~$${n.estimatedCost.toFixed(2)}`);
+  if (n.projectedCost != null) subParts.push(`~$${n.projectedCost.toFixed(2)}`);
   const sub = subParts.join(' · ');
   const pillClass = n.status === 'On List' ? 'onlist' : 'needed';
   return `
