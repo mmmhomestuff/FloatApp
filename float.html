@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>Float 🌿</title>
+  <title>Float</title>
   <style>
     /* ── Design System ─────────────────────────────────── */
     :root {
@@ -98,7 +98,8 @@
       transition: color 0.15s;
       padding-bottom: env(safe-area-inset-bottom, 0);
     }
-    .nav-btn .nav-icon { font-size: 22px; }
+    .nav-btn .nav-icon { display: block; height: 22px; }
+    .nav-btn .nav-icon svg { width: 22px; height: 22px; display: block; }
     .nav-btn.active { color: var(--accent); }
 
     .home-greeting {
@@ -116,7 +117,6 @@
       color: var(--text-muted);
       margin-top: 4px;
     }
-    .greeting-emoji { font-size: 28px; margin-right: 6px; }
 
     .stats-row {
       display: grid;
@@ -549,6 +549,7 @@
       border-radius: 2px;
       margin: 0 auto 20px;
     }
+    .modal-icon:empty { display: none; }
     .modal-icon { font-size: 40px; text-align: center; margin-bottom: 8px; }
     .modal-title { font-size: 22px; font-weight: 700; text-align: center; color: var(--text); margin-bottom: 4px; }
     .modal-subtitle { font-size: 13px; color: var(--text-muted); text-align: center; margin-bottom: 20px; }
@@ -664,6 +665,205 @@
       color: var(--overdue);
     }
     .hidden { display: none !important; }
+
+    /* ── Scan (receipt capture) ─────────────────────────── */
+    .scan-intro {
+      padding: 18px 16px 4px;
+      color: var(--text-muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .scan-capture {
+      margin: 12px 16px 4px;
+      padding: 28px 20px;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-alt);
+      text-align: center;
+      cursor: pointer;
+      display: block;
+      width: calc(100% - 32px);
+      font-family: var(--font);
+      color: var(--text);
+    }
+    .scan-capture:active { background: var(--accent-soft); }
+    .scan-capture .cam { font-size: 34px; display: block; margin-bottom: 8px; }
+    .scan-capture .lead { font-size: 16px; font-weight: 600; }
+    .scan-capture .sub { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+    .scan-status {
+      margin: 12px 16px;
+      padding: 14px 16px;
+      border-radius: var(--radius-sm);
+      background: var(--gold-soft);
+      color: var(--text);
+      font-size: 14px;
+      text-align: center;
+    }
+    .scan-dupe {
+      margin: 12px 16px;
+      padding: 14px 16px;
+      border-radius: var(--radius-sm);
+      background: var(--overdue-bg);
+      border: 1px solid var(--overdue);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .scan-head {
+      margin: 12px 16px;
+      padding: 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .scan-head label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      color: var(--text-light);
+      display: block;
+      margin-bottom: 3px;
+    }
+    .scan-head input {
+      width: 100%;
+      padding: 9px 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 15px;
+      font-family: var(--font);
+      color: var(--text);
+      background: var(--bg);
+    }
+    .scan-head .full { grid-column: 1 / -1; }
+    .scan-line {
+      margin: 10px 16px;
+      padding: 12px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .scan-line.low { border-left: 4px solid var(--gold); }
+    .scan-line.dropped { opacity: .42; }
+    .scan-line-top { display: flex; align-items: center; gap: 8px; }
+    .scan-line-name {
+      flex: 1;
+      padding: 7px 9px;
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      font-size: 16px;
+      font-weight: 600;
+      font-family: var(--font);
+      color: var(--text);
+      background: transparent;
+      min-width: 0;
+    }
+    .scan-line-name:focus { border-color: var(--border); background: var(--bg); outline: none; }
+    .scan-line-price {
+      width: 86px;
+      padding: 7px 9px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 16px;
+      font-family: var(--font);
+      text-align: right;
+      color: var(--text);
+      background: var(--bg);
+    }
+    .scan-line-raw {
+      font-size: 11px;
+      color: var(--text-light);
+      font-family: ui-monospace, Menlo, monospace;
+      margin: 6px 0 0 9px;
+      word-break: break-all;
+    }
+    .scan-line-meta {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .scan-line-meta input, .scan-line-meta select {
+      padding: 7px 8px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-family: var(--font);
+      color: var(--text);
+      background: var(--bg);
+    }
+    .scan-line-meta .qty  { width: 62px; }
+    .scan-line-meta .uqty { width: 62px; }
+    .scan-match {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--border);
+    }
+    .scan-match label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      color: var(--text-light);
+      display: block;
+      margin-bottom: 5px;
+    }
+    .scan-match select {
+      width: 100%;
+      padding: 8px 9px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-family: var(--font);
+      color: var(--text);
+      background: var(--bg);
+    }
+    .scan-flag {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--gold-soft);
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .scan-drop {
+      background: none;
+      border: none;
+      color: var(--text-light);
+      font-size: 20px;
+      padding: 0 4px;
+      cursor: pointer;
+      font-family: var(--font);
+    }
+    .scan-summary {
+      margin: 14px 16px 6px;
+      padding: 14px 16px;
+      background: var(--green-soft);
+      border-radius: var(--radius);
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.55;
+    }
+    .scan-summary .warn { color: var(--accent); }
+    .scan-actions { margin: 6px 16px 28px; display: flex; gap: 10px; }
+    .scan-actions button {
+      flex: 1;
+      padding: 15px;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 16px;
+      font-weight: 600;
+      font-family: var(--font);
+      cursor: pointer;
+    }
+    .scan-commit { background: var(--green); color: #fff; }
+    .scan-commit:disabled { background: var(--border); color: var(--text-light); }
+    .scan-cancel { background: var(--surface-alt); color: var(--text-muted); border: 1px solid var(--border) !important; }
+
   </style>
 </head>
 <body>
@@ -679,7 +879,7 @@
   <div id="screen-home" class="screen active">
     <div class="home-greeting">
       <div class="greeting-text">
-        <span class="greeting-emoji" id="greeting-emoji">🌿</span><span id="greeting-text">Hey!</span>
+        <span id="greeting-text">Hey!</span>
       </div>
       <div class="greeting-sub" id="greeting-sub">Loading…</div>
     </div>
@@ -705,14 +905,14 @@
         <button class="chat-send" id="chat-send" onclick="sendChat()">↑</button>
       </div>
       <div class="chat-offline-note" id="chat-note" style="display:none">
-        ⚠️ Chat offline — deploy claude-chat Edge Function to enable
+        Chat offline — deploy claude-chat Edge Function to enable
       </div>
     </div>
   </div>
 
   <div id="screen-chores" class="screen">
     <div class="mvp-banner mvp-hidden" id="mvp-banner">
-      <span class="mvp-crown">👑</span>
+      <span class="mvp-crown">✦</span>
       <div>
         <div class="mvp-name" id="mvp-name">–</div>
         <div class="mvp-label">MVP of the Week</div>
@@ -775,25 +975,42 @@
 
     <div class="chore-list-header needs-list-header">
       <span>Household Needs</span>
-      <button class="screenshot-btn" onclick="screenshotNeeds()" title="Save a photo backup of this list">📷 Save list</button>
+      <button class="screenshot-btn" onclick="screenshotNeeds()" title="Save a photo backup of this list">Save list</button>
     </div>
     <div id="needs-error" class="error-banner hidden"></div>
     <div class="needs-total-bar" id="needs-total-bar"></div>
     <div class="needs-list" id="needs-list"></div>
   </div>
 
+  <div id="screen-scan" class="screen">
+    <div class="scan-intro">
+      Photograph a receipt. Nothing is saved until you look the lines over and tap Log receipt.
+    </div>
+    <label class="scan-capture" for="scan-file">
+            <span class="lead">Take a photo of a receipt</span>
+      <span class="sub">or pick one from your camera roll</span>
+    </label>
+    <input type="file" id="scan-file" accept="image/*" capture="environment"
+           style="display:none" onchange="onReceiptPhoto(this)" />
+    <div id="scan-body"></div>
+  </div>
+
   <nav>
     <button class="nav-btn active" id="nav-home" onclick="showScreen('home')">
-      <span class="nav-icon">🏠</span>
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.5V20h13V9.5"/><path d="M9.5 20v-6h5v6"/></svg></span>
       <span>Home</span>
     </button>
     <button class="nav-btn" id="nav-chores" onclick="showScreen('chores')">
-      <span class="nav-icon">🧹</span>
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3 11 6.5"/><path d="M9 8.5 15.5 15"/><path d="M8.5 9 4 13.5 10.5 20 15 15.5"/><path d="M6 11.5 12.5 18"/></svg></span>
       <span>Chores</span>
     </button>
     <button class="nav-btn" id="nav-needs" onclick="showScreen('needs')">
-      <span class="nav-icon">🛒</span>
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2.2l2.3 10.5h9.6L19 7H6"/><circle cx="9.5" cy="19" r="1.4"/><circle cx="16.5" cy="19" r="1.4"/></svg></span>
       <span>Needs</span>
+    </button>
+    <button class="nav-btn" id="nav-scan" onclick="showScreen('scan')">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5v17l2-1.4 2 1.4 2-1.4 2 1.4 2-1.4 2 1.4v-17z"/><path d="M9 8h6"/><path d="M9 12h6"/><path d="M9 16h3"/></svg></span>
+      <span>Scan</span>
     </button>
   </nav>
 </div>
@@ -801,16 +1018,16 @@
 <div class="modal-backdrop" id="modal-chore" onclick="closeModal('modal-chore', event)">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
-    <div class="modal-icon" id="detail-icon">🧹</div>
+    <div class="modal-icon" id="detail-icon"></div>
     <div class="modal-title" id="detail-name">–</div>
     <div class="modal-subtitle" id="detail-last">–</div>
     <div class="done-label">Who did it?</div>
     <div class="done-btns" id="chore-done-btns">
-      <button class="done-btn" onclick="markDone('Mary')"><span class="done-avatar">🌸</span>Mary</button>
-      <button class="done-btn" onclick="markDone('Garrett')"><span class="done-avatar">🌿</span>Garrett</button>
+      <button class="done-btn" onclick="markDone('Mary')"><span class="done-avatar">M</span>Mary</button>
+      <button class="done-btn" onclick="markDone('Garrett')"><span class="done-avatar">G</span>Garrett</button>
     </div>
     <div class="history-section">
-      <div class="history-title">🕓 Recent Log Entries</div>
+      <div class="history-title">Recent Log Entries</div>
       <div class="history-list" id="chore-history"><div class="history-loading">Loading…</div></div>
     </div>
     <button class="dismiss-btn" onclick="closeModal('modal-chore')">cancel</button>
@@ -820,18 +1037,18 @@
 <div class="modal-backdrop" id="modal-group" onclick="closeModal('modal-group', event)">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
-    <div class="modal-icon" id="group-icon">🐾</div>
+    <div class="modal-icon" id="group-icon"></div>
     <div class="modal-title" id="group-title">–</div>
     <div class="modal-subtitle" id="group-subtitle">–</div>
     <div class="group-grid" id="group-grid"></div>
     <div class="group-hint">tap a pet to include or skip it</div>
     <div class="done-label" id="group-prompt-label">Who did it?</div>
     <div class="done-btns" id="group-done-btns">
-      <button class="done-btn" onclick="markGroupDone('Mary')"><span class="done-avatar">🌸</span>Mary</button>
-      <button class="done-btn" onclick="markGroupDone('Garrett')"><span class="done-avatar">🌿</span>Garrett</button>
+      <button class="done-btn" onclick="markGroupDone('Mary')"><span class="done-avatar">M</span>Mary</button>
+      <button class="done-btn" onclick="markGroupDone('Garrett')"><span class="done-avatar">G</span>Garrett</button>
     </div>
     <div class="history-section">
-      <div class="history-title" id="group-history-title">🕓 Recent Log Entries</div>
+      <div class="history-title" id="group-history-title">Recent Log Entries</div>
       <div class="history-list" id="group-history"><div class="history-loading">Loading…</div></div>
     </div>
     <button class="dismiss-btn" onclick="closeModal('modal-group')">cancel</button>
@@ -841,7 +1058,7 @@
 <div class="modal-backdrop" id="modal-needs-edit" onclick="closeModal('modal-needs-edit', event)">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
-    <div class="modal-icon" id="needs-edit-icon">📦</div>
+    <div class="modal-icon" id="needs-edit-icon"></div>
     <input type="text" class="needs-edit-name-input" id="needs-edit-name" placeholder="Item name" />
     <div class="needs-edit-row">
       <select class="category-select" id="needs-edit-category">
@@ -869,7 +1086,7 @@
     <div class="needs-filter-hint" style="text-align:center;padding:0 0 10px;">Needed = on your radar · On List = ready for the next trip</div>
     <div class="details-toggle" style="text-align:center;padding:0 0 10px;">Mark Purchased from the list — tap the status pill</div>
     <button class="add-btn" id="needs-save-btn" style="width:100%;" onclick="saveNeedEdit()">Save changes</button>
-    <button type="button" class="archive-btn" id="needs-archive-btn" data-armed="0" onclick="armArchive()">🗄️ Archive this item</button>
+    <button type="button" class="archive-btn" id="needs-archive-btn" data-armed="0" onclick="armArchive()">Archive this item</button>
     <button class="dismiss-btn" onclick="closeModal('modal-needs-edit')">cancel</button>
   </div>
 </div>
@@ -877,7 +1094,7 @@
 <div class="modal-backdrop" id="modal-purchase" onclick="closeModal('modal-purchase', event)">
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
-    <div class="modal-icon">🧾</div>
+    <div class="modal-icon"></div>
     <div class="modal-title" id="purchase-item-name">–</div>
     <div class="modal-subtitle" id="purchase-estimate-note">–</div>
     <div class="needs-edit-row">
@@ -904,10 +1121,6 @@ let needsGrouped = {};
 let currentTopSuggestion = null;
 let needsSearchTimer = null;
 const CATEGORY_ORDER = ['Grocery', 'Pet', 'Baby', 'Household', 'Project', 'Personal Care', 'Other'];
-const CATEGORY_ICON = {
-  Grocery: '🥬', Pet: '🐾', Baby: '🍼', Household: '🧻',
-  Project: '🛠️', 'Personal Care': '🧴', Other: '📦',
-};
 
 // Combined-tile groups. Add a new group here (real Notion chore titles as members) to get
 // the same "one tile, pick who's included, log together" pattern for anything else that
@@ -916,7 +1129,7 @@ const CHORE_GROUPS = [
   {
     id: 'group-food',
     label: 'Feed Pets',
-    icon: '🐾',
+    icon: '',
     frequency: 'daily',
     members: ['Bo - cat food', 'Toast - cat food', 'Dozer - dog food'],
     promptLabel: 'Who fed them?',
@@ -925,7 +1138,7 @@ const CHORE_GROUPS = [
   {
     id: 'group-meds',
     label: 'Monthly Flea & Tick',
-    icon: '💊',
+    icon: '',
     frequency: 'monthly',
     members: [
       'Bo - Revolution Plus (flea/tick/ear mites)',
@@ -947,10 +1160,10 @@ const FALLBACK_CHORES = [
     lastDone: null, lastDoneBy: null, isGroup: true, groupConfig: group, memberPageIds: [],
     members: group.members.map(m => ({ id: m, name: petShortName(m), icon: iconForPetName(m) })),
   })),
-  { id: 'placeholder-dishes',  name: 'Dishes',         icon: '🍽️', frequency: 'daily',  lastDone: null, lastDoneBy: null },
-  { id: 'placeholder-laundry', name: 'Laundry',        icon: '🧺', frequency: 'weekly', lastDone: null, lastDoneBy: null },
-  { id: 'placeholder-trash',   name: 'Take Out Trash', icon: '🗑️', frequency: 'weekly', lastDone: null, lastDoneBy: null },
-  { id: 'placeholder-sweep',   name: 'Sweep/Vacuum',   icon: '🧹', frequency: 'weekly', lastDone: null, lastDoneBy: null },
+  { id: 'placeholder-dishes',  name: 'Dishes',         icon: '', frequency: 'daily',  lastDone: null, lastDoneBy: null },
+  { id: 'placeholder-laundry', name: 'Laundry',        icon: '', frequency: 'weekly', lastDone: null, lastDoneBy: null },
+  { id: 'placeholder-trash',   name: 'Take Out Trash', icon: '', frequency: 'weekly', lastDone: null, lastDoneBy: null },
+  { id: 'placeholder-sweep',   name: 'Sweep/Vacuum',   icon: '', frequency: 'weekly', lastDone: null, lastDoneBy: null },
 ];
 
 async function boot() {
@@ -962,13 +1175,12 @@ async function boot() {
 
 function setGreeting() {
   const h = new Date().getHours();
-  let emoji, msg;
-  if (h < 6)       { emoji = '🌙'; msg = 'Good night'; }
-  else if (h < 12) { emoji = '☀️'; msg = 'Good morning'; }
-  else if (h < 17) { emoji = '🌿'; msg = 'Good afternoon'; }
-  else if (h < 20) { emoji = '🌅'; msg = 'Good evening'; }
-  else             { emoji = '🌙'; msg = 'Good night'; }
-  document.getElementById('greeting-emoji').textContent = emoji;
+  let msg;
+  if (h < 6)       msg = 'Good night';
+  else if (h < 12) msg = 'Good morning';
+  else if (h < 17) msg = 'Good afternoon';
+  else if (h < 20) msg = 'Good evening';
+  else             msg = 'Good night';
   document.getElementById('greeting-text').textContent = msg + '!';
   const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const today = new Date();
@@ -987,18 +1199,21 @@ async function loadChores() {
     console.warn('Chore load failed, using fallback:', e);
     allChores = FALLBACK_CHORES;
     const err = document.getElementById('chore-error');
-    err.textContent = '⚠️ Using static data — deploy chore-log Edge Function to go live.';
+    err.textContent = 'Using static data — deploy chore-log Edge Function to go live.';
     err.classList.remove('hidden');
   }
   renderChores();
   updateStats();
 }
 
-function iconForPetName(name) {
-  const n = name.toLowerCase();
-  if (n.includes('dozer')) return '🐶';
-  return '🐱';
+// Icons are stripped app-wide (8/2/26). Chore icons still arrive from Notion,
+// so anything data-sourced goes through stripEmoji() before it renders.
+function stripEmoji(s) {
+  return String(s || '').replace(
+    /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}]/gu, '').trim();
 }
+
+function iconForPetName() { return ''; }
 
 // "Bo - cat food" -> "Bo". Chip labels don't need to repeat the context
 // the modal title already establishes (this picker IS the food one).
@@ -1129,7 +1344,7 @@ function renderChores() {
 
   list.innerHTML = '';
   if (items.length === 0) {
-    const msg = currentSort === 'upcoming' ? 'Nothing coming up — you\'re ahead 🌿' : `No chores match "${query}"`;
+    const msg = currentSort === 'upcoming' ? 'Nothing coming up — you\'re ahead' : `No chores match "${query}"`;
     list.innerHTML = `<div class="history-empty">${msg}</div>`;
     return;
   }
@@ -1190,7 +1405,7 @@ function renderGroupModal(tile) {
   document.getElementById('group-title').textContent = tile.name;
   document.getElementById('group-prompt-label').textContent = tile.groupConfig?.promptLabel || 'Who did it?';
   document.getElementById('group-history-title').textContent =
-    `🕓 Recent Log Entries (${modalMembersList.map(m => m.name).join(', ')} combined)`;
+    `Recent Log Entries (${modalMembersList.map(m => m.name).join(', ')} combined)`;
   const grid = document.getElementById('group-grid');
   grid.innerHTML = modalMembersList.map(m =>
     `<button type="button" class="group-chip" data-member-id="${m.id}" onclick="toggleGroupChip('${m.id}')">${m.icon} ${m.name}</button>`
@@ -1199,7 +1414,7 @@ function renderGroupModal(tile) {
   if (tile.memberPageIds && tile.memberPageIds.length) {
     loadHistoryInto('group-history', modalMembersList);
   } else {
-    document.getElementById('group-history').innerHTML = '<div class="history-empty">No logs yet 🌱</div>';
+    document.getElementById('group-history').innerHTML = '<div class="history-empty">No logs yet</div>';
   }
 }
 
@@ -1236,14 +1451,14 @@ async function loadHistoryInto(containerId, entities) {
       .slice(0, 5);
     renderHistoryList(containerId, merged, entities.length > 1);
   } catch {
-    container.innerHTML = '<div class="history-empty">⚠️ Couldn\'t load history</div>';
+    container.innerHTML = '<div class="history-empty">Couldn\'t load history</div>';
   }
 }
 
 function renderHistoryList(containerId, entries, showWhichPet) {
   const container = document.getElementById(containerId);
   if (entries.length === 0) {
-    container.innerHTML = '<div class="history-empty">No logs yet 🌱</div>';
+    container.innerHTML = '<div class="history-empty">No logs yet</div>';
     return;
   }
   container.innerHTML = '';
@@ -1252,9 +1467,9 @@ function renderHistoryList(containerId, entries, showWhichPet) {
     row.className = 'history-row';
     const label = showWhichPet ? `${entry.name} · ${entry.doneBy}` : entry.doneBy;
     row.innerHTML = `
-      <span class="history-icon">${entry.icon || '🧹'}</span>
+      <span class="history-icon">${stripEmoji(entry.icon)}</span>
       <div class="history-info"><span class="history-person">${label}</span> <span class="history-date">— ${daysAgoLabel(entry.date)}</span></div>
-      <button type="button" class="history-del-btn" data-armed="0">🗑️</button>`;
+      <button type="button" class="history-del-btn" data-armed="0">×</button>`;
     const delBtn = row.querySelector('.history-del-btn');
     delBtn.onclick = () => armRowDelete(delBtn, () => deleteLogEntry(entry.logId, entry.choreId, containerId));
     container.appendChild(row);
@@ -1274,7 +1489,7 @@ function armRowDelete(btn, onConfirm) {
     if (btn.dataset.armed === '1') {
       btn.dataset.armed = '0';
       btn.classList.remove('confirming');
-      btn.textContent = '🗑️';
+      btn.textContent = '\u00d7';
     }
   }, 2500);
 }
@@ -1301,8 +1516,8 @@ async function deleteLogEntry(logId, choreId, containerId) {
     // Refresh whichever history list is open
     if (containerId === 'chore-history' && activeChore) loadHistoryInto('chore-history', [{ id: activeChore.id, icon: activeChore.icon, name: activeChore.name }]);
     if (containerId === 'group-history' && parentGroup) loadHistoryInto('group-history', modalMembersList);
-    showToast('🗑️ Log entry deleted');
-  } catch { showToast("⚠️ Couldn't delete — check connection", true); }
+    showToast('Log entry deleted');
+  } catch { showToast("Couldn't delete — check connection", true); }
 }
 
 let choreLogInFlight = false;
@@ -1327,7 +1542,7 @@ async function markDone(person) {
     renderChores(); updateStats();
     loadHistoryInto('chore-history', [{ id: chore.id, icon: chore.icon, name: chore.name }]);
     showToast(`${chore.icon} Logged for ${person}!`);
-  } catch { showToast("⚠️ Couldn't log — check connection", true); }
+  } catch { showToast("Couldn't log — check connection", true); }
   finally { choreLogInFlight = false; setButtonsLocked('chore-done-btns', false); }
 }
 
@@ -1363,9 +1578,9 @@ async function markGroupDone(person) {
       showToast(`${tile.icon} ${namesLogged} logged for ${person}!`);
     } else {
       const succeededNames = modalMembersList.filter(m => succeeded.includes(m.id)).map(m => m.name).join(', ') || 'none';
-      showToast(`⚠️ Only ${succeededNames} logged — ${failed} failed, check history`, true);
+      showToast(`Only ${succeededNames} logged — ${failed} failed, check history`, true);
     }
-  } catch { showToast("⚠️ Couldn't log — check connection", true); }
+  } catch { showToast("Couldn't log — check connection", true); }
   finally { choreLogInFlight = false; setButtonsLocked('group-done-btns', false); }
 }
 
@@ -1391,7 +1606,7 @@ async function sendChat() {
     document.getElementById('chat-note').style.display = 'none';
   } catch {
     thinking.remove();
-    appendChatMsg('⚠️ Chat offline. Deploy claude-chat Edge Function to enable.', 'assistant');
+    appendChatMsg('Chat offline. Deploy claude-chat Edge Function to enable.', 'assistant');
     document.getElementById('chat-note').style.display = 'block';
   }
 }
@@ -1414,6 +1629,7 @@ function showScreen(name) {
   document.getElementById(`screen-${name}`).classList.add('active');
   document.getElementById(`nav-${name}`).classList.add('active');
   if (name === 'needs') loadNeeds();
+  if (name === 'scan')  renderScan();
 }
 
 function openModal(id) { document.getElementById(id).classList.add('open'); document.body.style.overflow = 'hidden'; }
@@ -1519,7 +1735,7 @@ function renderNeeds() {
     return;
   }
   list.innerHTML = cats.map(cat => `
-    <div class="freq-subheader">${CATEGORY_ICON[cat] || '📦'} ${escapeHtml(cat)}</div>
+    <div class="freq-subheader">${escapeHtml(cat)}</div>
     ${filteredCategoryItems(cat).map(needRowHtml).join('')}
   `).join('');
   renderNeedsTotal();
@@ -1764,7 +1980,7 @@ async function screenshotNeeds() {
 
   ctx.fillStyle = '#2A1F1A';
   ctx.font = '700 26px -apple-system, sans-serif';
-  ctx.fillText('🛒 Household Needs', padding, 44);
+  ctx.fillText('Household Needs', padding, 44);
   ctx.font = '13px -apple-system, sans-serif';
   ctx.fillStyle = '#7A6A62';
   ctx.fillText(new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }), padding, 68);
@@ -1783,7 +1999,7 @@ async function screenshotNeeds() {
     const status = r.querySelector('.status-pill')?.textContent || '';
     ctx.font = '600 17px -apple-system, sans-serif';
     ctx.fillStyle = '#2A1F1A';
-    ctx.fillText(`☐ ${name}`, padding + 8, y);
+    ctx.fillText(`[ ] ${name}`, padding + 8, y);
     ctx.font = '11px -apple-system, sans-serif';
     ctx.fillStyle = '#A89890';
     ctx.textAlign = 'right';
@@ -1831,7 +2047,6 @@ function openNeedsEdit(pageId) {
   if (!n) return;
   editingPageId = pageId;
   editOriginalStatus = n.status;
-  document.getElementById('needs-edit-icon').textContent = CATEGORY_ICON[n.category] || '📦';
   document.getElementById('needs-edit-name').value = n.item;
   document.getElementById('needs-edit-category').value = n.category || '';
   document.getElementById('needs-edit-quantity').value = n.quantity || '';
@@ -1841,7 +2056,7 @@ function openNeedsEdit(pageId) {
   const archiveBtn = document.getElementById('needs-archive-btn');
   archiveBtn.dataset.armed = '0';
   archiveBtn.classList.remove('confirming');
-  archiveBtn.textContent = '🗄️ Archive this item';
+  archiveBtn.textContent = 'Archive this item';
   openModal('modal-needs-edit');
 }
 
@@ -1912,7 +2127,7 @@ function armConfirm(btn, idleLabel, onConfirm, ms = 2500) {
 }
 
 function armArchive() {
-  armConfirm(document.getElementById('needs-archive-btn'), '🗄️ Archive this item', () => archiveNeed(editingPageId));
+  armConfirm(document.getElementById('needs-archive-btn'), 'Archive this item', () => archiveNeed(editingPageId));
 }
 
 // Archive is not a delete — status: "Archived" is a normal PATCH, same as
@@ -1930,6 +2145,264 @@ async function archiveNeed(pageId) {
     await loadNeeds();
   } catch (e) {
     showToast(`Couldn't archive — try again`, true);
+  }
+}
+
+// ── Scan (receipt capture) ─────────────────────────────
+// Two-step by design, mirroring the receipt-scan Edge Function:
+// parse writes nothing, commit only sends what's on screen after review.
+const RECEIPT_SCAN_URL = `${SUPABASE}/receipt-scan`;
+
+const SCAN_UNITS = ['', 'gal', 'qt', 'pt', 'fl_oz', 'oz', 'lb', 'g', 'kg', 'ct', 'ea'];
+
+let scanState = { receipt: null, items: [], duplicate: null, busy: false };
+
+function resetScan() {
+  scanState = { receipt: null, items: [], duplicate: null, busy: false };
+  const input = document.getElementById('scan-file');
+  if (input) input.value = '';
+  renderScan();
+}
+
+// Phone photos run 4-12MB. Base64 inflates that by a third, which will blow
+// the function payload. Downscale before it ever leaves the device.
+function shrinkImage(file, maxDim = 1600) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Could not read that photo'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('Could not open that photo'));
+      img.onload = () => {
+        const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+        const c = document.createElement('canvas');
+        c.width  = Math.round(img.width  * scale);
+        c.height = Math.round(img.height * scale);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        resolve(c.toDataURL('image/jpeg', 0.82).split(',')[1]);
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function onReceiptPhoto(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+
+  scanState.busy = true;
+  scanState.receipt = null;
+  scanState.items = [];
+  scanState.duplicate = null;
+  renderScan();
+
+  try {
+    const image = await shrinkImage(file);
+    const res = await floatWrite(RECEIPT_SCAN_URL, {
+      body: JSON.stringify({ action: 'parse', image, mediaType: 'image/jpeg' }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.reason || data.error || `HTTP ${res.status}`);
+    }
+
+    scanState.receipt = data.receipt || {};
+    scanState.duplicate = data.duplicate || null;
+    scanState.items = (data.items || []).map(it => ({
+      name:       it.name || '',
+      price:      it.price ?? '',
+      qty:        it.qty ?? 1,
+      unit:       it.unit || '',
+      unitQty:    it.unitQty ?? '',
+      rawText:    it.rawText || '',
+      confidence: it.confidence || 'medium',
+      suggestions: it.suggestions || [],
+      // Nothing is pre-matched. An auto-accepted wrong match writes a bad
+      // purchase event silently, which is the thing this screen exists to stop.
+      matchedPageId: '',
+      dropped: false,
+    }));
+  } catch (e) {
+    showToast(`Couldn't read that receipt — ${e.message}`, true);
+  } finally {
+    scanState.busy = false;
+    input.value = '';
+    renderScan();
+  }
+}
+
+function scanEdit(i, field, value) {
+  scanState.items[i][field] = value;
+  if (field === 'unit' || field === 'unitQty' || field === 'price') renderScanSummary();
+}
+
+function scanToggleDrop(i) {
+  scanState.items[i].dropped = !scanState.items[i].dropped;
+  renderScan();
+}
+
+function scanHeadEdit(field, value) {
+  if (!scanState.receipt) scanState.receipt = {};
+  scanState.receipt[field] = value;
+  renderScanSummary();
+}
+
+function renderScan() {
+  const wrap = document.getElementById('scan-body');
+  if (!wrap) return;
+
+  if (scanState.busy) {
+    wrap.innerHTML = `<div class="scan-status">Reading the receipt… this takes a few seconds.</div>`;
+    return;
+  }
+
+  if (!scanState.receipt) {
+    wrap.innerHTML = '';
+    return;
+  }
+
+  const r = scanState.receipt;
+  let html = '';
+
+  if (scanState.duplicate) {
+    html += `<div class="scan-dupe">
+      <strong>Already logged.</strong> A receipt from this store, date and total was
+      recorded on ${escapeHtml(String(scanState.duplicate.created_at || '').slice(0, 10))}.
+      Logging again would double-count it.
+    </div>`;
+  }
+
+  html += `<div class="scan-head">
+    <div><label>Store</label>
+      <input type="text" value="${escapeHtml(r.store || '')}" oninput="scanHeadEdit('store', this.value)" /></div>
+    <div><label>Date</label>
+      <input type="date" value="${escapeHtml(r.purchasedOn || '')}" oninput="scanHeadEdit('purchasedOn', this.value)" /></div>
+    <div><label>Subtotal</label>
+      <input type="number" step="0.01" inputmode="decimal" value="${r.subtotal ?? ''}" oninput="scanHeadEdit('subtotal', this.value)" /></div>
+    <div><label>Total</label>
+      <input type="number" step="0.01" inputmode="decimal" value="${r.total ?? ''}" oninput="scanHeadEdit('total', this.value)" /></div>
+  </div>`;
+
+  scanState.items.forEach((it, i) => {
+    const unitOpts = SCAN_UNITS.map(u =>
+      `<option value="${u}"${u === it.unit ? ' selected' : ''}>${u || 'unit —'}</option>`).join('');
+
+    const matchOpts = [`<option value="">No match — just log the price</option>`]
+      .concat((it.suggestions || []).map(s =>
+        `<option value="${escapeHtml(s.notion_page_id || '')}"${s.notion_page_id === it.matchedPageId ? ' selected' : ''}>Match: ${escapeHtml(s.item_name || '')}</option>`))
+      .join('');
+
+    html += `<div class="scan-line ${it.confidence === 'low' ? 'low' : ''} ${it.dropped ? 'dropped' : ''}">
+      <div class="scan-line-top">
+        <input class="scan-line-name" type="text" value="${escapeHtml(it.name)}" oninput="scanEdit(${i}, 'name', this.value)" />
+        <input class="scan-line-price" type="number" step="0.01" inputmode="decimal" value="${it.price}" oninput="scanEdit(${i}, 'price', this.value)" />
+        <button class="scan-drop" onclick="scanToggleDrop(${i})" title="${it.dropped ? 'Put back' : 'Leave this line out'}">${it.dropped ? '↺' : '×'}</button>
+      </div>
+      ${it.rawText ? `<div class="scan-line-raw">${escapeHtml(it.rawText)}</div>` : ''}
+      <div class="scan-line-meta">
+        <input class="qty" type="number" step="1" inputmode="numeric" value="${it.qty}" oninput="scanEdit(${i}, 'qty', this.value)" title="Quantity" />
+        <select onchange="scanEdit(${i}, 'unit', this.value)" title="Unit">${unitOpts}</select>
+        <input class="uqty" type="number" step="0.01" inputmode="decimal" value="${it.unitQty}" placeholder="size" oninput="scanEdit(${i}, 'unitQty', this.value)" title="How many of that unit" />
+        ${it.confidence === 'low' ? '<span class="scan-flag">check this line</span>' : ''}
+        ${(!it.unit || it.unitQty === '' || it.unitQty === null) ? '<span class="scan-flag">no size — won\'t compare</span>' : ''}
+      </div>
+      <div class="scan-match">
+        <label>Household Needs</label>
+        <select onchange="scanEdit(${i}, 'matchedPageId', this.value)">${matchOpts}</select>
+      </div>
+    </div>`;
+  });
+
+  html += `<div class="scan-summary" id="scan-summary"></div>
+    <div class="scan-actions">
+      <button class="scan-cancel" onclick="resetScan()">Discard</button>
+      <button class="scan-commit" id="scan-commit-btn" onclick="commitReceipt()">Log receipt</button>
+    </div>`;
+
+  wrap.innerHTML = html;
+  renderScanSummary();
+}
+
+function renderScanSummary() {
+  const el = document.getElementById('scan-summary');
+  if (!el) return;
+
+  const kept = scanState.items.filter(i => !i.dropped);
+  const lineSum = kept.reduce((s, i) => s + (parseFloat(i.price) || 0), 0);
+  const total = parseFloat(scanState.receipt?.total);
+  const matched = kept.filter(i => i.matchedPageId).length;
+  const noSize = kept.filter(i => !i.unit || i.unitQty === '' || i.unitQty === null).length;
+
+  let html = `${kept.length} item${kept.length === 1 ? '' : 's'} · $${lineSum.toFixed(2)}`;
+  if (!isNaN(total)) {
+    const gap = Math.abs(total - lineSum);
+    // Tax and deposits mean lines rarely equal the total exactly. Only shout
+    // when the gap is bigger than plausible tax.
+    html += gap > Math.max(total * 0.15, 1.5)
+      ? `<br><span class="warn">Lines total $${lineSum.toFixed(2)} but the receipt says $${total.toFixed(2)}. Something was probably missed.</span>`
+      : `<br>Receipt total $${total.toFixed(2)} — close enough after tax.`;
+  }
+  html += `<br>${matched} matched to your needs list.`;
+  if (noSize) html += `<br>${noSize} line${noSize === 1 ? '' : 's'} without a size — logged, but left out of price comparisons.`;
+
+  el.innerHTML = html;
+
+  const btn = document.getElementById('scan-commit-btn');
+  if (btn) btn.disabled = kept.length === 0 || !scanState.receipt?.store || !scanState.receipt?.purchasedOn;
+}
+
+async function commitReceipt() {
+  const btn = document.getElementById('scan-commit-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Logging…'; }
+
+  const items = scanState.items.filter(i => !i.dropped).map(i => ({
+    name: i.name,
+    price: i.price === '' ? null : parseFloat(i.price),
+    qty: i.qty === '' ? null : parseFloat(i.qty),
+    unit: i.unit || null,
+    unitQty: i.unitQty === '' ? null : parseFloat(i.unitQty),
+    rawText: i.rawText || null,
+    matchedPageId: i.matchedPageId || null,
+  }));
+
+  const r = scanState.receipt;
+  try {
+    const res = await floatWrite(RECEIPT_SCAN_URL, {
+      body: JSON.stringify({
+        action: 'commit',
+        receipt: {
+          store: r.store,
+          purchasedOn: r.purchasedOn,
+          subtotal: r.subtotal === '' ? null : parseFloat(r.subtotal),
+          total: r.total === '' ? null : parseFloat(r.total),
+        },
+        items,
+      }),
+    });
+    const data = await res.json();
+
+    if (res.status === 409) {
+      showToast('Already logged — not double-counting it', true);
+      return;
+    }
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+    let msg = `Logged ${data.inserted} item${data.inserted === 1 ? '' : 's'}`;
+    if (data.flipped) msg += `, ${data.flipped} marked purchased`;
+    showToast(msg);
+
+    if (data.warnings && data.warnings.length) {
+      console.warn('receipt-scan warnings:', data.warnings);
+    }
+
+    resetScan();
+    await loadNeeds();
+  } catch (e) {
+    showToast(`Couldn't log it — ${e.message}`, true);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Log receipt'; }
   }
 }
 
