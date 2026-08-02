@@ -689,6 +689,40 @@
     .scan-capture .cam { font-size: 34px; display: block; margin-bottom: 8px; }
     .scan-capture .lead { font-size: 16px; font-weight: 600; }
     .scan-capture .sub { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+    /* Staging tray: photos sit here until the set looks right. */
+    .scan-tray { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 16px 0; }
+    .scan-thumb {
+      position: relative; width: 78px; height: 78px;
+      border-radius: var(--radius-sm); overflow: hidden;
+      border: 1px solid var(--border); background: var(--surface-alt);
+    }
+    .scan-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .scan-thumb .pg {
+      position: absolute; left: 0; bottom: 0; padding: 1px 6px;
+      font-size: 10px; letter-spacing: .03em;
+      background: rgba(42,31,26,.62); color: #fff;
+    }
+    .scan-thumb .rm {
+      position: absolute; top: 3px; right: 3px;
+      width: 20px; height: 20px; padding: 0;
+      border: none; border-radius: 50%;
+      background: rgba(42,31,26,.62); color: #fff;
+      font-size: 13px; line-height: 20px; text-align: center; cursor: pointer;
+    }
+    .scan-tray-actions { display: flex; gap: 10px; margin: 12px 16px 0; }
+    .scan-tray-actions button {
+      flex: 1; padding: 13px;
+      border-radius: var(--radius-sm); border: 1px solid var(--border);
+      background: var(--surface); color: var(--text);
+      font-family: var(--font); font-size: 14px; cursor: pointer;
+    }
+    .scan-tray-actions .go {
+      background: var(--accent); border-color: var(--accent);
+      color: #fff; font-weight: 600;
+    }
+    .scan-tray-hint { margin: 8px 16px 0; font-size: 12px; color: var(--text-light); line-height: 1.5; }
+    .scan-archive { margin: 10px 16px 0; font-size: 12px; color: var(--text-muted); }
     .scan-status {
       margin: 12px 16px;
       padding: 14px 16px;
@@ -900,6 +934,90 @@
     .claim-btn:active { background: var(--accent-soft); }
     .claim-btn:disabled { opacity: .5; }
 
+
+    /* ── Chore chains: dormant steps ────────────────────── */
+    .chore-row.dormant { opacity: 0.5; }
+    .dormant-toggle {
+      width: calc(100% - 32px);
+      margin: 14px 16px 4px;
+      padding: 11px 14px;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: var(--font);
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .dormant-toggle .chev { transition: transform 0.15s; }
+    .dormant-toggle.open .chev { transform: rotate(90deg); }
+    .dormant-hint {
+      font-size: 11px;
+      color: var(--text-light);
+      padding: 2px 20px 4px;
+    }
+
+    /* ── Needs: price separate from status ──────────────── */
+    .needs-est {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+      flex-shrink: 0;
+      min-width: 46px;
+      text-align: right;
+    }
+
+
+    /* ── Scan history ───────────────────────────────────── */
+    .scan-recent-head {
+      display: flex; align-items: baseline; gap: 8px;
+      margin: 20px 16px 8px;
+      font-size: 13px; font-weight: 600; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: .05em;
+    }
+    .scan-recent-head .sub {
+      font-size: 11px; font-weight: 400; letter-spacing: 0;
+      text-transform: none; color: var(--text-light);
+    }
+    .scan-recent-row {
+      margin: 0 16px 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 12px 14px;
+      cursor: pointer;
+    }
+    .scan-recent-top { display: flex; align-items: baseline; gap: 10px; }
+    .scan-recent-store {
+      flex: 1; min-width: 0; font-size: 16px; font-weight: 600; color: var(--text);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .scan-recent-total {
+      font-size: 16px; font-weight: 600; color: var(--text);
+      font-variant-numeric: tabular-nums; flex-shrink: 0;
+    }
+    .scan-recent-meta { font-size: 12px; color: var(--text-light); margin-top: 3px; }
+    .scan-recent-meta .flag { color: var(--accent); }
+    .scan-recent-lines {
+      margin-top: 10px; padding-top: 10px;
+      border-top: 1px dashed var(--border);
+    }
+    .scan-recent-line {
+      display: flex; gap: 10px; font-size: 13px;
+      color: var(--text-muted); padding: 3px 0;
+    }
+    .scan-recent-line .nm { flex: 1; min-width: 0; }
+    .scan-recent-line .pr { font-variant-numeric: tabular-nums; }
+    .scan-recent-empty {
+      margin: 0 16px; padding: 18px; text-align: center;
+      color: var(--text-light); font-size: 13px; font-style: italic;
+    }
+
   </style>
 </head>
 <body>
@@ -1021,16 +1139,19 @@
 
   <div id="screen-scan" class="screen">
     <div class="scan-intro">
-      Photograph a receipt. Nothing is saved until you look the lines over and tap Log receipt.
+      Add every photo of the receipt, then read it. A long receipt can be several shots.
+      Nothing is saved until you look the lines over and tap Log receipt.
     </div>
     <label class="scan-capture" for="scan-file">
       <span class="cam">🧾</span>
-      <span class="lead">Take a photo of a receipt</span>
-      <span class="sub">or pick one from your camera roll</span>
+      <span class="lead">Add receipt photos</span>
+      <span class="sub">Camera, photo library or files</span>
     </label>
-    <input type="file" id="scan-file" accept="image/*" capture="environment"
-           style="display:none" onchange="onReceiptPhoto(this)" />
+    <input type="file" id="scan-file" accept="image/*" multiple
+           style="display:none" onchange="onReceiptPhotos(this)" />
+    <div id="scan-tray"></div>
     <div id="scan-body"></div>
+    <div id="scan-recent"></div>
   </div>
 
   <nav>
@@ -1234,6 +1355,7 @@ function setGreeting() {
 
 async function loadChores() {
   try {
+    await loadLatestLogTimes();
     const res = await fetch(`${CHORE_LOG_URL}?action=list`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
@@ -1389,8 +1511,11 @@ function renderChores() {
     list.innerHTML = `<div class="history-empty">${msg}</div>`;
     return;
   }
+  const dormantItems = items.filter(c => chainState(c.id) === 'dormant');
+  const liveItems    = items.filter(c => chainState(c.id) !== 'dormant');
+
   let lastHeader = null;
-  items.forEach(chore => {
+  const renderRow = (chore, dormant) => {
     if (groupByFrequency) {
       const label = frequencyLabel(chore.frequency);
       if (label !== lastHeader) {
@@ -1403,7 +1528,7 @@ function renderChores() {
     }
     const overdue = isOverdue(chore);
     const row = document.createElement('div');
-    row.className = 'chore-row' + (overdue ? ' overdue' : '');
+    row.className = 'chore-row' + (overdue ? ' overdue' : '') + (dormant ? ' dormant' : '');
     row.innerHTML = `
       <span class="chore-icon">${chore.icon}</span>
       <div class="chore-info">
@@ -1413,7 +1538,30 @@ function renderChores() {
       <span class="chore-chevron">›</span>`;
     row.onclick = () => openChoreModal(chore);
     list.appendChild(row);
-  });
+  };
+
+  liveItems.forEach(c => renderRow(c, false));
+
+  // Dormant steps stay reachable rather than disappearing — if the panel logs
+  // a Swap you didn't make, you still need a way to see and correct it.
+  if (dormantItems.length) {
+    const toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'dormant-toggle' + (showDormant ? ' open' : '');
+    toggle.innerHTML =
+      `<span>Hidden — waiting on another step (${dormantItems.length})</span><span class="chev">›</span>`;
+    toggle.onclick = toggleDormant;
+    list.appendChild(toggle);
+
+    if (showDormant) {
+      const hint = document.createElement('div');
+      hint.className = 'dormant-hint';
+      hint.textContent = 'These become active once the step before them is logged.';
+      list.appendChild(hint);
+      lastHeader = null;
+      dormantItems.forEach(c => renderRow(c, true));
+    }
+  }
 }
 
 function updateStats() {
@@ -1671,7 +1819,7 @@ function showScreen(name) {
   document.getElementById(`nav-${name}`).classList.add('active');
   if (name === 'needs')  loadNeeds();
   if (name === 'chores') loadUnclaimed();
-  if (name === 'scan')  renderScan();
+  if (name === 'scan') { renderScan(); loadRecentScans(); }
 }
 
 function openModal(id) { document.getElementById(id).classList.add('open'); document.body.style.overflow = 'hidden'; }
@@ -1787,17 +1935,19 @@ function needRowHtml(n) {
   const sub = [n.quantity, n.notes].filter(Boolean).join(' · ');
   const pillClass = n.status === 'On List' ? 'onlist' : 'needed';
 
-  // Price at a glance beats the Needed/On List label — color still carries
-  // the stage, the text now carries the number. Falls back to the status
-  // word only when there's genuinely no price to show yet.
-  const pillLabel = n.projectedCost != null ? `~$${n.projectedCost.toFixed(2)}` : (n.status || 'Needed');
+  // Price and status are separate things and don't belong in one control.
+  // The estimate is information you read; the pill is a control you tap.
+  // Reverted 8/2 from the combined pill built 8/1.
+  const est = n.estimatedCost ?? n.projectedCost ?? null;
+  const estLabel = est != null ? `$${Number(est).toFixed(2)}` : '';
   return `
     <div class="needs-row" onclick="openNeedsEdit('${n.pageId}')">
       <div class="needs-item-info">
         <div class="needs-item-name">${escapeHtml(n.item)}</div>
         ${sub ? `<div class="needs-item-sub">${escapeHtml(sub)}</div>` : ''}
       </div>
-      <div class="status-pill ${pillClass}" onclick="event.stopPropagation(); cycleNeedStatus('${n.pageId}')">${escapeHtml(pillLabel)}</div>
+      <div class="needs-est">${escapeHtml(estLabel)}</div>
+      <div class="status-pill ${pillClass}" onclick="event.stopPropagation(); cycleNeedStatus('${n.pageId}')">${escapeHtml(n.status || 'Needed')}</div>
     </div>`;
 }
 
@@ -2038,7 +2188,8 @@ async function screenshotNeeds() {
     }
     const name = r.querySelector('.needs-item-name')?.textContent || '';
     const sub = r.querySelector('.needs-item-sub')?.textContent || '';
-    const status = r.querySelector('.status-pill')?.textContent || '';
+    const est = r.querySelector('.needs-est')?.textContent || '';
+    const status = est || r.querySelector('.status-pill')?.textContent || '';
     ctx.font = '600 17px -apple-system, sans-serif';
     ctx.fillStyle = '#2A1F1A';
     ctx.fillText(`☐ ${name}`, padding + 8, y);
@@ -2198,18 +2349,22 @@ const RECEIPT_SCAN_URL = `${SUPABASE}/receipt-scan`;
 
 const SCAN_UNITS = ['', 'gal', 'qt', 'pt', 'fl_oz', 'oz', 'lb', 'g', 'kg', 'ct', 'ea'];
 
-let scanState = { receipt: null, items: [], duplicate: null, busy: false };
+// files[] holds the staged photos: the original File for the Drive copy and
+// a preview URL for the tray. Nothing is sent until she taps Read receipt.
+let scanState = { receipt: null, items: [], duplicate: null, busy: false, files: [] };
 
 function resetScan() {
-  scanState = { receipt: null, items: [], duplicate: null, busy: false };
+  (scanState.files || []).forEach(f => { try { URL.revokeObjectURL(f.url); } catch (e) {} });
+  scanState = { receipt: null, items: [], duplicate: null, busy: false, files: [] };
   const input = document.getElementById('scan-file');
   if (input) input.value = '';
+  renderScanTray();
   renderScan();
 }
 
 // Phone photos run 4-12MB. Base64 inflates that by a third, which will blow
 // the function payload. Downscale before it ever leaves the device.
-function shrinkImage(file, maxDim = 1600) {
+function shrinkImage(file, maxDim = 1600, quality = 0.82) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = () => reject(new Error('Could not read that photo'));
@@ -2222,7 +2377,7 @@ function shrinkImage(file, maxDim = 1600) {
         c.width  = Math.round(img.width  * scale);
         c.height = Math.round(img.height * scale);
         c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-        resolve(c.toDataURL('image/jpeg', 0.82).split(',')[1]);
+        resolve(c.toDataURL('image/jpeg', quality).split(',')[1]);
       };
       img.src = reader.result;
     };
@@ -2230,20 +2385,82 @@ function shrinkImage(file, maxDim = 1600) {
   });
 }
 
-async function onReceiptPhoto(input) {
-  const file = input.files && input.files[0];
-  if (!file) return;
+// Selecting photos stages them. Nothing is sent until she taps Read receipt,
+// so she can add another section or drop a blurry shot first.
+function onReceiptPhotos(input) {
+  const picked = Array.from(input.files || []);
+  input.value = '';
+  if (!picked.length) return;
+
+  picked.forEach(file => {
+    if (!/^image\//.test(file.type)) return;
+    if (scanState.files.length >= 8) return;
+    scanState.files.push({ file, url: URL.createObjectURL(file) });
+  });
+
+  // A fresh photo set means any earlier parse is stale.
+  scanState.receipt = null;
+  scanState.items = [];
+  scanState.duplicate = null;
+
+  renderScanTray();
+  renderScan();
+  renderRecentScans();
+}
+
+function removeScanPhoto(i) {
+  const gone = scanState.files.splice(i, 1)[0];
+  if (gone) { try { URL.revokeObjectURL(gone.url); } catch (e) {} }
+  renderScanTray();
+}
+
+function renderScanTray() {
+  const tray = document.getElementById('scan-tray');
+  if (!tray) return;
+
+  if (!scanState.files.length || scanState.busy) { tray.innerHTML = ''; return; }
+
+  const thumbs = scanState.files.map((f, i) => `
+    <div class="scan-thumb">
+      <img src="${f.url}" alt="Receipt photo ${i + 1}" />
+      <span class="pg">${i + 1}</span>
+      <button class="rm" onclick="removeScanPhoto(${i})" title="Remove this photo">&times;</button>
+    </div>`).join('');
+
+  const n = scanState.files.length;
+  tray.innerHTML = `
+    <div class="scan-tray">${thumbs}</div>
+    <div class="scan-tray-hint">
+      ${n} photo${n === 1 ? '' : 's'} staged${n > 1 ? ', read top to bottom' : ''}.
+      Tap a photo\u2019s x to drop it, or Add photos for another section.
+    </div>
+    <div class="scan-tray-actions">
+      <button onclick="document.getElementById('scan-file').click()">Add photos</button>
+      <button class="go" onclick="startReceiptParse()">Read receipt</button>
+    </div>`;
+}
+
+async function startReceiptParse() {
+  if (!scanState.files.length) return;
 
   scanState.busy = true;
   scanState.receipt = null;
   scanState.items = [];
   scanState.duplicate = null;
+  renderScanTray();
   renderScan();
+  renderRecentScans();
 
   try {
-    const image = await shrinkImage(file);
+    // Downscaled copies for parsing. The originals stay on the device for the
+    // Drive PDF, which is the copy she would actually go back and read.
+    const images = [];
+    for (const f of scanState.files) {
+      images.push({ data: await shrinkImage(f.file, 1600), mediaType: 'image/jpeg' });
+    }
+
     const res = await floatWrite(RECEIPT_SCAN_URL, {
-      body: JSON.stringify({ action: 'parse', image, mediaType: 'image/jpeg' }),
+      body: JSON.stringify({ action: 'parse', images }),
     });
     const data = await res.json();
 
@@ -2268,11 +2485,12 @@ async function onReceiptPhoto(input) {
       dropped: false,
     }));
   } catch (e) {
-    showToast(`Couldn't read that receipt — ${e.message}`, true);
+    showToast(`Couldn't read that receipt, ${e.message}`, true);
   } finally {
     scanState.busy = false;
-    input.value = '';
+    renderScanTray();
     renderScan();
+    renderRecentScans();
   }
 }
 
@@ -2366,6 +2584,7 @@ function renderScan() {
 
   wrap.innerHTML = html;
   renderScanSummary();
+  renderRecentScans();
 }
 
 function renderScanSummary() {
@@ -2440,12 +2659,73 @@ async function commitReceipt() {
       console.warn('receipt-scan warnings:', data.warnings);
     }
 
+    // Drive copy happens after the ledger write, never before. If this fails
+    // the purchase is still recorded, which is the part that can't be redone.
+    await archiveReceiptPhotos(data.receiptId);
+
     resetScan();
+    await loadRecentScans();
     await loadNeeds();
   } catch (e) {
     showToast(`Couldn't log it — ${e.message}`, true);
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = 'Log receipt'; }
+  }
+}
+
+// Upload the staged photos as one PDF. Every page has to go in a single
+// request, because a PDF can't be appended to page by page. Goes through the
+// Edge Function, which holds the Apps Script URL and token. Those can't live
+// in this file because the FloatApp repo is public.
+async function archiveReceiptPhotos(receiptId) {
+  if (!receiptId || !scanState.files.length) return;
+
+  const note = document.createElement('div');
+  note.className = 'scan-archive';
+  const body = document.getElementById('scan-body');
+  if (body) body.appendChild(note);
+  note.textContent = 'Building the receipt PDF...';
+
+  const LADDER = [
+    { maxDim: 2400, quality: 0.92 },
+    { maxDim: 2000, quality: 0.86 },
+    { maxDim: 1600, quality: 0.80 },
+    { maxDim: 1200, quality: 0.72 },
+  ];
+  const BUDGET = 5 * 1024 * 1024; // base64 characters, roughly 5MB of body
+
+  try {
+    let images = null;
+    for (const step of LADDER) {
+      const batch = [];
+      for (const f of scanState.files) {
+        batch.push({ data: await shrinkImage(f.file, step.maxDim, step.quality), mediaType: 'image/jpeg' });
+      }
+      images = batch;
+      if (batch.reduce((n, im) => n + im.data.length, 0) <= BUDGET) break;
+      note.textContent = 'Large receipt, compressing further...';
+    }
+
+    note.textContent = 'Saving the PDF to Drive...';
+    const res = await floatWrite(RECEIPT_SCAN_URL, {
+      body: JSON.stringify({ action: 'archive', receiptId, images }),
+    });
+    const out = await res.json();
+
+    // 501 means the Apps Script side isn't wired up yet.
+    if (res.status === 501) {
+      showToast('Logged. Drive copy is off until the archive script is connected.', true);
+      return;
+    }
+    if (!res.ok) throw new Error(out.detail || out.error || `HTTP ${res.status}`);
+
+    const n = out.pageCount || scanState.files.length;
+    showToast(n > 1 ? `Receipt saved to Drive, ${n} pages in one PDF` : 'Receipt saved to Drive as a PDF');
+  } catch (e) {
+    console.warn('receipt archive failed:', e);
+    showToast('Logged, but the PDF copy did not reach Drive', true);
+  } finally {
+    if (note.parentNode) note.parentNode.removeChild(note);
   }
 }
 
@@ -2526,6 +2806,195 @@ async function claimChore(logId, who) {
     if (row) row.querySelectorAll('.claim-btn').forEach(b => b.disabled = false);
     showToast(`Couldn't claim it — ${e.message}`, true);
   }
+}
+
+// ── Chore chains ───────────────────────────────────────
+// Some chores only matter because another one just happened. Swap Laundry is
+// pointless until a load is started; Unload Dishwasher is pointless until it
+// has run. These aren't frequencies, they're sequences.
+//
+// A step is ACTIVE when its predecessor was logged more recently than it was.
+// Nothing is stored — no "dishwasher is dirty" flag to drift out of sync. The
+// log already knows, which is the whole lesson from the 8/2 stale-mirror bug.
+//
+// Keyed by Notion page id, not name, so renaming a chore can't break a chain.
+const CHORE_CHAINS = [
+  {
+    name: 'Laundry',
+    steps: [
+      '36eb9fd04f7281e09757fd678135d032', // Start Laundry  (always available)
+      '3b0b9fd04f7281768107deb8d1fe0807', // Swap Laundry
+      '3b0b9fd04f7281b28d16c49c9dc11014', // Start Dryer
+    ],
+  },
+  {
+    name: 'Dishwasher',
+    steps: [
+      '3b0b9fd04f72815d9cbaf1e8e2405fec', // Load Dishwasher   (always available)
+      '36eb9fd04f7281f8b08beedfc8bb90f6', // Start Dishwasher
+      '3b0b9fd04f7281b0bf8bc907d115e9a1', // Unload Dishwasher
+    ],
+  },
+];
+
+let latestLogTimes = {};   // choreId -> ISO timestamp of its newest log entry
+let latestLoaded  = false; // did the timestamp fetch actually succeed?
+let showDormant   = false;
+
+function normalizeId(id) {
+  return String(id || '').replace(/-/g, '');
+}
+
+async function loadLatestLogTimes() {
+  try {
+    const res = await fetch(`${CHORE_LOG_URL}?action=latest`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    latestLogTimes = {};
+    for (const [id, ts] of Object.entries(data.latest || {})) {
+      latestLogTimes[normalizeId(id)] = ts;
+    }
+    latestLoaded = true;
+  } catch {
+    // Fail OPEN, and it has to be explicit. Without this flag every chain step
+    // reads 0 === 0, resolves to dormant, and the whole laundry and dishwasher
+    // sequence silently vanishes into the Hidden drawer whenever this fetch
+    // fails. Hiding a chore that might genuinely need doing is the worse error.
+    latestLogTimes = {};
+    latestLoaded = false;
+  }
+}
+
+function lastLoggedAt(choreId) {
+  const ts = latestLogTimes[normalizeId(choreId)];
+  return ts ? new Date(ts).getTime() : 0;
+}
+
+// Returns 'active', 'dormant', or null when the chore isn't in any chain.
+function chainState(choreId) {
+  if (!latestLoaded) return null;  // no timestamps, no hiding — show everything
+  const id = normalizeId(choreId);
+  for (const chain of CHORE_CHAINS) {
+    const idx = chain.steps.findIndex(s => normalizeId(s) === id);
+    if (idx === -1) continue;
+    if (idx === 0) return 'active';        // chain entry point is always available
+    const mine = lastLoggedAt(chain.steps[idx]);
+    const prev = lastLoggedAt(chain.steps[idx - 1]);
+    // Predecessor happened since I last ran, so I'm the next thing to do.
+    return prev > mine ? 'active' : 'dormant';
+  }
+  return null;
+}
+
+function toggleDormant() {
+  showDormant = !showDormant;
+  renderChores();
+}
+
+// ── Scan history ───────────────────────────────────────
+// "What did I already scan?" — mirrors the recent-scans list from V1's Scan
+// tab. Reads receipts, not scan_history: this tab produces receipts, and the
+// printer's mail/bill pipeline is a separate stream that isn't merged in yet.
+let recentReceipts = [];
+let expandedReceipt = null;
+let receiptLines = {};   // receiptId -> line items, cached once fetched
+
+async function loadRecentScans() {
+  try {
+    const res = await fetch(`${RECEIPT_SCAN_URL}?action=recent&limit=20`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    recentReceipts = data.receipts || [];
+  } catch {
+    recentReceipts = [];
+  }
+  renderRecentScans();
+}
+
+async function toggleReceipt(id) {
+  expandedReceipt = expandedReceipt === id ? null : id;
+  renderRecentScans();
+
+  if (expandedReceipt && !receiptLines[id]) {
+    try {
+      const res = await fetch(`${RECEIPT_SCAN_URL}?action=receipt&id=${encodeURIComponent(id)}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      receiptLines[id] = data.items || [];
+    } catch {
+      receiptLines[id] = [];
+    }
+    renderRecentScans();
+  }
+}
+
+function renderRecentScans() {
+  const wrap = document.getElementById('scan-recent');
+  if (!wrap) return;
+
+  // Hidden mid-review so the confirm screen isn't competing with history.
+  if (scanState.receipt || scanState.busy) { wrap.innerHTML = ''; return; }
+
+  let html = `<div class="scan-recent-head"><span>Recent scans</span>
+    <span class="sub">${recentReceipts.length ? 'tap to see the lines' : ''}</span></div>`;
+
+  if (!recentReceipts.length) {
+    html += `<div class="scan-recent-empty">Nothing scanned yet.</div>`;
+    wrap.innerHTML = html;
+    return;
+  }
+
+  html += recentReceipts.map(r => {
+    const total = r.total != null ? `$${Number(r.total).toFixed(2)}` : '';
+    const lineSum = Number(r.line_sum || 0);
+    const items = Number(r.items || 0);
+    const matched = Number(r.matched || 0);
+
+    // Same tolerance as the review screen: tax and deposits mean lines rarely
+    // equal the total exactly, so only flag a genuinely large gap.
+    const t = Number(r.total);
+    const gap = !isNaN(t) ? Math.abs(t - lineSum) : 0;
+    const short = !isNaN(t) && gap > Math.max(t * 0.15, 1.5);
+
+    const bits = [
+      r.purchased_on ? escapeHtml(daysAgoLabel(r.purchased_on)) : 'no date',
+      `${items} item${items === 1 ? '' : 's'}`,
+    ];
+    if (matched) bits.push(`${matched} matched`);
+    if (short) bits.push(`<span class="flag">lines only $${lineSum.toFixed(2)}</span>`);
+
+    const open = expandedReceipt === r.id;
+    const lines = receiptLines[r.id];
+
+    let detail = '';
+    if (open) {
+      if (!lines) {
+        detail = `<div class="scan-recent-lines"><div class="scan-recent-line">Loading…</div></div>`;
+      } else if (!lines.length) {
+        detail = `<div class="scan-recent-lines"><div class="scan-recent-line">No line items recorded.</div></div>`;
+      } else {
+        detail = `<div class="scan-recent-lines">` + lines.map(l => {
+          const size = l.unit_qty != null && l.unit ? ` · ${l.unit_qty} ${escapeHtml(l.unit)}` : '';
+          const price = l.actual_cost != null ? `$${Number(l.actual_cost).toFixed(2)}` : '';
+          return `<div class="scan-recent-line">
+            <span class="nm">${escapeHtml(l.item_name || 'Unnamed')}${size}</span>
+            <span class="pr">${price}</span>
+          </div>`;
+        }).join('') + `</div>`;
+      }
+    }
+
+    return `<div class="scan-recent-row" onclick="toggleReceipt('${r.id}')">
+      <div class="scan-recent-top">
+        <div class="scan-recent-store">${escapeHtml(r.store || 'Unknown store')}</div>
+        <div class="scan-recent-total">${total}</div>
+      </div>
+      <div class="scan-recent-meta">${bits.join(' · ')}</div>
+      ${detail}
+    </div>`;
+  }).join('');
+
+  wrap.innerHTML = html;
 }
 
 boot();
